@@ -29,3 +29,13 @@ describe('GET /api/v1/emojis', () => {
     // .expect(200, ['😀', '😳', '🙄'], done);
   });
 });
+
+describe('/api/v3', () => {
+  it('GET /isAlive', (done) => {
+    request(app)
+      .get('/api/v3/isAlive')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200, { success: true }, done);
+  });
+});

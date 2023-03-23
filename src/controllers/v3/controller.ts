@@ -10,9 +10,10 @@ import { publicDir } from '../../globals';
 // console.log(`global publicDir = ${publicDir}`);
 // import { publicDir } from '../../../server';
 // const publicDir = '';
+import { RES_SUCCESS } from './models';
 
 const rootHandler = (_req: Request, res: Response): void => {
-  // res.status(200).send('v3 root');
+  // res.status(200).send('v3 root');xxsxzz
   // res.sendFile(
   //   '/Users/rozimmermann/doc/2021.10.18_Craigslist-scraper/express-api-starter-ts/public/v3.html',
   // );
@@ -20,7 +21,8 @@ const rootHandler = (_req: Request, res: Response): void => {
 };
 
 const isAliveHandler = (_req: Request, res: Response): void => {
-  res.status(200).json({ success: true });
+  const result: RES_SUCCESS = { success: true };
+  res.status(200).json(result);
 };
 
 const exampleHandler = (_req: Request, res: Response): void => {
