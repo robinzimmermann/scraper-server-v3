@@ -9,3 +9,7 @@ if (!dotenvExists('.env')) {
 export const port = process.env.PORT;
 export const static_home = process.env.STATIC_HOME;
 export const publicDir = `${static_home}/public`;
+
+export const dbDir = `${process.cwd()}/.db`;
+
+console.log(`process.cwd()=${process.cwd()}`);
