@@ -37,7 +37,7 @@ describe('app', () => {
   });
 });
 
-describe.skip('GET /', () => {
+describe('GET /', () => {
   it('responds with a use rest message', (done) => {
     request(app)
       .get('/')
@@ -47,7 +47,8 @@ describe.skip('GET /', () => {
   });
 });
 
-describe('actual', () => {
+describe.skip('actual', () => {
+  // Test actual URL rather than app
   it('does something', (done) => {
     request('http://localhost:3036/what')
       .get('/')
