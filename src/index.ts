@@ -15,6 +15,7 @@ import app from './app';
 import { logger } from './utils/logger/logger';
 // import { dotenvExists } from './utils/common/checkDotEnv';
 import { port } from './globals';
+import { initAllDbs } from './database/common';
 
 // if (!dotenvExists('.env')) {
 //   logger.error('exiting');
@@ -38,10 +39,26 @@ import { port } from './globals';
 // console.log('da port is', port);
 app.listen(port, () => {
   logger.info(
-    `App is running at ${chalk.bold(
+    `server is running at ${chalk.bold(
       `http://localhost:${port}`,
     )} in ${chalk.bold(app.get('env'))} mode`,
   );
+
+  const dbResult = initAllDbs();
+
+  if (dbResult.isOk()) {
+    dbResult.value.forEach((msg) => logger.warn(chalk.yellow(msg)));
+  }
+
+  if (dbResult.isErr()) {
+    dbResult.mapErr((messages) =>
+      messages.forEach((msg) => logger.error(chalk.red(msg))),
+    );
+    logger.error('initializing went pear-shaped, shutting down');
+    return;
+  }
+
+  logger.info(chalk.green.bold('server ready'));
 });
 
 // export { __rootname };
