@@ -1,11 +1,15 @@
 import { LowSync, JSONFileSync } from 'lowdb';
 import fs from 'fs';
+import chalk from 'chalk';
 
 import { JsonDb } from './JsonDb';
+import { logger } from '../../../src/utils/logger/logger';
 
 export default <T>(file: string): JsonDb<T> => {
   if (!fs.existsSync(file)) {
-    console.log(`database file doesn't exist, creating it: ${file}`);
+    logger.warn(
+      `database file doesn't exist, creating it: ${chalk.bold(file)}`,
+    );
     fs.writeFileSync(file, '{}\n');
   }
 
@@ -22,7 +26,7 @@ export default <T>(file: string): JsonDb<T> => {
       if (err instanceof Error) {
         const e = err as Error;
         if (e instanceof SyntaxError) {
-          console.log(
+          logger.warn(
             `syntax error in db file, initializing data to {}: ${file}`,
           );
         } else {
