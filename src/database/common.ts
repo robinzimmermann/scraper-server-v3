@@ -4,6 +4,7 @@ import chalk from 'chalk';
 
 // import lowdb from '../api/jsonDb/lowdbDriver';
 import * as dbPosts from '../database/dbPosts';
+import * as dbSearches from '../database/dbSearches';
 import { dbDir } from '../globals';
 import { logger } from '../../src/utils/logger/logger';
 
@@ -22,6 +23,9 @@ export const initAllDbs = (): Result<string[], string[]> => {
 
   const filePosts = `${dbDir}/dbPosts.json`;
   dbPosts.init(filePosts);
+
+  const fileSearches = `${dbDir}/dbSearches.json`;
+  dbSearches.init(fileSearches);
 
   // const errors = [] as string[];
   const warnings = [] as string[];

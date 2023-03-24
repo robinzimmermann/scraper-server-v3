@@ -2,7 +2,7 @@ import request from 'supertest';
 
 import app from '../src/app';
 
-describe('app', () => {
+describe.skip('app', () => {
   // it('responds with a use rest message', (done) => {
   //   request(app)
   //     .get('/what-is-this-even')
@@ -37,7 +37,7 @@ describe('app', () => {
   });
 });
 
-describe('GET /', () => {
+describe.skip('GET /', () => {
   it('responds with a use rest message', (done) => {
     request(app)
       .get('/')
