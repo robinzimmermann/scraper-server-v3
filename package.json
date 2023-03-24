@@ -3,7 +3,10 @@
   "type": "module",
   "version": "1.2.0",
   "description": " A basic starter for an express.js API with Typescript",
-  "main": "src/index.ts",
+  "exports": "./src/index.ts",
+  "engines": {
+    "node": ">=16.00"
+  },
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
@@ -41,7 +44,7 @@
     "express": "^4.18.2",
     "helmet": "^6.0.1",
     "jest": "^29.5.0",
-    "lowdb": "^5.1.0",
+    "lowdb": "^4.0.1",
     "morgan": "^1.10.0",
     "neverthrow": "^6.0.0",
     "nodemon": "^2.0.21",
