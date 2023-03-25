@@ -15,5 +15,7 @@
     "esm": true,
     "experimentalSpecifierResolution": "node"
   },
-  "include": ["./*.js", "src/**/*.ts", "test/**/*.ts"]
+  "files": ["node_modules/jest-extended/types/index.d.ts"],
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules"]
 }
