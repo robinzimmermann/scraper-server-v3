@@ -17,10 +17,6 @@ describe('dbPosts test suite', () => {
     initializeJest();
   });
 
-  // test('basics', () => {
-  //   expect(true).toBe(true);
-  // });
-
   test.skip('initializes when no database file is present', () => {
     dbPosts.init('no-such-file');
 
@@ -30,18 +26,9 @@ describe('dbPosts test suite', () => {
 
   test('updating title works', () => {
     dbPosts.init('postsDb-1');
-    // const saveDataSpy = jest.spyOn(dbPosts, 'saveData');
 
     expect(dbPosts.getPosts()).toContainKey('101');
     dbPosts.updateTitle('101', 'Awesome new title');
-    expect(saveDataSpy).toHaveBeenCalledTimes(1);
-  });
-
-  test('updating title works 2', () => {
-    dbPosts.init('postsDb-1');
-
-    expect(dbPosts.getPosts()).toContainKey('101');
-    dbPosts.updateTitle('101', 'Dodgy new title');
     expect(saveDataSpy).toHaveBeenCalledTimes(1);
   });
 

@@ -1,4 +1,5 @@
 import * as postsDb from './data/postsDb-data';
+import * as searchesDb from './data/searchesDb-data';
 
 export default <T>(
   file: string,
@@ -8,12 +9,11 @@ export default <T>(
 } => {
   const readAny = (): unknown => {
     switch (file) {
-      case 'postsDb-empty':
-        return postsDb.postsEmpty;
-
       case 'postsDb-1':
-        console.log('woot!');
         return postsDb.postsDb1;
+
+      case 'searchesDb-1':
+        return searchesDb.searchesDb1;
 
       default:
         return {};
