@@ -8,7 +8,8 @@ export type Database = Posts;
 let dbFile: JsonDb<Database>;
 let dbData: Database;
 
-const dbLogger = DbLogger('[DbPosts]');
+const dbLoggerPrefix = '[dbPosts]';
+const dbLogger = DbLogger(dbLoggerPrefix);
 
 export const saveData = (): void => {
   dbFile.write();
@@ -18,7 +19,6 @@ export const init = (thePath: string): void => {
   dbLogger.info('initializing');
   dbFile = lowdb<Database>(thePath);
   dbData = dbFile.read();
-  console.log(`IGNORE TEMPORARY data=${JSON.stringify(dbData)}`);
 
   // data['123'] = { pid: '123', title: 'The Poop' };
   // db.write();

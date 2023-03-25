@@ -24,7 +24,7 @@ export default <T>(file: string): JsonDb<T> => {
       database.read();
     } catch (err: unknown) {
       if (err instanceof Error) {
-        const e = err as Error;
+        const e = err;
         if (e instanceof SyntaxError) {
           logger.warn(
             `syntax error in db file, initializing data to {}: ${file}`,

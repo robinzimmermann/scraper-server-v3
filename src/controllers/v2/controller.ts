@@ -5,7 +5,7 @@ import { HttpException } from '../../models/httpException.model';
 //   res.status(200).send('v2 example request');
 // };
 
-const v2Handler = (_req: Request, _res: Response, next: NextFunction) => {
+const v2Handler = (_req: Request, _res: Response, next: NextFunction): void => {
   //Throwing some error
   next(new HttpException(400, 'the v2 api is old, baby'));
 };

@@ -11,3 +11,8 @@ export const static_home = process.env.STATIC_HOME;
 export const publicDir = `${static_home}/public`;
 
 export const dbDir = `${process.cwd()}/.db`;
+
+export const cacheDir = `${process.cwd()}/.cache`;
+
+export const craigslistCacheDir = 'craigslist-search-results';
+export const facebookCacheDir = 'facebook-search-results';

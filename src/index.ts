@@ -2,6 +2,7 @@
 import chalk from 'chalk';
 // import path from 'path';
 // import { fileURLToPath } from 'url';
+// import R from 'ramda';
 
 // const __filename = fileURLToPath(import.meta.url);
 // console.log(`__filename=${__filename}`);
@@ -14,8 +15,15 @@ import chalk from 'chalk';
 import app from './app';
 import { logger } from './utils/logger/logger';
 // import { dotenvExists } from './utils/common/checkDotEnv';
-import { port } from './globals';
+import {
+  port,
+  cacheDir,
+  craigslistCacheDir,
+  facebookCacheDir,
+} from './globals';
 import { initAllDbs } from './database/common';
+import { doIt } from './fetcher/FromFiles';
+import fsDriver from './api/cache/fsDriver';
 
 // if (!dotenvExists('.env')) {
 //   logger.error('exiting');
@@ -37,28 +45,53 @@ import { initAllDbs } from './database/common';
 // const port = process.env.PORT || 5008;
 // const port = app.get('port');
 // console.log('da port is', port);
-app.listen(port, () => {
-  logger.info(
-    `server is running at ${chalk.bold(
-      `http://localhost:${port}`,
-    )} in ${chalk.bold(app.get('env'))} mode`,
-  );
 
-  const dbResult = initAllDbs();
-
-  if (dbResult.isOk()) {
-    dbResult.value.forEach((msg) => logger.warn(chalk.yellow(msg)));
-  }
-
-  if (dbResult.isErr()) {
-    dbResult.mapErr((messages) =>
-      messages.forEach((msg) => logger.error(chalk.red(msg))),
+const startServer = (): void => {
+  app.listen(port, () => {
+    logger.info(
+      `server is running at ${chalk.bold(
+        `http://localhost:${port}`,
+      )} in ${chalk.bold(app.get('env'))} mode`,
     );
-    logger.error('initializing went pear-shaped, shutting down');
-    return;
-  }
 
-  logger.info(chalk.green.bold('server ready'));
-});
+    const dbResult = initAllDbs();
 
-// export { __rootname };
+    const craigslistCache = fsDriver(`${cacheDir}/${craigslistCacheDir}`);
+    const facebookCache = fsDriver(`${cacheDir}/${facebookCacheDir}`);
+    console.log(`using ${craigslistCache} and ${facebookCache} for now. TEMP`);
+
+    if (dbResult.isOk()) {
+      dbResult.value.forEach((msg) => logger.warn(chalk.yellow(msg)));
+    }
+
+    if (dbResult.isErr()) {
+      dbResult.mapErr((messages) =>
+        messages.forEach((msg) => logger.error(chalk.red(msg))),
+      );
+      logger.error('initializing went pear-shaped, shutting down');
+      return;
+    }
+
+    doIt();
+
+    logger.info(chalk.green.bold('server ready'));
+  });
+};
+
+// logger.info('do it 1');
+// const testRambda = (currentValues: number[]): number => {
+//   const currentMax = currentValues.reduce(
+//     (element, max) => (element > max ? element : max),
+//     0,
+//   );
+//   if (!currentMax || currentMax < 0) {
+//     return 10;
+//   }
+
+//   return currentMax + 10;
+// };
+// const cVals = [5, 10, 15];
+// const newMax = testRambda(cVals);
+// console.log(`newMax=${newMax}`);
+
+startServer();

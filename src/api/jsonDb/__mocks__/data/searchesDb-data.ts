@@ -1,10 +1,31 @@
+// import {
+// } from '../../../../database/models/dbSearches';
+
 export const searchesDb1 = {
   '101': {
-    title: 'YZ250F',
-    pid: '601',
+    sid: '101',
+    alias: 'KTM dirt bikes',
+    isEnabled: true,
+    rank: 85,
+    sources: ['craigslist'],
+    craigslistSearchDetails: {
+      searchTerms: ['search1', 'search2'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
+      regions: ['sf bayarea', 'inland empire'],
+    },
   },
-  '102': {
-    title: 'YZ250F',
-    pid: '602',
+};
+
+export const searchesDbBad = {
+  '101': {
+    alias: 'KTM dirt bikes',
+    isEnabled: true,
+    rank: 85,
+    sources: ['craigslist'],
+    craigslistSearchDetails: {
+      searchTerms: ['search1', 'search2'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
+      regions: ['sf bayarea', 'inland empire'],
+    },
   },
 };

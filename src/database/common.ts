@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { ok, Result } from 'neverthrow';
+import { ok, err, Result } from 'neverthrow';
 import chalk from 'chalk';
 
 // import lowdb from '../api/jsonDb/lowdbDriver';
@@ -25,10 +25,27 @@ export const initAllDbs = (): Result<string[], string[]> => {
   dbPosts.init(filePosts);
 
   const fileSearches = `${dbDir}/dbSearches.json`;
-  dbSearches.init(fileSearches);
+  const searchesResult = dbSearches.init(fileSearches);
 
-  // const errors = [] as string[];
+  const errors = [] as string[];
   const warnings = [] as string[];
+
+  if (searchesResult.isErr()) {
+    searchesResult.mapErr((messages) =>
+      messages.forEach((msg) => errors.push(msg)),
+    );
+    searchesResult.map((messages) =>
+      messages.forEach((msg) => warnings.push(msg)),
+    );
+    if (errors.length > 0) {
+      return err(errors);
+    }
+  }
+  if (searchesResult.isOk()) {
+    searchesResult.map((messages) =>
+      messages.forEach((msg) => warnings.push(msg)),
+    );
+  }
 
   return ok(warnings);
 };

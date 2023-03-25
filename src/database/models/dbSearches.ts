@@ -132,27 +132,27 @@ export type FacebookRadius = {
 export type CraigslistSearchDetails = {
   searchTerms: string[];
   craigslistSubcategories: CraigslistSubcategory[];
-  regions: CraigslistRegionDetail[];
+  regions: CraigslistRegion[];
 };
 
 export type FacebookSearchDetails = {
   searchTerms: string[];
   regions: {
-    region: FacebookRegionDetail;
+    region: CraigslistRegion;
     distance: FacebookRadius;
   };
 };
 
 export type Search = {
-  alias: string; // common search term name that applies to all sources
   sid: string; //search id
-  isEnabled: boolean;
+  alias: string; // common search term name that applies to all sources
+  isEnabled: boolean; // whether this will be included in the next search
   rank: number;
-  minPrice: number;
-  maxPrice: number;
+  minPrice?: number;
+  maxPrice?: number;
   sources: Source[]; // list of sources this search should use
-  craigslistSearchDetails: CraigslistSearchDetails;
-  facebookSearchDetails: FacebookSearchDetails;
+  craigslistSearchDetails?: CraigslistSearchDetails;
+  facebookSearchDetails?: FacebookSearchDetails;
 };
 /*
 {

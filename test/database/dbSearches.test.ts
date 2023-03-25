@@ -23,4 +23,11 @@ describe('dbSearches test suite', () => {
     expect(dbSearches.getSearches()).toBeEmpty();
     expect(saveDataSpy).toHaveBeenCalledTimes(0);
   });
+
+  test('check basic search type', () => {
+    dbSearches.init('searchesDb-1');
+
+    expect(dbSearches.getSearches()).toContainKey('101');
+    expect(saveDataSpy).toHaveBeenCalledTimes(0);
+  });
 });
