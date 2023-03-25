@@ -14,6 +14,17 @@ export const saveData = (): void => {
   dbFile.write();
 };
 
+export const init = (thePath: string): void => {
+  dbLogger.info('initializing');
+  dbFile = lowdb<Database>(thePath);
+  dbData = dbFile.read();
+  console.log(`IGNORE TEMPORARY data=${JSON.stringify(dbData)}`);
+
+  // data['123'] = { pid: '123', title: 'The Poop' };
+  // db.write();
+  // checkValidity();
+};
+
 export const getPosts = (): Posts => {
   return dbData;
 };
@@ -44,15 +55,4 @@ export const updateTitle = (pid: string, newTitle: string): void => {
   } else {
     throw new Error(`pid ${pid} does not exist`);
   }
-};
-
-export const init = (thePath: string): void => {
-  dbLogger.info('initializing');
-  dbFile = lowdb<Database>(thePath);
-  dbData = dbFile.read();
-  console.log(`IGNORE TEMPORARY data=${JSON.stringify(dbData)}`);
-
-  // data['123'] = { pid: '123', title: 'The Poop' };
-  // db.write();
-  // checkValidity();
 };
