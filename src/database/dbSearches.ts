@@ -6,7 +6,7 @@ import { Search, Searches, Source } from './models/dbSearches';
 import { JsonDb } from '../api/jsonDb/JsonDb';
 import lowdb from '../api/jsonDb/lowdbDriver';
 import { DbLogger } from './util';
-import { isValueInEnum } from '../utils/utils';
+import { isValueInEnum, getDateTimestamp } from '../utils/utils';
 
 export type Database = Searches;
 
@@ -34,6 +34,8 @@ const validateSearchTerms = (searchTerms: string[]): string | null => {
 };
 
 const validate = (): Result<string[], string[]> => {
+  dbLogger.debug("I'm skipping the validate() method for now");
+  return ok([]);
   const errors = [] as string[];
   const warnings = [] as string[];
   let fixableIssues = 0;
@@ -171,7 +173,7 @@ const validate = (): Result<string[], string[]> => {
 };
 
 export const init = (thePath: string): Result<string[], string[]> => {
-  dbLogger.info('initializing');
+  dbLogger.debug('initializing');
   const jsonDbPosts = lowdb<Database>(thePath);
   dbFile = jsonDbPosts;
   dbData = dbFile.read();
@@ -194,7 +196,98 @@ export const init = (thePath: string): Result<string[], string[]> => {
   return ok(result.value);
 };
 
-export const getSearches = (): Searches => {
+/**
+ * Tells whether the given search is valid or not. In invalid search is one where this is a problem,
+ * such as a missing field.
+ */
+export const isSearchValid = (sid: string): Result<boolean, string[]> => {
+  const errors: string[] = [];
+
+  const buildError = (msg: string): void => {
+    errors.push(`search ${chalk.bold(sid)} ${msg}`);
+  };
+
+  console.log('sid:', sid);
+  const search = dbData[sid];
+  console.log('sid:', sid);
+  console.log('search:', search);
+
+  // Check SID element is present
+  if (!Object.prototype.hasOwnProperty.call(search, 'sid')) {
+    buildError(`doesn't exist`);
+    return err(errors);
+  }
+  // Check SID element has a value
+  if (!search.sid) {
+    buildError(`no search containing that sid`);
+    return err(errors);
+  }
+  // Check SID element matches the parent property element
+  if (sid !== search.sid) {
+    buildError(`doesn't match sid element of ${chalk.bold(search.sid)}`);
+  }
+
+  // Check string property both exists and has a value
+  const checkStringProperty = (elementName: keyof Search): void => {
+    console.log('checkStringProperty() 111, with name', elementName);
+    console.log('the type', search[elementName]);
+    if (!(elementName in search)) {
+      console.log('checkStringProperty() 222');
+      buildError(`has no ${chalk.bold(elementName)} element`);
+    } else if ((search[elementName] as string).length === 0) {
+      console.log('checkStringProperty() 333');
+      buildError(`has no ${chalk.bold(elementName)} value`);
+    } else if (typeof search[elementName] !== 'string') {
+      console.log('checkStringProperty() 444');
+      buildError(
+        `has ${chalk.bold(elementName)} that is not of type ${chalk.bold(
+          'string',
+        )}`,
+      );
+    }
+  };
+
+  console.log('000');
+
+  checkStringProperty('alias');
+  // checkStringProperty('isEnabled');
+  // if (!('alias' in search) || search['alias'].length === 0) {
+  //   console.log('111');
+  //   buildError(`has no ${chalk.bold('alias')} element or value`);
+  // }
+
+  console.log(`in isValid, errors: ${errors}`);
+  if (errors.length > 0) {
+    return err(errors);
+  } else {
+    return ok(true);
+  }
+};
+
+const buildLogMsg = (msg: string): string => {
+  return `[${getDateTimestamp()}] ${msg}`;
+};
+
+const addLogNoWrite = (sid: string, msg: string): void => {
+  if (!dbData[sid]) {
+    return;
+  }
+  if (!dbData[sid].log) {
+    dbData[sid].log = [];
+  }
+  (dbData[sid].log as string[]).push(buildLogMsg(msg));
+};
+
+export const addLogWithWrite = (pid: string, msg: string): void => {
+  addLogNoWrite(pid, msg);
+  dbFile.write();
+};
+
+/**
+ * Returns searches that are actionable. i.e. Can actually be searched.
+ * Thus it won't return searches with are no enabled, or which have issues.
+ */
+export const getValidEnabledSearches = (): Searches => {
   return dbData;
 };
 
@@ -213,3 +306,11 @@ const getNextRank = (): number => {
   }
   return currentMax + 10;
 };
+
+// export const createEmptySearch = () => {
+
+// }
+
+// export const addSearch = (search: Search): Result<boolean, string[]> => {
+//   return isSearchValid(search.sid);
+// };

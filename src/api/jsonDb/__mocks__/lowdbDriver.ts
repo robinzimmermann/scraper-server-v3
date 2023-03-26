@@ -15,6 +15,30 @@ export default <T>(
       case 'searchesDb-1':
         return searchesDb.searchesDb1;
 
+      case 'searchesDbInvalid':
+        return searchesDb.searchesDbInvalid;
+
+      case 'searchesDbValid':
+        return searchesDb.searchesDbValid;
+
+      case 'searchesDbMissingSidElement':
+        return searchesDb.searchesDbMissingSidElement;
+
+      case 'searchesDbEmptySid':
+        return searchesDb.searchesDbEmptySid;
+
+      case 'searchesDbSidElementDoesntMatch':
+        return searchesDb.searchesDbSidElementDoesntMatch;
+
+      case 'searchesDbMissingAlias':
+        return searchesDb.searchesDbMissingAlias;
+
+      case 'searchesDbEmptyAlias':
+        return searchesDb.searchesDbEmptyAlias;
+
+      case 'searchesDWrongTypeAlias':
+        return searchesDb.searchesDWrongTypeAlias;
+
       default:
         return {};
     }

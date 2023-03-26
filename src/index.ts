@@ -1,3 +1,4 @@
+import fs from 'fs';
 // import express from 'express';
 import chalk from 'chalk';
 // import path from 'path';
@@ -22,7 +23,7 @@ import {
   facebookCacheDir,
 } from './globals';
 import { initAllDbs } from './database/common';
-import { doIt } from './fetcher/FromFiles';
+import { init } from './fetcher/fetcher';
 import fsDriver from './api/cache/fsDriver';
 
 // if (!dotenvExists('.env')) {
@@ -54,6 +55,13 @@ const startServer = (): void => {
       )} in ${chalk.bold(app.get('env'))} mode`,
     );
 
+    if (!fs.existsSync(cacheDir)) {
+      logger.warn(
+        `The cache directory does not exist, creating it: ${cacheDir}`,
+      );
+      fs.mkdirSync(cacheDir);
+    }
+
     const dbResult = initAllDbs();
 
     const craigslistCache = fsDriver(`${cacheDir}/${craigslistCacheDir}`);
@@ -72,7 +80,7 @@ const startServer = (): void => {
       return;
     }
 
-    doIt();
+    init();
 
     logger.info(chalk.green.bold('server ready'));
   });

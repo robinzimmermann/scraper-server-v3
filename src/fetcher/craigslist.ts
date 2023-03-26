@@ -2,7 +2,7 @@ const anotherFunc = (): void => {
   console.log('ouch');
 };
 
-export const doIt = (): void => {
+export const init = (): void => {
   console.log("I'm doing it!");
   anotherFunc();
 };

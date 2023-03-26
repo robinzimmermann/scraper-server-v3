@@ -153,6 +153,7 @@ export type Search = {
   sources: Source[]; // list of sources this search should use
   craigslistSearchDetails?: CraigslistSearchDetails;
   facebookSearchDetails?: FacebookSearchDetails;
+  log?: string[];
 };
 /*
 {
