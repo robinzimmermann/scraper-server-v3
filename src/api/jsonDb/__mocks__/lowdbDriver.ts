@@ -1,5 +1,5 @@
-import * as postsDb from './data/postsDb-data';
-import * as searchesDb from './data/searchesDb-data';
+// import * as postsDb from './data/postsDb-data';
+// import * as searchesDb from './data/searchesDb-data';
 
 export default <T>(
   file: string,
@@ -7,45 +7,47 @@ export default <T>(
   read: () => T;
   write: () => void;
 } => {
-  const readAny = (): unknown => {
-    switch (file) {
-      case 'postsDb-1':
-        return postsDb.postsDb1;
+  console.log(`FILE FILE FILE = ${JSON.parse(file)}`);
+  // const readAny = (): unknown => {
+  //   switch (file) {
+  //     case 'postsDb-1':
+  //       return postsDb.postsDb1;
 
-      case 'searchesDb-1':
-        return searchesDb.searchesDb1;
+  //     case 'searchesDb-1':
+  //       return searchesDb.searchesDb1;
 
-      case 'searchesDbInvalid':
-        return searchesDb.searchesDbInvalid;
+  //     case 'searchesDbInvalid':
+  //       return searchesDb.searchesDbInvalid;
 
-      case 'searchesDbValid':
-        return searchesDb.searchesDbValid;
+  //     case 'searchesDbValid':
+  //       return searchesDb.searchesDbValid;
 
-      case 'searchesDbMissingSidElement':
-        return searchesDb.searchesDbMissingSidElement;
+  //     case 'searchesDbMissingSidElement':
+  //       return searchesDb.searchesDbMissingSidElement;
 
-      case 'searchesDbEmptySid':
-        return searchesDb.searchesDbEmptySid;
+  //     case 'searchesDbEmptySid':
+  //       return searchesDb.searchesDbEmptySid;
 
-      case 'searchesDbSidElementDoesntMatch':
-        return searchesDb.searchesDbSidElementDoesntMatch;
+  //     case 'searchesDbSidElementDoesntMatch':
+  //       return searchesDb.searchesDbSidElementDoesntMatch;
 
-      case 'searchesDbMissingAlias':
-        return searchesDb.searchesDbMissingAlias;
+  //     case 'searchesDbMissingAlias':
+  //       return searchesDb.searchesDbMissingAlias;
 
-      case 'searchesDbEmptyAlias':
-        return searchesDb.searchesDbEmptyAlias;
+  //     case 'searchesDbEmptyAlias':
+  //       return searchesDb.searchesDbEmptyAlias;
 
-      case 'searchesDWrongTypeAlias':
-        return searchesDb.searchesDWrongTypeAlias;
+  //     case 'searchesDbWrongTypeAlias':
+  //       return searchesDb.searchesDbWrongTypeAlias;
 
-      default:
-        return {};
-    }
-  };
+  //     default:
+  //       return {};
+  //   }
+  // };
 
   const read = (): T => {
-    return JSON.parse(JSON.stringify(readAny())) as T;
+    // return JSON.parse(JSON.stringify(readAny())) as T;
+    return JSON.parse(file) as T;
   };
 
   const write = (): void => {

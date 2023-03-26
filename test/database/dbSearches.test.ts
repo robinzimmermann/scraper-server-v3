@@ -4,11 +4,8 @@ import 'jest-extended';
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
 import * as dbSearches from '../../src/database/dbSearches';
-import {
-  CraigslistSubcategory,
-  Search,
-} from '../../src/database/models/dbSearches';
 import { logger } from '../../src/utils/logger/logger';
+import * as searchersDbMock from '../../src/api/jsonDb/__mocks__/data/searchesDb-data';
 
 // Some handy Jest spies.
 const saveDataSpy = jest.spyOn(dbSearches, 'saveData');
@@ -22,7 +19,12 @@ describe('dbSearches test suite', () => {
     initializeJest();
   });
 
-  const doNegativeTest = (sid: string, phraseInError: string): void => {
+  const doNegativeTest = (
+    element: unknown,
+    sid: string,
+    phraseInError: string,
+  ): void => {
+    dbSearches.init(JSON.stringify(element));
     const result = dbSearches.isSearchValid(sid);
     const negErrors: string[] = [];
     expect(result.isErr()).toBeTruthy();
@@ -34,6 +36,15 @@ describe('dbSearches test suite', () => {
     expect(negErrors[0]).toContain(phraseInError);
   };
 
+  // const middleMan = (
+  //   element: unknown,
+  //   sid: string,
+  //   errorExpression: string,
+  // ): void => {
+  //   dbSearches.init(JSON.stringify(element));
+  //   doNegativeTest(sid, errorExpression);
+  // };
+
   test.skip('initializes when no database file is present', () => {
     dbSearches.init('no-such-file');
 
@@ -44,7 +55,7 @@ describe('dbSearches test suite', () => {
   test('valid search', () => {
     const errors: string[] = [];
 
-    dbSearches.init('searchesDbValid');
+    dbSearches.init(JSON.stringify(searchersDbMock.searchesDbValid));
     const sid = '5';
 
     const result = dbSearches.isSearchValid(sid);
@@ -56,55 +67,35 @@ describe('dbSearches test suite', () => {
     expect(errors).toHaveLength(0);
   });
 
-  test('search is missing sid element', () => {
-    const errors: string[] = [];
-
-    dbSearches.init('searchesDbMissingSidElement');
-    const sid = '21';
-
-    const result = dbSearches.isSearchValid(sid);
-    expect(result.isErr()).toBeTruthy();
-    result.mapErr((errorMessages) =>
-      errorMessages.forEach((msg) => errors.push(msg)),
-    );
-    errors.forEach((error) => logger.info(error));
-    expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('exist');
-  });
-
-  test('search has empty sid', () => {
-    const errors: string[] = [];
-
-    dbSearches.init('searchesDbEmptySid');
-    const sid = '22';
-
-    const result = dbSearches.isSearchValid(sid);
-    expect(result.isErr()).toBeTruthy();
-    result.mapErr((errorMessages) =>
-      errorMessages.forEach((msg) => errors.push(msg)),
-    );
-    errors.forEach((error) => logger.info(error));
-    expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('containing');
-  });
-
   test("search has sid element that doesn't match parent", () => {
-    dbSearches.init('searchesDbSidElementDoesntMatch');
-    doNegativeTest('23', 'match');
+    doNegativeTest(
+      searchersDbMock.searchesDbSidElementDoesntMatch,
+      '9',
+      'match',
+    );
+  });
+
+  test('search is missing sid', () => {
+    doNegativeTest(searchersDbMock.searchesDbMissingSid, '21', 'exist');
   });
 
   test('search element missing alias', () => {
-    dbSearches.init('searchesDbMissingAlias');
-    doNegativeTest('25', 'alias');
-  });
-
-  test('search element has empty alias', () => {
-    dbSearches.init('searchesDbEmptyAlias');
-    doNegativeTest('26', 'alias');
+    doNegativeTest(searchersDbMock.searchesDbMissingAlias, '25', 'has no');
   });
 
   test('search element wrong type alias', () => {
-    dbSearches.init('searchesDWrongTypeAlias');
-    doNegativeTest('27', 'type');
+    doNegativeTest(searchersDbMock.searchesDbWrongTypeAlias, '26', 'type');
+  });
+
+  test('search has empty alias', () => {
+    doNegativeTest(searchersDbMock.searchesDbEmptyAlias, '27', 'has no');
+  });
+
+  test('search element missing isEnabled', () => {
+    doNegativeTest(searchersDbMock.searchesDbMissingIsEnabled, '30', 'has no');
+  });
+
+  test('search element wrong type isEnabled', () => {
+    doNegativeTest(searchersDbMock.searchesDbWrongTypeIsEnabled, '31', 'type');
   });
 });

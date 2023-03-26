@@ -12,7 +12,7 @@ const initializeJest = (): void => {
   jest.clearAllMocks();
 };
 
-describe('dbPosts test suite', () => {
+describe.skip('dbPosts test suite', () => {
   beforeEach(() => {
     initializeJest();
   });

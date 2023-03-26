@@ -227,34 +227,38 @@ export const isSearchValid = (sid: string): Result<boolean, string[]> => {
     buildError(`doesn't match sid element of ${chalk.bold(search.sid)}`);
   }
 
-  // Check string property both exists and has a value
-  const checkStringProperty = (elementName: keyof Search): void => {
-    console.log('checkStringProperty() 111, with name', elementName);
+  const checkProperty = (elementName: keyof Search, myType: string): void => {
+    console.log('checkProperty() 111, with name', elementName);
     console.log('the type', search[elementName]);
     if (!(elementName in search)) {
-      console.log('checkStringProperty() 222');
+      console.log('checkProperty() 222');
       buildError(`has no ${chalk.bold(elementName)} element`);
-    } else if ((search[elementName] as string).length === 0) {
-      console.log('checkStringProperty() 333');
-      buildError(`has no ${chalk.bold(elementName)} value`);
-    } else if (typeof search[elementName] !== 'string') {
-      console.log('checkStringProperty() 444');
+    } else if (typeof search[elementName] !== myType) {
+      console.log('checkProperty() 333');
       buildError(
         `has ${chalk.bold(elementName)} that is not of type ${chalk.bold(
-          'string',
+          myType,
         )}`,
       );
+    } else if (
+      myType === 'string' &&
+      (search[elementName] as string).length === 0
+    ) {
+      console.log('checkProperty() 444');
+      buildError(`has no ${chalk.bold(elementName)} value`);
     }
   };
 
   console.log('000');
 
-  checkStringProperty('alias');
+  checkProperty('alias', 'string');
   // checkStringProperty('isEnabled');
   // if (!('alias' in search) || search['alias'].length === 0) {
   //   console.log('111');
   //   buildError(`has no ${chalk.bold('alias')} element or value`);
   // }
+
+  checkProperty('isEnabled', 'boolean');
 
   console.log(`in isValid, errors: ${errors}`);
   if (errors.length > 0) {
