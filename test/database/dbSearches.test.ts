@@ -36,17 +36,8 @@ describe('dbSearches test suite', () => {
     expect(negErrors[0]).toContain(phraseInError);
   };
 
-  // const middleMan = (
-  //   element: unknown,
-  //   sid: string,
-  //   errorExpression: string,
-  // ): void => {
-  //   dbSearches.init(JSON.stringify(element));
-  //   doNegativeTest(sid, errorExpression);
-  // };
-
-  test.skip('initializes when no database file is present', () => {
-    dbSearches.init('no-such-file');
+  test('initializes when no database file is present', () => {
+    dbSearches.init('');
 
     expect(dbSearches.getValidEnabledSearches()).toBeEmpty();
     expect(saveDataSpy).toHaveBeenCalledTimes(0);
@@ -97,5 +88,13 @@ describe('dbSearches test suite', () => {
 
   test('search element wrong type isEnabled', () => {
     doNegativeTest(searchersDbMock.searchesDbWrongTypeIsEnabled, '31', 'type');
+  });
+
+  test('search element missing rank', () => {
+    doNegativeTest(searchersDbMock.searchesDbMissingRank, '35', 'has no');
+  });
+
+  test('search element wrong type rank', () => {
+    doNegativeTest(searchersDbMock.searchesDbWrongTypeRank, '36', 'type');
   });
 });

@@ -177,6 +177,8 @@ export const init = (thePath: string): Result<string[], string[]> => {
   const jsonDbPosts = lowdb<Database>(thePath);
   dbFile = jsonDbPosts;
   dbData = dbFile.read();
+  console.log(`init thePath=${thePath}`);
+  console.log(`init dbData=${JSON.stringify(dbData)}`);
   // data['123'].alias = 'dd'
 
   // data['123'] = { pid: '123', title: 'The Poop' };
@@ -228,8 +230,8 @@ export const isSearchValid = (sid: string): Result<boolean, string[]> => {
   }
 
   const checkProperty = (elementName: keyof Search, myType: string): void => {
-    console.log('checkProperty() 111, with name', elementName);
-    console.log('the type', search[elementName]);
+    console.log(`checkProperty() 111, name=${elementName}, myType=${myType}`);
+    console.log('the search', search[elementName]);
     if (!(elementName in search)) {
       console.log('checkProperty() 222');
       buildError(`has no ${chalk.bold(elementName)} element`);
@@ -259,6 +261,8 @@ export const isSearchValid = (sid: string): Result<boolean, string[]> => {
   // }
 
   checkProperty('isEnabled', 'boolean');
+
+  checkProperty('rank', 'number');
 
   console.log(`in isValid, errors: ${errors}`);
   if (errors.length > 0) {
