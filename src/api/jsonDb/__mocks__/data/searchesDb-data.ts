@@ -247,13 +247,28 @@ export const searchesDbWrongTypeRank = {
     },
   },
 };
-export const searchesDbMissingSource = {
-  '35': {
-    sid: '35',
+
+export const searchesDbMissingSources = {
+  '40': {
+    sid: '40',
     alias: 'KTM dirt bikes',
     isEnabled: true,
     rank: 85,
-    sources: ['craigslist'],
+    craigslistSearchDetails: {
+      searchTerms: ['search1', 'search2'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
+      regions: ['sf bayarea', 'inland empire'],
+    },
+  },
+};
+
+export const searchesDbInvalidSources = {
+  '41': {
+    sid: '41',
+    alias: 'KTM dirt bikes',
+    isEnabled: true,
+    rank: 85,
+    sources: ['poop'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       craigslistSubcategories: ['tools', 'motorcycles'],

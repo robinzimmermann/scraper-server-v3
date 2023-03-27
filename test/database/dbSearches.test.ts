@@ -70,7 +70,7 @@ describe('dbSearches test suite', () => {
     doNegativeTest(searchersDbMock.searchesDbMissingSid, '21', 'exist');
   });
 
-  test('search element missing alias', () => {
+  test('search missing alias', () => {
     doNegativeTest(searchersDbMock.searchesDbMissingAlias, '25', 'has no');
   });
 
@@ -82,7 +82,7 @@ describe('dbSearches test suite', () => {
     doNegativeTest(searchersDbMock.searchesDbEmptyAlias, '27', 'has no');
   });
 
-  test('search element missing isEnabled', () => {
+  test('search missing isEnabled', () => {
     doNegativeTest(searchersDbMock.searchesDbMissingIsEnabled, '30', 'has no');
   });
 
@@ -90,11 +90,27 @@ describe('dbSearches test suite', () => {
     doNegativeTest(searchersDbMock.searchesDbWrongTypeIsEnabled, '31', 'type');
   });
 
-  test('search element missing rank', () => {
+  test('search missing rank', () => {
     doNegativeTest(searchersDbMock.searchesDbMissingRank, '35', 'has no');
   });
 
   test('search element wrong type rank', () => {
     doNegativeTest(searchersDbMock.searchesDbWrongTypeRank, '36', 'type');
   });
+
+  // test('search missing sources', () => {
+  //   doNegativeTest(searchersDbMock.searchesDbMissingSources, '40', 'has no');
+  // });
+
+  // test('search invalid sources', () => {
+  //   doNegativeTest(searchersDbMock.searchesDbInvalidSources, '41', 'has no');
+  // });
+
+  // Missing source
+  // Each source should be valid
+  // Should be an array of strings
+  // Should not be empty
+  // For each source, there should be a details
+
+  // Should not have a details section if there is no corresponding source for it
 });

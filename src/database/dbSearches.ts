@@ -249,6 +249,9 @@ export const isSearchValid = (sid: string): Result<boolean, string[]> => {
       console.log('checkProperty() 444');
       buildError(`has no ${chalk.bold(elementName)} value`);
     }
+
+    // Check if sources are valid
+    // if ()
   };
 
   console.log('000');
@@ -263,6 +266,9 @@ export const isSearchValid = (sid: string): Result<boolean, string[]> => {
   checkProperty('isEnabled', 'boolean');
 
   checkProperty('rank', 'number');
+
+  console.log('TYPE:', typeof search.sources);
+  checkProperty('sources', 'object');
 
   console.log(`in isValid, errors: ${errors}`);
   if (errors.length > 0) {
