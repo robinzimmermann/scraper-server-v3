@@ -1,3 +1,7 @@
+# TODO
+
+- Don't poll isAlive every second. Wait until it is discovered it's not alive and then poll until back?
+
 "main": "src/index.ts",
 
 Common error HTTP status codes include:
