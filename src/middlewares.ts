@@ -7,7 +7,6 @@ export function notFound(
   res: Response,
   next: NextFunction,
 ): void {
-  console.log('in notFound');
   res.status(404);
   const error = new Error(`🔍 - Not Found - ${req.originalUrl}`);
   next(error);

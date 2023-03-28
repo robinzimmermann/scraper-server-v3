@@ -7,7 +7,6 @@ const failSaveHandler = (
   res: Response,
   next: NextFunction,
 ): void => {
-  console.log('in failSaveHandler');
   res.status(error.status || 500).json({
     status: error.status || 500,
     message: error.message || 'Something went wrong',

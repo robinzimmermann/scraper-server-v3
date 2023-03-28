@@ -34,7 +34,7 @@ export const hasPost = (pid: string): boolean => {
 };
 
 const checkTitle = (title: string): void => {
-  console.log(`checking the title ${title}`);
+  dbLogger.silly(`checking the title ${title}`);
 };
 
 export const updateTitle = (pid: string, newTitle: string): void => {

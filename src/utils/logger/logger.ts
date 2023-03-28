@@ -16,7 +16,7 @@ const format = winston.format.combine(
 const options: winston.LoggerOptions = {
   transports: [
     new winston.transports.Console({
-      level: 'debug',
+      level: 'silly',
       format: winston.format.combine(winston.format.colorize(), format),
     }),
     new winston.transports.File({

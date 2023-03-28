@@ -1,8 +1,10 @@
+import { logger } from '../utils/logger/logger';
+
 const anotherFunc = (): void => {
-  console.log('ouch');
+  logger.silly('ouch');
 };
 
 export const init = (): void => {
-  console.log("I'm doing it!");
+  logger.silly("I'm doing it, says craigslist!");
   anotherFunc();
 };
