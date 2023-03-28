@@ -7,14 +7,23 @@ export const dbInfoColor = chalk.grey;
 export const DbLogger = (
   prefix: string,
 ): {
-  info: (message: string) => void;
-  debug: (message: string) => void;
-  warn: (message: string) => void;
   error: (message: string) => void;
+  warn: (message: string) => void;
+  info: (message: string) => void;
+  verbose: (message: string) => void;
+  debug: (message: string) => void;
   silly: (message: string) => void;
 } => {
   const log = (level: typeof logger.info, message: string): void => {
     level(dbInfoColor(`${prefix} ${message}`));
+  };
+
+  const error = (message: string): void => {
+    log(logger.error, message);
+  };
+
+  const warn = (message: string): void => {
+    log(logger.warn, message);
   };
 
   const info = (message: string): void => {
@@ -25,19 +34,15 @@ export const DbLogger = (
     log(logger.debug, message);
   };
 
-  const warn = (message: string): void => {
-    log(logger.warn, message);
-  };
-
-  const error = (message: string): void => {
-    log(logger.error, message);
+  const verbose = (message: string): void => {
+    log(logger.verbose, message);
   };
 
   const silly = (message: string): void => {
     log(logger.silly, message);
   };
 
-  return { info, debug, warn, error, silly };
+  return { error, warn, info, verbose, debug, silly };
 };
 
 export const isValueInEnum = <T extends { [name: string]: unknown }>(
