@@ -1,3 +1,4 @@
+import fs from 'fs';
 // import * as postsDb from './data/postsDb-data';
 // import * as searchesDb from './data/searchesDb-data';
 
@@ -7,6 +8,12 @@ export default <T>(
   read: () => T;
   write: () => void;
 } => {
+  // Make sure the file exists
+  if (!fs.existsSync(file)) {
+    console.log('PROBLEM PROBLEM PROBLEM file does not exist:', file);
+  } else {
+    console.log('The file actually exists:', file);
+  }
   const read = (): T => {
     if (file) {
       console.log('doing it the easy way:', file);

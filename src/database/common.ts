@@ -13,13 +13,14 @@ export type ErrorWarnings = {
   warnings?: string[];
 };
 
-export const initAllDbs = (): Result<string[], string[]> => {
+export const initAllDbs = (): Result<boolean, string[]> => {
   if (!fs.existsSync(dbDir)) {
     logger.warn(
       `database directory doesn't exist, creating it: ${chalk.bold(dbDir)}`,
     );
     fs.mkdirSync(dbDir, { recursive: true });
   }
+  const errors = [] as string[];
 
   const filePosts = `${dbDir}/dbPosts.json`;
   dbPosts.init(filePosts);
@@ -27,25 +28,15 @@ export const initAllDbs = (): Result<string[], string[]> => {
   const fileSearches = `${dbDir}/dbSearches.json`;
   const searchesResult = dbSearches.init(fileSearches);
 
-  const errors = [] as string[];
-  const warnings = [] as string[];
-
   if (searchesResult.isErr()) {
     searchesResult.mapErr((messages) =>
       messages.forEach((msg) => errors.push(msg)),
     );
-    searchesResult.map((messages) =>
-      messages.forEach((msg) => warnings.push(msg)),
-    );
-    if (errors.length > 0) {
-      return err(errors);
-    }
-  }
-  if (searchesResult.isOk()) {
-    searchesResult.map((messages) =>
-      messages.forEach((msg) => warnings.push(msg)),
-    );
   }
 
-  return ok(warnings);
+  if (errors.length > 0) {
+    return err(errors);
+  } else {
+    return ok(true);
+  }
 };
