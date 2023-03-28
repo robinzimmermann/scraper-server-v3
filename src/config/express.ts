@@ -14,6 +14,7 @@ const ignoreRequestsForLogging = (req: Request, _res: Response): boolean => {
     req.path.startsWith('/vendor') ||
     req.path.startsWith('/css') ||
     req.path.startsWith('/js')
+    // req.path.endsWith('/isAlive')
   ) {
     return true;
   }
