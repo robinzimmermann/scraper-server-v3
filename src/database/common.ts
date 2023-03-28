@@ -28,7 +28,7 @@ export const initAllDbs = (): Result<boolean, string[]> => {
   const searchesResult = dbSearches.init(fileSearches);
 
   if (searchesResult.isErr()) {
-    searchesResult.mapErr((messages) =>
+    searchesResult.mapErr((messages: string[]) =>
       messages.forEach((msg) => errors.push(msg)),
     );
   }

@@ -16,14 +16,14 @@ describe.skip('app', () => {
   // });
 
   it('blahs', async () => {
-    const resp = await request(app).get('/what-is-this-even');
-    console.log(`resp.text=${resp.text},${resp.text.includes('friend')},`);
-    console.log(`Content-Type=${resp.get('Content-Type')}`);
-    console.log(`Content-Length=${resp.get('Content-Length')}`);
-    console.log(`resp.status=${resp.status}`);
-    console.log(`resp.body.errors=${resp.body.errors}`);
-    console.log(`headers=${JSON.stringify(resp.headers)}`);
-    expect(resp.status).toBe(200);
+    // const resp = await request(app).get('/what-is-this-even');
+    // console.log(`resp.text=${resp.text},${resp.text.includes('friend')},`);
+    // console.log(`Content-Type=${resp.get('Content-Type')}`);
+    // console.log(`Content-Length=${resp.get('Content-Length')}`);
+    // console.log(`resp.status=${resp.status}`);
+    // console.log(`resp.body.errors=${resp.body.errors}`);
+    // console.log(`headers=${JSON.stringify(resp.headers)}`);
+    // expect(resp.status).toBe(200);
     // console.log(`resp.AAA=${resp.AAA}`);
     // expect('Content-Type', /html/)
     // .end((err, res) => {
