@@ -380,7 +380,10 @@ export const addLogWithWrite = (pid: string, msg: string): void => {
 export const getValidEnabledSearches = (): Searches => {
   const goodSearches: Searches = {};
   Object.keys(dbData)
-    .filter((sid) => isSearchValid(dbData[sid]))
+    .filter((sid) => {
+      const result = isSearchValid(dbData[sid]);
+      return result.isOk();
+    })
     .forEach((sid) => (goodSearches[sid] = dbData[sid]));
   return goodSearches;
 };

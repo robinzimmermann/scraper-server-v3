@@ -27,6 +27,7 @@ export const doSearch = async (): Promise<void> => {
  * Perform one-time initialization when the server starts.
  */
 export const init = (): void => {
-  logger.debug('initializing fetcher, because I have nothing else to do');
   logger.silly('initializing fetcher, because I have nothing else to do');
+  const searches = dbSearches.getValidEnabledSearches();
+  logger.debug(`searches: ${Object.keys(searches).join(', ')}`);
 };
