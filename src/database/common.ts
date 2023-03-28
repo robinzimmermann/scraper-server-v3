@@ -2,7 +2,6 @@ import fs from 'fs';
 import { ok, err, Result } from 'neverthrow';
 import chalk from 'chalk';
 
-// import lowdb from '../api/jsonDb/lowdbDriver';
 import * as dbPosts from '../database/dbPosts';
 import * as dbSearches from '../database/dbSearches';
 import { dbDir } from '../globals';

@@ -24,7 +24,7 @@ import {
 } from './globals';
 import { initAllDbs } from './database/common';
 import * as fetcher from './fetcher/fetcher';
-import fsDriver from './api/cache/fsDriver';
+import cache from './api/cache/fsDriver';
 
 // if (!dotenvExists('.env')) {
 //   logger.error('exiting');
@@ -62,10 +62,10 @@ const startServer = (): void => {
       fs.mkdirSync(cacheDir);
     }
 
-    const craigslistCache = fsDriver(cacheDir, craigslistCacheDir);
+    const craigslistCache = cache(cacheDir, craigslistCacheDir);
     craigslistCache.createIfNotExists();
 
-    const facebookCache = fsDriver(cacheDir, facebookCacheDir);
+    const facebookCache = cache(cacheDir, facebookCacheDir);
     facebookCache.createIfNotExists();
 
     const dbResult = initAllDbs();

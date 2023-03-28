@@ -4,7 +4,7 @@ import chalk from 'chalk';
 
 import { type Search, Searches } from './models/dbSearches';
 import { JsonDb } from '../api/jsonDb/JsonDb';
-import lowdb from '../api/jsonDb/lowdbDriver';
+import jsonDb from '../api/jsonDb/lowdbDriver';
 import { DbLogger } from './util';
 import { getDateTimestamp } from '../utils/utils';
 
@@ -174,7 +174,7 @@ export const saveData = (): void => {
 
 export const init = (thePath: string): Result<boolean, string[]> => {
   dbLogger.info('initializing');
-  const jsonDbPosts = lowdb<Database>(thePath);
+  const jsonDbPosts = jsonDb<Database>(thePath);
   dbFile = jsonDbPosts;
   dbData = dbFile.read();
   // data['123'].alias = 'dd'

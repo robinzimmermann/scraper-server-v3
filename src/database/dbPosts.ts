@@ -1,6 +1,6 @@
 import { Posts } from './models/dbPosts';
 import { JsonDb } from '../api/jsonDb/JsonDb';
-import lowdb from '../api/jsonDb/lowdbDriver';
+import jsonDb from '../api/jsonDb/lowdbDriver';
 import { DbLogger } from './util';
 
 export type Database = Posts;
@@ -17,7 +17,7 @@ export const saveData = (): void => {
 
 export const init = (thePath: string): void => {
   dbLogger.info('initializing');
-  dbFile = lowdb<Database>(thePath);
+  dbFile = jsonDb<Database>(thePath);
   dbData = dbFile.read();
 
   // data['123'] = { pid: '123', title: 'The Poop' };
