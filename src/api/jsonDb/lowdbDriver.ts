@@ -30,10 +30,10 @@ export default <T>(file: string): JsonDb<T> => {
             `syntax error in db file, initializing data to {}: ${file}`,
           );
         } else {
-          console.log(e);
+          console.error(e);
         }
       } else {
-        console.log(err);
+        console.error(err);
       }
       doWrite = true;
     }

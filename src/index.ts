@@ -66,7 +66,9 @@ const startServer = (): void => {
 
     const craigslistCache = fsDriver(`${cacheDir}/${craigslistCacheDir}`);
     const facebookCache = fsDriver(`${cacheDir}/${facebookCacheDir}`);
-    console.log(`using ${craigslistCache} and ${facebookCache} for now. TEMP`);
+    console.log(
+      `using ${craigslistCache} and ${facebookCache} for now to prevent an eslint warning. TEMP`,
+    );
 
     // if (dbResult.isOk()) {
     //   dbResult.value.forEach((msg) => logger.warn(chalk.yellow(msg)));

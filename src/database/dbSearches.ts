@@ -173,11 +173,6 @@ export const saveData = (): void => {
 // };
 
 export const init = (thePath: string): Result<boolean, string[]> => {
-  console.log('######################################################');
-  console.log('######################################################');
-  console.log('######################################################');
-  console.log('######################################################');
-  console.log('######################################################');
   dbLogger.debug('initializing');
   const jsonDbPosts = lowdb<Database>(thePath);
   dbFile = jsonDbPosts;
@@ -209,8 +204,6 @@ export const init = (thePath: string): Result<boolean, string[]> => {
  * such as a missing field.
  */
 const isSearchValid = (search: Search): Result<boolean, string[]> => {
-  console.log('=========> isSearchValid()');
-  console.log(JSON.stringify(search, null, 2));
   const errors: string[] = [];
 
   // Check SID element is present
@@ -242,13 +235,9 @@ const isSearchValid = (search: Search): Result<boolean, string[]> => {
   };
 
   const checkProperty = (elementName: keyof Search, myType: string): void => {
-    console.log(`checkProperty() 111, name=${elementName}, myType=${myType}`);
-    console.log('the search', search[elementName]);
     if (!(elementName in search)) {
-      console.log('checkProperty() 222');
       buildError(`has no element ${chalk.bold(elementName)}`);
     } else if (typeof search[elementName] !== myType) {
-      console.log('checkProperty() 333');
       buildError(
         `has ${chalk.bold(elementName)} that is not of type ${chalk.bold(
           myType,
@@ -258,7 +247,6 @@ const isSearchValid = (search: Search): Result<boolean, string[]> => {
       myType === 'string' &&
       (search[elementName] as string).length === 0
     ) {
-      console.log('checkProperty() 444');
       buildError(`has no value for ${chalk.bold(elementName)}`);
     }
 
@@ -360,7 +348,6 @@ const isDbValid = (): Result<boolean, string[]> => {
   console.log(`in isValid, errors: ${errors}`);
   */
   if (errors.length > 0) {
-    console.log('returning with errors');
     return err(errors);
   } else {
     return ok(true);
