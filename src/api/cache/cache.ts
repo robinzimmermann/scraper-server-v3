@@ -1,3 +1,6 @@
 export interface Cache {
-  doesCacheExist: () => boolean;
+  getParentDir: () => string;
+  getCacheName: () => string;
+  getCacheDir: () => string;
+  createIfNotExists: () => void;
 }

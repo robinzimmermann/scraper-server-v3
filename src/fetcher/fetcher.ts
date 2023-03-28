@@ -1,5 +1,6 @@
 import { logger } from '../utils/logger/logger';
 import * as dbSearches from '../database/dbSearches';
+import * as cache from '../api/cache/cache';
 
 export type Job = {
   jid: number;
@@ -26,8 +27,11 @@ export const doSearch = async (): Promise<void> => {
 /**
  * Perform one-time initialization when the server starts.
  */
-export const init = (): void => {
-  logger.silly('initializing fetcher, because I have nothing else to do');
-  const searches = dbSearches.getValidEnabledSearches();
-  logger.debug(`searches: ${Object.keys(searches).join(', ')}`);
+export const init = (caches: cache.Cache[]): void => {
+  if (caches.length > 0) {
+    logger.info('caches:');
+    caches.forEach((c) => logger.info(`  ${c.getCacheDir()}`));
+  } else {
+    logger.info('there are no cached files');
+  }
 };

@@ -23,7 +23,7 @@ import {
   facebookCacheDir,
 } from './globals';
 import { initAllDbs } from './database/common';
-import { init } from './fetcher/fetcher';
+import * as fetcher from './fetcher/fetcher';
 import fsDriver from './api/cache/fsDriver';
 
 // if (!dotenvExists('.env')) {
@@ -62,15 +62,13 @@ const startServer = (): void => {
       fs.mkdirSync(cacheDir);
     }
 
-    const dbResult = initAllDbs();
+    const craigslistCache = fsDriver(cacheDir, craigslistCacheDir);
+    craigslistCache.createIfNotExists();
 
-    const craigslistCache = fsDriver(`${cacheDir}/${craigslistCacheDir}`);
-    const facebookCache = fsDriver(`${cacheDir}/${facebookCacheDir}`);
-    logger.silly(
-      `using ${JSON.stringify(craigslistCache)} and ${JSON.stringify(
-        facebookCache,
-      )} for now to prevent an eslint warning. TEMP`,
-    );
+    const facebookCache = fsDriver(cacheDir, facebookCacheDir);
+    facebookCache.createIfNotExists();
+
+    const dbResult = initAllDbs();
 
     // if (dbResult.isOk()) {
     //   dbResult.value.forEach((msg) => logger.warn(chalk.yellow(msg)));
@@ -84,7 +82,7 @@ const startServer = (): void => {
       return;
     }
 
-    init();
+    fetcher.init([craigslistCache, facebookCache]);
 
     logger.info(chalk.green.bold('server ready'));
   });

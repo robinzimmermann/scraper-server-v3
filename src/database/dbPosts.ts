@@ -16,7 +16,7 @@ export const saveData = (): void => {
 };
 
 export const init = (thePath: string): void => {
-  dbLogger.debug('initializing');
+  dbLogger.info('initializing');
   dbFile = lowdb<Database>(thePath);
   dbData = dbFile.read();
 

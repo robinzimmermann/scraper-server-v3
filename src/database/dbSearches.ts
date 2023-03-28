@@ -173,7 +173,7 @@ export const saveData = (): void => {
 // };
 
 export const init = (thePath: string): Result<boolean, string[]> => {
-  dbLogger.debug('initializing');
+  dbLogger.info('initializing');
   const jsonDbPosts = lowdb<Database>(thePath);
   dbFile = jsonDbPosts;
   dbData = dbFile.read();
@@ -388,21 +388,21 @@ export const getValidEnabledSearches = (): Searches => {
   return goodSearches;
 };
 
-const getNextRank = (): number => {
-  const ranks = Object.values(dbData)
-    .filter((search) => typeof search.rank === 'number')
-    .map((search) => search.rank);
+// const getNextRank = (): number => {
+//   const ranks = Object.values(dbData)
+//     .filter((search) => typeof search.rank === 'number')
+//     .map((search) => search.rank);
 
-  const currentMax = ranks.reduce(
-    (element, max) => (element > max ? element : max),
-    0,
-  );
+//   const currentMax = ranks.reduce(
+//     (element, max) => (element > max ? element : max),
+//     0,
+//   );
 
-  if (!currentMax || currentMax < 0) {
-    return 10;
-  }
-  return currentMax + 10;
-};
+//   if (!currentMax || currentMax < 0) {
+//     return 10;
+//   }
+//   return currentMax + 10;
+// };
 
 // export const createEmptySearch = () => {
 
