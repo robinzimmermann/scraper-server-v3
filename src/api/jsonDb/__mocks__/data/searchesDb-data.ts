@@ -10,8 +10,8 @@ export const searchesDb1 = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -27,8 +27,8 @@ export const searchesDbInvalid = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 
@@ -41,8 +41,8 @@ export const searchesDbInvalid = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 
@@ -54,8 +54,8 @@ export const searchesDbInvalid = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 
@@ -68,8 +68,8 @@ export const searchesDbInvalid = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 
@@ -81,8 +81,8 @@ export const searchesDbInvalid = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 
@@ -95,8 +95,8 @@ export const searchesDbInvalid = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -111,8 +111,8 @@ export const searchesDbValid = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -126,8 +126,8 @@ export const searchesDbSidElementDoesntMatch = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -140,8 +140,8 @@ export const searchesDbMissingSid = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -154,8 +154,8 @@ export const searchesDbMissingAlias = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -169,8 +169,8 @@ export const searchesDbWrongTypeAlias = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -184,8 +184,8 @@ export const searchesDbEmptyAlias = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -198,8 +198,8 @@ export const searchesDbMissingIsEnabled = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -213,8 +213,8 @@ export const searchesDbWrongTypeIsEnabled = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -227,8 +227,8 @@ export const searchesDbMissingRank = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -242,8 +242,8 @@ export const searchesDbWrongTypeRank = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -256,8 +256,8 @@ export const searchesDbMissingSources = {
     rank: 85,
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -271,8 +271,8 @@ export const searchesDbInvalidSources = {
     sources: ['poop'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };

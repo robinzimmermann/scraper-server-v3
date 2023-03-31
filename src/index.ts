@@ -14,7 +14,7 @@ import * as fetcher from './fetcher/fetcher';
 import cache from './api/cache/fsDriver';
 
 const startServer = (): void => {
-  app.listen(port, () => {
+  app.listen(port, async () => {
     logger.info(
       `server is running at ${chalk.bold(
         `http://localhost:${port}`,
@@ -51,23 +51,71 @@ const startServer = (): void => {
     fetcher.init([craigslistCache, facebookCache]);
 
     logger.info(chalk.green.bold('server ready'));
+
+    await fetcher.doSearch(); // this temporary and should be removed
   });
 };
 
-// logger.info('do it 1');
-// const testRambda = (currentValues: number[]): number => {
-//   const currentMax = currentValues.reduce(
-//     (element, max) => (element > max ? element : max),
-//     0,
-//   );
-//   if (!currentMax || currentMax < 0) {
-//     return 10;
-//   }
-
-//   return currentMax + 10;
-// };
-// const cVals = [5, 10, 15];
-// const newMax = testRambda(cVals);
-// console.log(`newMax=${newMax}`);
-
 startServer();
+
+/*
+const p1 = async (): Promise<number> => {
+  const timeoutLength = 1000;
+  const np = new Promise<number>((resolve) =>
+    setTimeout(() => {
+      console.log('p1 finished!!!');
+      resolve(timeoutLength);
+    }, timeoutLength),
+  );
+  return np;
+};
+
+const p2 = async (): Promise<number> => {
+  console.log('p2 starting');
+  const result = await p1();
+  console.log('p2 finishing');
+  return result;
+};
+
+const p3 = async (): Promise<number> => {
+  console.log('p3 starting');
+  const result = await p2();
+  console.log('p3 finishing');
+  return result;
+};
+
+const p4 = (): Promise<number> => {
+  const timeoutLength = 10000;
+  console.log('p4 starting');
+  const np = new Promise<number>((resolve) =>
+    setTimeout(() => {
+      console.log('p4 finishing');
+      resolve(timeoutLength);
+    }, timeoutLength),
+  );
+  return np;
+};
+
+const longFunction = (): Promise<void> => {
+  console.log('starting longFunction()');
+  const np = new Promise<void>((resolve) =>
+    setTimeout(() => {
+      console.log('finished longFunction()');
+      resolve();
+    }, 5000),
+  );
+  return np;
+};
+
+const p11 = p1();
+const p22 = p2();
+const p44 = p4();
+
+console.log('p1 about to start');
+await longFunction();
+console.log('starting Promise.all()');
+const allPromises = Promise.all([p11, p22, p44]);
+const result = await allPromises;
+console.log('result:', result);
+console.log('final message');
+*/

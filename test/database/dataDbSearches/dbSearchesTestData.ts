@@ -7,8 +7,41 @@ export const valid = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
+    },
+  },
+  '6': {
+    sid: '6',
+    alias: 'demolition hammer',
+    isEnabled: true,
+    rank: 95,
+    sources: ['facebook'],
+    facebookSearchDetails: {
+      searchTerms: ['search1', 'search2'],
+      regionalDetails: [
+        { region: 'reno', distance: 15 },
+        { region: 'telluride', distance: 5 },
+      ],
+    },
+  },
+  '7': {
+    sid: '7',
+    alias: 'poloris',
+    isEnabled: true,
+    rank: 95,
+    sources: ['craigslist', 'facebook'],
+    craigslistSearchDetails: {
+      searchTerms: ['search1', 'search2'],
+      regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
+    },
+    facebookSearchDetails: {
+      searchTerms: ['search1', 'search2'],
+      regionalDetails: [
+        { region: 'reno', distance: 15 },
+        { region: 'telluride', distance: 5 },
+      ],
     },
   },
 };
@@ -21,8 +54,8 @@ export const sidMissing = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -36,8 +69,8 @@ export const sidWrongType = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -51,8 +84,8 @@ export const sidHasNoValue = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -65,8 +98,8 @@ export const aliasMissing = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -80,8 +113,8 @@ export const aliasWrongType = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -95,8 +128,37 @@ export const aliasHasNoValue = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
+    },
+  },
+};
+
+export const isEnabledMissing = {
+  '5': {
+    sid: '5',
+    alias: 'KTM dirt bikes',
+    rank: 85,
+    sources: ['craigslist'],
+    craigslistSearchDetails: {
+      searchTerms: ['search1', 'search2'],
+      regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
+    },
+  },
+};
+
+export const isEnabledWrongType = {
+  '5': {
+    sid: '5',
+    alias: 'KTM dirt bikes',
+    isEnabled: 1234,
+    rank: 85,
+    sources: ['craigslist'],
+    craigslistSearchDetails: {
+      searchTerms: ['search1', 'search2'],
+      regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -110,8 +172,8 @@ export const enabledSearches = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
-      craigslistSubcategories: ['motorcycles'],
       regions: ['sf bayarea', 'inland empire'],
+      craigslistSubcategories: ['motorcycles'],
     },
   },
   '61': {
@@ -122,8 +184,8 @@ export const enabledSearches = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['demolition hammer'],
-      craigslistSubcategories: ['tools'],
       regions: ['sf bayarea'],
+      craigslistSubcategories: ['tools'],
     },
   },
   '62': {
@@ -133,8 +195,8 @@ export const enabledSearches = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['demolition hammer'],
-      craigslistSubcategories: ['tools'],
       regions: ['sf bayarea'],
+      craigslistSubcategories: ['tools'],
     },
   },
   '63': {
@@ -143,8 +205,8 @@ export const enabledSearches = {
     sources: ['craigslist'],
     craigslistSearchDetails: {
       searchTerms: ['demolition hammer'],
-      craigslistSubcategories: ['tools'],
       regions: ['sf bayarea'],
+      craigslistSubcategories: ['tools'],
     },
   },
 };

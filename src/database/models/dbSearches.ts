@@ -52,7 +52,7 @@ export enum CraigslistSubcategory {
   wanted = 'wanted',
 }
 
-export const enum CraigslistRegion {
+export enum CraigslistRegion {
   sfBayArea = 'sf bayarea',
   westernSlope = 'western slope',
   losAngeles = 'los angeles',
@@ -95,7 +95,7 @@ export type CraigslistRegionDetail = {
 //   };
 // };
 
-export const enum FacebookRegion {
+export enum FacebookRegion {
   walnutCreek = 'walnut creek',
   losAngeles = 'los angeles',
   reno = 'reno',
@@ -135,12 +135,14 @@ export type CraigslistSearchDetails = {
   regions: CraigslistRegion[];
 };
 
+export type FacebookSearchRegionDetails = {
+  region: FacebookRegion;
+  distance: FacebookRadius;
+};
+
 export type FacebookSearchDetails = {
   searchTerms: string[];
-  regions: {
-    region: CraigslistRegion;
-    distance: FacebookRadius;
-  };
+  regionalDetails: FacebookSearchRegionDetails[];
 };
 
 export type Search = {
@@ -155,23 +157,6 @@ export type Search = {
   facebookSearchDetails?: FacebookSearchDetails;
   log?: string[];
 };
-/*
-{
-  'sid': '123',
-  'alias: '350 dirt bikes'
-  'sources': {
-    'craigslist': {
-      'searchTerms': ['350', 'YZ|KTM'],
-      'regions': ['sf bayarea', 'western slope'],
-      'subCategories': ['motorcycles', 'motorcycle parts']
-    },
-    'facebook': {
-      'searchTerms': ['YZ|KTM + 350']
-      'regions': ['sf bayarea', 'los angeles']
-    }
-  }
-}
-*/
 
 export type Searches = {
   [sid: string]: Search;

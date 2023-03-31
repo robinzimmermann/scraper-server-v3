@@ -2,11 +2,21 @@ import { err, ok, Result } from 'neverthrow';
 import chalk from 'chalk';
 // import R from 'ramda';
 
-import { type Search, Searches } from './models/dbSearches';
+import {
+  type Search,
+  Searches,
+  Source,
+  CraigslistSearchDetails,
+  FacebookSearchDetails,
+  CraigslistRegion,
+  CraigslistSubcategory,
+  FacebookRegion,
+} from './models/dbSearches';
 import { JsonDb } from '../api/jsonDb/JsonDb';
 import jsonDb from '../api/jsonDb/lowdbDriver';
 import { DbLogger } from './util';
-import { getDateTimestamp } from '../utils/utils';
+import { getDateTimestamp, isValueInEnum } from '../utils/utils';
+import { rankComparator } from '../utils/sorters/searches';
 
 export type Database = Searches;
 
@@ -177,14 +187,10 @@ export const init = (thePath: string): Result<boolean, string[]> => {
   const jsonDbPosts = jsonDb<Database>(thePath);
   dbFile = jsonDbPosts;
   dbData = dbFile.read();
-  // data['123'].alias = 'dd'
 
-  // data['123'] = { pid: '123', title: 'The Poop' };
-  // db.write();
-  // checkValidity();
-
-  // const result = validate();
   const result = isDbValid();
+  // dbLogger.debug(`dbData=${JSON.stringify(dbData)}`);
+
   return result;
   // if (result.isErr()) {
   //   const messages = [] as string[];
@@ -234,14 +240,17 @@ const isSearchValid = (search: Search): Result<boolean, string[]> => {
     errors.push(`search ${chalk.bold(sid)} ${msg}`);
   };
 
-  const checkProperty = (elementName: keyof Search, myType: string): void => {
+  const checkPrimitiveProperty = (
+    elementName: keyof Search,
+    myType: string,
+  ): void => {
     if (!(elementName in search)) {
       buildError(`has no element ${chalk.bold(elementName)}`);
     } else if (typeof search[elementName] !== myType) {
       buildError(
         `has ${chalk.bold(elementName)} that is not of type ${chalk.bold(
           myType,
-        )}`,
+        )} (it is type ${typeof search[elementName]})`,
       );
     } else if (
       myType === 'string' &&
@@ -254,7 +263,274 @@ const isSearchValid = (search: Search): Result<boolean, string[]> => {
     // if ()
   };
 
-  checkProperty('alias', 'string');
+  // Make sure the sources are valid, and the assocated details section for
+  // each source is valid.
+  const checkSourcesAreValid = (sources: Source[]): void => {
+    const checkCraigslistSearchDetails = (
+      searchDetails: CraigslistSearchDetails,
+    ): void => {
+      const searchDetailsName = 'craigslistSearchDetails';
+
+      if (!('searchTerms' in searchDetails)) {
+        buildError(
+          `has ${chalk.bold(searchDetailsName)} without a ${chalk.bold(
+            'searchTerms',
+          )} element`,
+        );
+        return;
+      }
+      const { searchTerms } = searchDetails;
+      if (!(searchTerms instanceof Array)) {
+        buildError(
+          `has ${chalk.bold(
+            `${searchDetailsName}.searchTerms`,
+          )} which is not an ${chalk.bold('array')}`,
+        );
+      }
+      if (searchTerms.length === 0) {
+        buildError(
+          `has ${chalk.bold(
+            `${searchDetailsName}.searchTerms`,
+          )} with no values`,
+        );
+      }
+
+      if (!('regions' in searchDetails)) {
+        buildError(
+          `has ${chalk.bold(searchDetailsName)} without a ${chalk.bold(
+            'regions',
+          )} element`,
+        );
+        return;
+      }
+      const { regions } = searchDetails;
+      if (!(regions instanceof Array)) {
+        buildError(
+          `has ${chalk.bold(
+            `${searchDetailsName}.regions`,
+          )} which is not an ${chalk.bold('array')}`,
+        );
+      }
+      if (regions.length === 0) {
+        buildError(
+          `has ${chalk.bold(`${searchDetailsName}.regions`)} with no values`,
+        );
+      }
+      // Make sure regions has valid values.
+      regions.forEach((region) => {
+        if (!isValueInEnum(region, CraigslistRegion)) {
+          buildError(
+            `has ${chalk.bold(
+              `${searchDetailsName}.regions`,
+            )} that contains an invalid value: ${chalk.bold(region)}`,
+          );
+        }
+      });
+
+      if (!('craigslistSubcategories' in searchDetails)) {
+        buildError(
+          `has ${chalk.bold(searchDetailsName)} without a ${chalk.bold(
+            'craigslistSubcategories',
+          )} element`,
+        );
+        return;
+      }
+      const { craigslistSubcategories } = searchDetails;
+      if (!(craigslistSubcategories instanceof Array)) {
+        buildError(
+          `has ${chalk.bold(
+            `${searchDetailsName}.craigslistSubcategories`,
+          )} which is not an ${chalk.bold('array')}`,
+        );
+      }
+      if (craigslistSubcategories.length === 0) {
+        buildError(
+          `has ${chalk.bold(
+            `${searchDetailsName}.craigslistSubcategories`,
+          )} with no values`,
+        );
+      }
+      // Make sure craigslistSubcategories has valid values.
+      craigslistSubcategories.forEach((subcategory) => {
+        if (!isValueInEnum(subcategory, CraigslistSubcategory)) {
+          buildError(
+            `has ${chalk.bold(
+              `${searchDetailsName}.craigslistSubcategories`,
+            )} that contains an invalid value: ${chalk.bold(subcategory)}`,
+          );
+        }
+      });
+    };
+
+    const checkFacebookSearchDetails = (
+      searchDetails: FacebookSearchDetails,
+    ): void => {
+      const searchDetailsName = 'facebookSearchDetails';
+      if (!('searchTerms' in searchDetails)) {
+        buildError(
+          `has ${chalk.bold(searchDetailsName)} without a ${chalk.bold(
+            'searchTerms',
+          )} element`,
+        );
+        return;
+      }
+      const { searchTerms } = searchDetails;
+      if (!(searchTerms instanceof Array)) {
+        buildError(
+          `has ${chalk.bold(
+            `${searchDetailsName}.searchTerms`,
+          )} which is not an ${chalk.bold('array')}`,
+        );
+      }
+      if (searchTerms.length === 0) {
+        buildError(
+          `has ${chalk.bold(
+            `${searchDetailsName}.searchTerms`,
+          )} with no values`,
+        );
+      }
+
+      if (!('regionalDetails' in searchDetails)) {
+        buildError(
+          `has ${chalk.bold(searchDetailsName)} without a ${chalk.bold(
+            'regionalDetails',
+          )} element`,
+        );
+        return;
+      }
+      const { regionalDetails } = searchDetails;
+      if (!(regionalDetails instanceof Array)) {
+        buildError(
+          `has ${chalk.bold(
+            `${searchDetailsName}.regionalDetails`,
+          )} which is not an ${chalk.bold('array')}`,
+        );
+      }
+      if (regionalDetails.length === 0) {
+        buildError(
+          `has ${chalk.bold(
+            `${searchDetailsName}.regionalDetails`,
+          )} with no values`,
+        );
+      }
+      // Make sure regionalDetails has valid regions.
+      regionalDetails.forEach((regionalDetail) => {
+        if (!('region' in regionalDetail)) {
+          buildError(
+            `has a ${chalk.bold(
+              `${searchDetailsName}.regionalDetails`,
+            )} section with ${chalk.bold('region')} element missing`,
+          );
+        }
+        if (typeof regionalDetail.region !== 'string') {
+          buildError(
+            `has a ${chalk.bold(
+              `${searchDetailsName}.regionalDetails`,
+            )} section where ${chalk.bold('region')} is not a ${chalk.bold(
+              'string',
+            )} type`,
+          );
+        }
+        // Make sure region has valid values.
+        if (!isValueInEnum(regionalDetail.region, FacebookRegion)) {
+          buildError(
+            `has a ${chalk.bold(
+              `${searchDetailsName}.regionalDetails`,
+            )} section where ${chalk.bold(
+              'region',
+            )} is not a valid value from ${chalk.bold(
+              'FacebookRegion',
+            )} enum: ${chalk.bold(regionalDetail.region)}`,
+          );
+        }
+        if (Object.keys(regionalDetail).length !== 2) {
+          buildError(
+            `has a ${chalk.bold(
+              `${searchDetailsName}.regionalDetails`,
+            )} section where ${chalk.bold(
+              'region',
+            )} has extra properties: ${chalk.bold(
+              JSON.stringify(regionalDetail),
+            )}`,
+          );
+        }
+
+        if (!('distance' in regionalDetail)) {
+          buildError(
+            `has a ${chalk.bold(
+              `${searchDetailsName}.regionalDetails`,
+            )} section with ${chalk.bold('distance')} element missing`,
+          );
+        }
+        if (typeof regionalDetail.distance !== 'number') {
+          buildError(
+            `has a ${chalk.bold(
+              `${searchDetailsName}.regionalDetails`,
+            )} section where ${chalk.bold('distance')} is not a ${chalk.bold(
+              'number',
+            )} type`,
+          );
+        }
+      });
+    };
+
+    if (!sources) {
+      buildError(`has no value for ${chalk.bold('sources')}`);
+      return;
+    }
+    if (!(sources instanceof Array)) {
+      buildError(
+        `has ${chalk.bold('sources')} which is not an ${chalk.bold('array')}`,
+      );
+      return;
+    }
+    if (sources.length === 0) {
+      buildError(`has ${chalk.bold('sources')} with no values`);
+      return;
+    }
+
+    sources.forEach((source) => {
+      if (!isValueInEnum(source, Source)) {
+        buildError(
+          `contains a ${chalk.bold('source')} which is not valid: ${chalk.bold(
+            source,
+          )}`,
+        );
+      } else {
+        // For every valid source, there must be details section
+        const detailsName: keyof Search = `${source}SearchDetails`;
+        if (!search[detailsName]) {
+          buildError(
+            `contains a source of ${chalk.bold(source)} but no ${chalk.bold(
+              detailsName,
+            )} element`,
+          );
+        } else {
+          switch (source) {
+            case Source.craigslist:
+              checkCraigslistSearchDetails(
+                search[detailsName] as CraigslistSearchDetails,
+              );
+              break;
+            case Source.facebook:
+              checkFacebookSearchDetails(
+                search[detailsName] as FacebookSearchDetails,
+              );
+              break;
+          }
+        }
+      }
+    });
+  };
+
+  // const checkSearchDetails = (details: CraigslistSearchDetails | FacebookSearchDetails): void => {
+  // };
+
+  checkPrimitiveProperty('alias', 'string');
+  checkPrimitiveProperty('isEnabled', 'boolean');
+  checkPrimitiveProperty('rank', 'number');
+
+  checkSourcesAreValid(search.sources);
 
   if (errors.length > 0) {
     return err(errors);
@@ -376,16 +652,24 @@ export const addLogWithWrite = (pid: string, msg: string): void => {
 /**
  * Returns searches that are actionable. i.e. Can actually be searched.
  * Thus it won't return searches with are no enabled, or which have issues.
+ * Searches will be returned in order sortd by rank.
  */
-export const getValidEnabledSearches = (): Searches => {
-  const goodSearches: Searches = {};
+export const getValidEnabledSearches = (): Search[] => {
+  const goodSearches: Search[] = [];
   Object.keys(dbData)
     .filter((sid) => {
       const result = isSearchValid(dbData[sid]);
       return result.isOk();
     })
-    .forEach((sid) => (goodSearches[sid] = dbData[sid]));
+    .filter((sid) => dbData[sid].isEnabled)
+    .map((sid) => dbData[sid])
+    .sort(rankComparator)
+    .forEach((search) => goodSearches.push(search));
   return goodSearches;
+};
+
+export const getSearchBySid = (sid: string): Search => {
+  return dbData[sid];
 };
 
 // const getNextRank = (): number => {
