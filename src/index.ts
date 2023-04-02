@@ -3,20 +3,18 @@ import chalk from 'chalk';
 
 import app from './app';
 import { logger } from './utils/logger/logger';
-import {
-  port,
-  cacheDir,
-  craigslistCacheDir,
-  facebookCacheDir,
-} from './globals';
+import { port, cacheDir } from './globals';
 import { initAllDbs } from './database/common';
 import * as fetcher from './fetcher/fetcher';
-import cache from './api/cache/fsDriver';
+// import cache from './api/cache/fsDriver';
+import { launch, unlaunch } from './api/headlessBrowser/puppeteerDriver';
 
-const startServer = (): void => {
+const startServer = async (): Promise<void> => {
+  // launch();
+
   app.listen(port, async () => {
     logger.info(
-      `server is running at ${chalk.bold(
+      `server is starting at ${chalk.bold(
         `http://localhost:${port}`,
       )} in ${chalk.bold(app.get('env'))} mode`,
     );
@@ -28,11 +26,11 @@ const startServer = (): void => {
       fs.mkdirSync(cacheDir);
     }
 
-    const craigslistCache = cache(cacheDir, craigslistCacheDir);
-    craigslistCache.createIfNotExists();
+    // const craigslistCache = cache(cacheDir, craigslistCacheDir);
+    // craigslistCache.createIfNotExists();
 
-    const facebookCache = cache(cacheDir, facebookCacheDir);
-    facebookCache.createIfNotExists();
+    // const facebookCache = cache(cacheDir, facebookCacheDir);
+    // facebookCache.createIfNotExists();
 
     const dbResult = initAllDbs();
 
@@ -48,15 +46,28 @@ const startServer = (): void => {
       return;
     }
 
-    fetcher.init([craigslistCache, facebookCache]);
-
-    logger.info(chalk.green.bold('server ready'));
-
-    await fetcher.doSearch(); // this temporary and should be removed
+    fetcher.init();
   });
 };
 
-startServer();
+const stopServer = async (): Promise<void> => {
+  await unlaunch();
+  process.exit(1);
+};
+
+// When Ctrl-C is pressed
+process.on('SIGINT', async (_code) => {
+  stopServer();
+});
+
+// When node restarts due to code change
+process.on('SIGUSR2', async (_code) => {
+  stopServer();
+});
+
+// startServer();
+await Promise.all([launch(), startServer()]);
+logger.info(chalk.green.bold('server ready'));
 
 /*
 const p1 = async (): Promise<number> => {

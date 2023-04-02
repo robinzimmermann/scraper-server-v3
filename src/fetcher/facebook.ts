@@ -1,4 +1,9 @@
-import { FacebookSearchDetails } from '../database/models/dbSearches';
+import {
+  FacebookRegion,
+  FacebookSearchDetails,
+  getFacebookLocation,
+} from '../database/models/dbSearches';
+import { logger } from '../utils/logger/logger';
 import { FacebookJobDetails, Job } from './fetcher';
 
 // For Facebook, there is a job for each searchTerm by each region buy each subCategory.
@@ -17,4 +22,28 @@ export const getJobs = (
     ),
   );
   return jobs;
+};
+
+export const composeUrl = (
+  region: FacebookRegion,
+  searchTerm: string,
+): string => {
+  return `https://facebook.com/marketplace/${getFacebookLocation(
+    region,
+  )}/search/?query=${encodeURIComponent(searchTerm)}`;
+};
+
+export const fetchSearchResults = async (job: Job): Promise<void> => {
+  logger.silly(
+    `facebook.fetchSearchResults() job ${job.jid} about to contact the server`,
+  );
+  return new Promise((resolve) => {
+    // Simulate doing a search
+    setTimeout(() => {
+      logger.silly(
+        `facebook.fetchSearchResults() job ${job.jid} got a response from server`,
+      );
+      resolve();
+    }, 1000);
+  });
 };

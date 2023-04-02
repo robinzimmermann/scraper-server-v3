@@ -1,4 +1,11 @@
-import { CraigslistSearchDetails } from '../database/models/dbSearches';
+import {
+  CraigslistSearchDetails,
+  CraigslistSubcategory,
+  CraigslistRegion,
+  getCraigslistSubcategoryCode,
+  getCraigslistBaseUrl,
+} from '../database/models/dbSearches';
+import { logger } from '../utils/logger/logger';
 import { CraigslistJobDetails, Job } from './fetcher';
 
 // For Craiglist, there is a job for each searchTerm by each region buy each subCategory.
@@ -19,4 +26,31 @@ export const getJobs = (
     ),
   );
   return jobs;
+};
+
+export const composeUrl = (
+  region: CraigslistRegion,
+  subCategory: CraigslistSubcategory,
+  searchTerm: string,
+): string => {
+  return `https://${getCraigslistBaseUrl(
+    region,
+  )}/search/${getCraigslistSubcategoryCode(
+    subCategory,
+  )}?query=${encodeURIComponent(searchTerm)}`;
+};
+
+export const fetchSearchResults = async (job: Job): Promise<void> => {
+  logger.silly(
+    `craigslist.fetchSearchResults() job ${job.jid} about to contact the server`,
+  );
+  return new Promise((resolve) => {
+    // Simulate doing a search
+    setTimeout(() => {
+      logger.silly(
+        `craigslist.fetchSearchResults() job ${job.jid} got a response from server`,
+      );
+      resolve();
+    }, 1000);
+  });
 };

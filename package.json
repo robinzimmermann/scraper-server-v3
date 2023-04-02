@@ -54,6 +54,7 @@
     "neverthrow": "^6.0.0",
     "nodemon": "^2.0.21",
     "prettier": "^2.8.4",
+    "puppeteer": "^19.8.2",
     "ramda": "^0.28.0",
     "supertest": "^6.3.3",
     "ts-jest": "^29.0.5",

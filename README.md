@@ -1,3 +1,23 @@
+"222": {
+"sid": "222",
+"alias": "KTM dirt bikes",
+"isEnabled": true,
+"rank": 85,
+"sources": ["craigslist", "facebook"],
+"craigslistSearchDetails": {
+"searchTerms": ["ktm 350", "SX-F"],
+"regions": ["sf bayarea", "inland empire", "reno"],
+"craigslistSubcategories": ["motorcycles"]
+},
+"facebookSearchDetails": {
+"searchTerms": ["ktm 350", "SX-F"],
+"regionalDetails": [
+{ "region": "walnut creek", "distance": 5 },
+{ "region": "los angeles", "distance": 5 }
+]
+}
+}
+
 # TODO
 
 - Don't poll isAlive every second. Wait until it is discovered it's not alive and then poll until back?

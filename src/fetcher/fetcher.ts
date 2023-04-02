@@ -1,17 +1,18 @@
 import { logger } from '../utils/logger/logger';
 import * as dbSearches from '../database/dbSearches';
-import * as cache from '../api/cache/cache';
 import chalk from 'chalk';
 import {
   CraigslistRegion,
   FacebookRegion,
   Source,
   CraigslistSubcategory,
+  Search,
 } from '../database/models/dbSearches';
 import { getRandWaitTime } from './helper';
 import { waitWithProgress } from '../utils/utils';
 import * as craigslistFetcher from './craigslist';
 import * as facebookFetcher from './facebook';
+import { cacheDir } from '../globals';
 
 export type CraigslistJobDetails = {
   searchTerm: string;
@@ -28,10 +29,10 @@ export type Job = {
   jid: number;
   sid: string;
   source: Source;
-  // searchTerm: string;
-  // region: CraigslistRegion | FacebookRegion;
   details: CraigslistJobDetails | FacebookJobDetails;
   randomWaitTime: number;
+  searchResultsHomeDir: string;
+  url: string;
 };
 
 export type CraigslistFetchOptions = {
@@ -86,26 +87,38 @@ const printJob = (job: Job): string => {
   switch (job.source) {
     case Source.craigslist:
       details = <CraigslistJobDetails>job.details;
-      detailsStr = `details={searchTerm=${details.searchTerm},region=${details.region},craigslistSubcategory=${details.craigslistSubcategory}}`;
+      detailsStr = `searchTerm=${chalk.dim(
+        details.searchTerm,
+      )},region=${chalk.dim(details.region)},subcategory=${chalk.dim(
+        details.craigslistSubcategory,
+      )}`;
       break;
     case Source.facebook:
       details = <FacebookJobDetails>job.details;
-      detailsStr = `details={searchTerm=${details.searchTerm},region=${details.region}}`;
+      detailsStr = `searchTerm=${chalk.dim(
+        details.searchTerm,
+      )},region=${chalk.dim(details.region)}`;
       break;
   }
-  return `{job=${job.jid},search=${job.sid},source=${job.source},${detailsStr},randomWaitTime=${job.randomWaitTime}}`;
+  return `{job=${chalk.dim(job.jid)},search=${chalk.dim(
+    job.sid,
+  )},source=${chalk.dim(job.source)},${chalk.bold(
+    'details={',
+  )}${detailsStr}},randomWaitTime=${chalk.dim(
+    job.randomWaitTime,
+  )},searchResultsHomeDir=${chalk.dim(
+    job.searchResultsHomeDir,
+  )},url=${chalk.dim(job.url)}${chalk.bold('}')}`;
 };
 
-// jid: number;
-// sid: string;
-// source: Source;
-// randomWaitTime: number;
-
 const addJob = (
-  sid: string,
+  search: Search,
   source: Source,
-  details: CraigslistJobDetails | FacebookJobDetails,
+  jobDetails: CraigslistJobDetails | FacebookJobDetails,
 ): void => {
+  const craigslistJobDetails = <CraigslistJobDetails>jobDetails;
+  const facebookJobDetails = <FacebookJobDetails>jobDetails;
+
   let randomWaitTime = 0;
   // For vendors that need random wait time, set it.
   if (source === Source.craigslist) {
@@ -116,12 +129,32 @@ const addJob = (
     );
   }
 
+  let url: string;
+
+  switch (source) {
+    case Source.craigslist:
+      url = craigslistFetcher.composeUrl(
+        craigslistJobDetails.region,
+        craigslistJobDetails.craigslistSubcategory,
+        jobDetails.searchTerm,
+      );
+      break;
+    case Source.facebook:
+      url = facebookFetcher.composeUrl(
+        facebookJobDetails.region,
+        facebookJobDetails.searchTerm,
+      );
+      break;
+  }
+
   const job = <Job>{
     jid: jobIdCounter++,
-    sid,
+    sid: search.sid,
     source,
-    details,
+    details: jobDetails,
     randomWaitTime,
+    searchResultsHomeDir: `${cacheDir}/${search.alias}`,
+    url,
   };
 
   jobs.push(job);
@@ -129,14 +162,59 @@ const addJob = (
 
 const doJobSearchResults = async (job: Job): Promise<void> => {
   // TIP: If not awaiting something with a promise, then create promise
-  return new Promise((resolve) => {
-    // Simulate doing a search
-    setTimeout(() => {
-      logger.silly(
-        `doJobSearchResults() job ${job.jid} got a response from server`,
+  switch (job.source) {
+    case Source.craigslist:
+      await craigslistFetcher.fetchSearchResults(job);
+      break;
+    case Source.facebook:
+      await facebookFetcher.fetchSearchResults(job);
+      break;
+  }
+};
+
+const getVendorJobs = (source: Source, search: Search): void => {
+  // Within craigslist sources, there are individual jobs for search terms, and then individual jobs for regions within each search term
+  // Within facebook sources, there are individual jobs for search terms, and regions
+  switch (source) {
+    case Source.craigslist:
+      craigslistFetcher.getJobs(
+        search.craigslistSearchDetails,
+        (craigslistJobDetails: CraigslistJobDetails) => {
+          addJob(search, source, {
+            searchTerm: craigslistJobDetails.searchTerm,
+            region: craigslistJobDetails.region,
+            craigslistSubcategory: craigslistJobDetails.craigslistSubcategory,
+          });
+        },
       );
-      resolve();
-    }, 1000);
+      break;
+    case Source.facebook:
+      facebookFetcher.getJobs(
+        search.facebookSearchDetails,
+        (facebookJobDetails: FacebookJobDetails) => {
+          addJob(search, source, {
+            searchTerm: facebookJobDetails.searchTerm,
+            region: facebookJobDetails.region,
+          });
+        },
+      );
+      break;
+    default:
+    // Should never get here.
+  }
+};
+
+/**
+ * Build up the jobs that will be required by searches.
+ */
+const buildJobs = (): void => {
+  // Create a job for each search. A search may result in multiple jobs
+  const validSearches = dbSearches.getValidEnabledSearches();
+  validSearches.forEach((search) => {
+    // Add separate jobs for each source of a search
+    search.sources.sort().forEach((source) => {
+      getVendorJobs(source, search);
+    });
   });
 };
 
@@ -150,42 +228,7 @@ export const doSearch = async (): Promise<void> => {
   jobPointer = 0;
   jobs.length = 0;
 
-  // Create a job for each search. A search may result in multiple jobs
-  const validSearches = dbSearches.getValidEnabledSearches();
-  validSearches.forEach((search) => {
-    // Add a separate job for each source of a search
-    search.sources.sort().forEach((source) => {
-      // Within sources, there are individual jobs for search terms, and then individual jobs for regions within each search term
-      switch (source) {
-        case Source.craigslist:
-          craigslistFetcher.getJobs(
-            search.craigslistSearchDetails,
-            (craigslistJobDetails: CraigslistJobDetails) => {
-              addJob(search.sid, source, {
-                searchTerm: craigslistJobDetails.searchTerm,
-                region: craigslistJobDetails.region,
-                craigslistSubcategory:
-                  craigslistJobDetails.craigslistSubcategory,
-              });
-            },
-          );
-          break;
-        case Source.facebook:
-          facebookFetcher.getJobs(
-            search.facebookSearchDetails,
-            (facebookJobDetails: FacebookJobDetails) => {
-              addJob(search.sid, source, {
-                searchTerm: facebookJobDetails.searchTerm,
-                region: facebookJobDetails.region,
-              });
-            },
-          );
-          break;
-        default:
-        // Should never get here.
-      }
-    });
-  });
+  buildJobs();
 
   if (!jobs || jobs.length === 0) {
     logger.warn(warningColor('nothing to fetch!'));
@@ -194,7 +237,7 @@ export const doSearch = async (): Promise<void> => {
 
   // This is temporary until a better way is found to list the jobs
   jobs.forEach((job) => {
-    logger.debug(`job: ${printJob(job)}`);
+    logger.debug(`${printJob(job)}`);
   });
 
   while (jobPointer < jobs.length) {
@@ -224,17 +267,10 @@ export const doSearch = async (): Promise<void> => {
 /**
  * Perform one-time initialization when the server starts.
  */
-export const init = (caches: cache.Cache[], opts?: FetchOptions): void => {
+export const init = (opts?: FetchOptions): void => {
   options = { ...defaults, ...(opts || {}) };
 
   if (options.debugUseShortRandomWaitTime) {
     logger.warn(warningColor(`${logPrefix}DEBUG: using short wait time!`));
-  }
-
-  if (caches.length > 0) {
-    logger.info('caches:');
-    caches.forEach((c) => logger.info(`  ${c.getCacheDir()}`));
-  } else {
-    logger.info('there are no cached files');
   }
 };
