@@ -7,7 +7,12 @@ import { port, cacheDir } from './globals';
 import { initAllDbs } from './database/common';
 import * as fetcher from './fetcher/fetcher';
 // import cache from './api/cache/fsDriver';
-import { launch, unlaunch } from './api/headlessBrowser/puppeteerDriver';
+// import puppeteerDriver from './api/headlessBrowser/puppeteerDriver';
+import { doSearch } from './fetcher/fetcher';
+import HBrowserInstance from './api/hbrowser/puppeteerDriver';
+
+// const headlessBrowser = puppeteerDriver();
+const hbrowser = HBrowserInstance();
 
 const startServer = async (): Promise<void> => {
   // launch();
@@ -46,12 +51,12 @@ const startServer = async (): Promise<void> => {
       return;
     }
 
-    fetcher.init();
+    fetcher.init(hbrowser);
   });
 };
 
 const stopServer = async (): Promise<void> => {
-  await unlaunch();
+  await hbrowser.unlaunch();
   process.exit(1);
 };
 
@@ -66,67 +71,7 @@ process.on('SIGUSR2', async (_code) => {
 });
 
 // startServer();
-await Promise.all([launch(), startServer()]);
+await Promise.all([hbrowser.launch(), startServer()]);
 logger.info(chalk.green.bold('server ready'));
 
-/*
-const p1 = async (): Promise<number> => {
-  const timeoutLength = 1000;
-  const np = new Promise<number>((resolve) =>
-    setTimeout(() => {
-      console.log('p1 finished!!!');
-      resolve(timeoutLength);
-    }, timeoutLength),
-  );
-  return np;
-};
-
-const p2 = async (): Promise<number> => {
-  console.log('p2 starting');
-  const result = await p1();
-  console.log('p2 finishing');
-  return result;
-};
-
-const p3 = async (): Promise<number> => {
-  console.log('p3 starting');
-  const result = await p2();
-  console.log('p3 finishing');
-  return result;
-};
-
-const p4 = (): Promise<number> => {
-  const timeoutLength = 10000;
-  console.log('p4 starting');
-  const np = new Promise<number>((resolve) =>
-    setTimeout(() => {
-      console.log('p4 finishing');
-      resolve(timeoutLength);
-    }, timeoutLength),
-  );
-  return np;
-};
-
-const longFunction = (): Promise<void> => {
-  console.log('starting longFunction()');
-  const np = new Promise<void>((resolve) =>
-    setTimeout(() => {
-      console.log('finished longFunction()');
-      resolve();
-    }, 5000),
-  );
-  return np;
-};
-
-const p11 = p1();
-const p22 = p2();
-const p44 = p4();
-
-console.log('p1 about to start');
-await longFunction();
-console.log('starting Promise.all()');
-const allPromises = Promise.all([p11, p22, p44]);
-const result = await allPromises;
-console.log('result:', result);
-console.log('final message');
-*/
+await doSearch(); // TODO This is temporary, browser user should start searches

@@ -1,6 +1,8 @@
-import { logger } from '../utils/logger/logger';
-import * as dbSearches from '../database/dbSearches';
 import chalk from 'chalk';
+
+import { logger } from '../utils/logger/logger';
+import { HBrowserInstance } from '../api/hbrowser/HBrowser';
+import * as dbSearches from '../database/dbSearches';
 import {
   CraigslistRegion,
   FacebookRegion,
@@ -13,6 +15,8 @@ import { waitWithProgress } from '../utils/utils';
 import * as craigslistFetcher from './craigslist';
 import * as facebookFetcher from './facebook';
 import { cacheDir } from '../globals';
+// import HeadlessBrowserInstance from '../api/headlessBrowser/HeadlessBrowserInstance';
+// import * as puppeteer from 'puppeteer';
 
 export type CraigslistJobDetails = {
   searchTerm: string;
@@ -72,6 +76,8 @@ const defaults = <FetchOptions>{
 const logPrefix = '[fetcher] ';
 
 let options: FetchOptions = defaults;
+
+let browser: HBrowserInstance;
 
 const jobs = <Job[]>[];
 let jobIdCounter = 1;
@@ -164,10 +170,10 @@ const doJobSearchResults = async (job: Job): Promise<void> => {
   // TIP: If not awaiting something with a promise, then create promise
   switch (job.source) {
     case Source.craigslist:
-      await craigslistFetcher.fetchSearchResults(job);
+      await craigslistFetcher.fetchSearchResults(browser, job);
       break;
     case Source.facebook:
-      await facebookFetcher.fetchSearchResults(job);
+      await facebookFetcher.fetchSearchResults(browser, job);
       break;
   }
 };
@@ -267,7 +273,12 @@ export const doSearch = async (): Promise<void> => {
 /**
  * Perform one-time initialization when the server starts.
  */
-export const init = (opts?: FetchOptions): void => {
+export const init = (
+  headlessBrowserDriver: HBrowserInstance,
+  opts?: FetchOptions,
+): void => {
+  browser = headlessBrowserDriver;
+
   options = { ...defaults, ...(opts || {}) };
 
   if (options.debugUseShortRandomWaitTime) {

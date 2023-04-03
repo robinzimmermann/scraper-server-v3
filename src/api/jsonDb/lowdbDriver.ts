@@ -5,15 +5,21 @@ import chalk from 'chalk';
 import { JsonDb } from './JsonDb';
 import { logger } from '../../../src/utils/logger/logger';
 
-export default <T>(file: string): JsonDb<T> => {
-  if (!fs.existsSync(file)) {
-    logger.warn(
-      `database file doesn't exist, creating it: ${chalk.bold(file)}`,
-    );
-    fs.writeFileSync(file, '{}\n');
-  }
+// export default <T>(file: string): JsonDb<T> => {
+export default <T>(): JsonDb<T> => {
+  let file: string;
 
   let database: LowSync<T>;
+
+  const setCacheDir = (cacheDir: string): void => {
+    file = cacheDir;
+    if (!fs.existsSync(file)) {
+      logger.warn(
+        `database file doesn't exist, creating it: ${chalk.bold(file)}`,
+      );
+      fs.writeFileSync(file, '{}\n');
+    }
+  };
 
   const read = (): T => {
     const adapter = new JSONFileSync<T>(file);
@@ -49,5 +55,5 @@ export default <T>(file: string): JsonDb<T> => {
     database.write();
   };
 
-  return <JsonDb<T>>{ read, write };
+  return <JsonDb<T>>{ setCacheDir, read, write };
 };

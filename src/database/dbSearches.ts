@@ -13,21 +13,22 @@ import {
   FacebookRegion,
 } from './models/dbSearches';
 import { JsonDb } from '../api/jsonDb/JsonDb';
-import jsonDb from '../api/jsonDb/lowdbDriver';
+// import jsonDb from '../api/jsonDb/lowdbDriver';
 import { DbLogger } from './util';
 import { getDateTimestamp, isValueInEnum } from '../utils/utils';
 import { rankComparator } from '../utils/sorters/searches';
 
 export type Database = Searches;
 
-let dbFile: JsonDb<Database>;
+// let dbFile: JsonDb<Database>;
+let myJsonDb: JsonDb<Database>;
 let dbData: Database;
 
 const dbLoggerPrefix = '[dbSearches]';
 const dbLogger = DbLogger(dbLoggerPrefix);
 
 export const saveData = (): void => {
-  dbFile.write();
+  myJsonDb.write();
 };
 
 // const validateSearchTerms = (searchTerms: string[]): string | null => {
@@ -182,11 +183,20 @@ export const saveData = (): void => {
 //   return ok(warnings);
 // };
 
-export const init = (thePath: string): Result<boolean, string[]> => {
+// export const init = (thePath: string): Result<boolean, string[]> => {
+export const init = (jsonDb: JsonDb<Database>): Result<boolean, string[]> => {
   dbLogger.info('initializing');
-  const jsonDbPosts = jsonDb<Database>(thePath);
-  dbFile = jsonDbPosts;
-  dbData = dbFile.read();
+
+  // myJsonDb = jsonDb;
+
+  // const jsonDbPosts = jsonDb<Database>(thePath);
+  // const jsonDbPosts = myJsonDb.read();
+  // dbFile = jsonDbPosts;
+  // dbData = dbFile.read();
+  // dbData = myJsonDb.read();
+
+  myJsonDb = jsonDb;
+  dbData = myJsonDb.read();
 
   const result = isDbValid();
   // dbLogger.debug(`dbData=${JSON.stringify(dbData)}`);
@@ -646,7 +656,8 @@ const addLogNoWrite = (sid: string, msg: string): void => {
 
 export const addLogWithWrite = (pid: string, msg: string): void => {
   addLogNoWrite(pid, msg);
-  dbFile.write();
+  // dbFile.write();
+  myJsonDb.write();
 };
 
 /**

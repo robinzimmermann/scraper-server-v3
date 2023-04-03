@@ -1,3 +1,7 @@
+// import * as puppeteer from 'puppeteer';
+
+// import { HeadlessBrowserInstance } from '../api/headlessBrowser/HeadlessBrowserInstance';
+import { HBrowserInstance } from '../api/hbrowser/HBrowser';
 import {
   CraigslistSearchDetails,
   CraigslistSubcategory,
@@ -40,17 +44,22 @@ export const composeUrl = (
   )}?query=${encodeURIComponent(searchTerm)}`;
 };
 
-export const fetchSearchResults = async (job: Job): Promise<void> => {
+export const fetchSearchResults = async (
+  browser: HBrowserInstance,
+  job: Job,
+): Promise<void> => {
   logger.silly(
-    `craigslist.fetchSearchResults() job ${job.jid} about to contact the server`,
+    `craigslist.fetchSearchResults() job ${job.jid} about to contact the craigslist server`,
   );
-  return new Promise((resolve) => {
-    // Simulate doing a search
-    setTimeout(() => {
-      logger.silly(
-        `craigslist.fetchSearchResults() job ${job.jid} got a response from server`,
-      );
-      resolve();
-    }, 1000);
-  });
+  const results = await browser.getHtmlPageCraigslist(job.url);
+  logger.verbose(`got back from craigslist search: ${JSON.stringify(results)}`);
+  // return new Promise((resolve) => {
+  //   // Simulate doing a search
+  //   setTimeout(() => {
+  //     logger.silly(
+  //       `craigslist.fetchSearchResults() job ${job.jid} got a response from server`,
+  //     );
+  //     resolve();
+  //   }, 1000);
+  // });
 };

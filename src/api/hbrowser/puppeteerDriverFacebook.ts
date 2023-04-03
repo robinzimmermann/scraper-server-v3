@@ -2,20 +2,17 @@
 
 import * as puppeteer from 'puppeteer';
 
-import {
-  HeadlessBrowserInstance,
-  HeadlessBrowserResults,
-} from './HeadlessBrowserInstance';
 import { logger } from '../../utils/logger/logger';
+import { HeadlessBrowserResults } from './HBrowser';
 
 export const getHtmlPage = async (
-  browser: HeadlessBrowserInstance<puppeteer.Browser>,
+  browser: puppeteer.Browser,
   url: string,
-  nextPageJavascript?: string,
+  searchTerm: string,
 ): Promise<HeadlessBrowserResults> => {
-  logger.verbose(
-    `starting craigslist fetch, url=${url}, nextPageJavascript=${nextPageJavascript}`,
-  );
+  logger.verbose('starting facebook page');
+  logger.verbose(`url=${url}, searchTerm=${searchTerm}`);
+
   if (!browser) {
     return new Promise((_resolve, reject) => {
       reject(new Error(''));
@@ -25,9 +22,9 @@ export const getHtmlPage = async (
   try {
     return new Promise((resolve, _reject) => {
       setTimeout(() => {
-        logger.silly('simulating a craigslist page taking a while');
+        logger.silly('simulated a facebook page taking a while');
         resolve(<HeadlessBrowserResults>{
-          html: '<html><h1>I am Craigslist!</h1></html>',
+          html: '<html><h1>I am Facebook!</h1></html>',
         });
       }, 3000);
     });

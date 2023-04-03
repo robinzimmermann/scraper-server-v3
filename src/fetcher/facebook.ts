@@ -1,3 +1,7 @@
+// import * as puppeteer from 'puppeteer';
+// import { HeadlessBrowserInstance } from '../api/headlessBrowser/HeadlessBrowserInstance';
+import { HBrowserInstance } from '../api/hbrowser/HBrowser';
+
 import {
   FacebookRegion,
   FacebookSearchDetails,
@@ -33,17 +37,28 @@ export const composeUrl = (
   )}/search/?query=${encodeURIComponent(searchTerm)}`;
 };
 
-export const fetchSearchResults = async (job: Job): Promise<void> => {
+export const fetchSearchResults = async (
+  browser: HBrowserInstance,
+  job: Job,
+): Promise<void> => {
   logger.silly(
-    `facebook.fetchSearchResults() job ${job.jid} about to contact the server`,
+    `facebook.fetchSearchResults() job ${job.jid} about to contact the facebook server`,
   );
-  return new Promise((resolve) => {
-    // Simulate doing a search
-    setTimeout(() => {
-      logger.silly(
-        `facebook.fetchSearchResults() job ${job.jid} got a response from server`,
-      );
-      resolve();
-    }, 1000);
-  });
+  const results = await browser.getHtmlPageFacebook(
+    job.url,
+    job.details.searchTerm,
+  );
+  logger.verbose(`got back from faceboook search: ${JSON.stringify(results)}`);
+  // logger.silly(
+  //   `facebook.fetchSearchResults() job ${job.jid} about to contact the server`,
+  // );
+  // return new Promise((resolve) => {
+  //   // Simulate doing a search
+  //   setTimeout(() => {
+  //     logger.silly(
+  //       `facebook.fetchSearchResults() job ${job.jid} got a response from server`,
+  //     );
+  //     resolve();
+  //   }, 1000);
+  // });
 };

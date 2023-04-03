@@ -1,7 +1,7 @@
 // import puppeteer from 'puppeteer';
 
 import { logger } from '../../utils/logger/logger';
-import { HeadlessBrowserResults } from './HeadlessBrowser';
+import { HeadlessBrowserResults } from './HeadlessBrowserInstance';
 
 export const getHtmlPage = async (
   url: string,
@@ -11,6 +11,8 @@ export const getHtmlPage = async (
   logger.verbose(`url=${url}, searchTerm=${searchTerm}`);
 
   return new Promise((resolve, _reject) => {
-    resolve(<HeadlessBrowserResults>{ html: '<html></html>' });
+    resolve(<HeadlessBrowserResults>{
+      html: '<html><h1>I am Facebook!</h1></html>',
+    });
   });
 };

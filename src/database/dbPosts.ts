@@ -1,24 +1,31 @@
 import { Posts } from './models/dbPosts';
 import { JsonDb } from '../api/jsonDb/JsonDb';
-import jsonDb from '../api/jsonDb/lowdbDriver';
+// import jsonDb from '../api/jsonDb/JsonDb';
 import { DbLogger } from './util';
 
 export type Database = Posts;
 
-let dbFile: JsonDb<Database>;
+// let dbFile: JsonDb<Database>;
+let myJsonDb: JsonDb<Database>;
 let dbData: Database;
 
 const dbLoggerPrefix = '[dbPosts]';
 const dbLogger = DbLogger(dbLoggerPrefix);
 
 export const saveData = (): void => {
-  dbFile.write();
+  // dbFile.write();
+  myJsonDb.write();
 };
 
-export const init = (thePath: string): void => {
+//export const init = (thePath: string): void => {
+export const init = (jsonDb: JsonDb<Database>): void => {
   dbLogger.info('initializing');
-  dbFile = jsonDb<Database>(thePath);
-  dbData = dbFile.read();
+
+  myJsonDb = jsonDb;
+  dbData = myJsonDb.read();
+
+  // dbFile = jsonDb<Database>(thePath);
+  // dbData = dbFile.read();
 
   // data['123'] = { pid: '123', title: 'The Poop' };
   // db.write();

@@ -2,14 +2,11 @@
 
 import * as puppeteer from 'puppeteer';
 
-import {
-  HeadlessBrowserInstance,
-  HeadlessBrowserResults,
-} from './HeadlessBrowserInstance';
+import { HeadlessBrowserResults } from './HBrowser';
 import { logger } from '../../utils/logger/logger';
 
 export const getHtmlPage = async (
-  browser: HeadlessBrowserInstance<puppeteer.Browser>,
+  browser: puppeteer.Browser,
   url: string,
   nextPageJavascript?: string,
 ): Promise<HeadlessBrowserResults> => {
@@ -25,7 +22,7 @@ export const getHtmlPage = async (
   try {
     return new Promise((resolve, _reject) => {
       setTimeout(() => {
-        logger.silly('simulating a craigslist page taking a while');
+        logger.silly('simulated a craigslist page taking a while');
         resolve(<HeadlessBrowserResults>{
           html: '<html><h1>I am Craigslist!</h1></html>',
         });

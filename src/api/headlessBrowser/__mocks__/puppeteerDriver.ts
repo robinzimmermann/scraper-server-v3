@@ -1,6 +1,17 @@
-import { HeadlessBrowser, HeadlessBrowserResults } from '../HeadlessBrowser';
+import {
+  HeadlessBrowserInstance,
+  HeadlessBrowserResults,
+} from '../HeadlessBrowserInstance';
 
-export default (): HeadlessBrowser => {
+export default (): HeadlessBrowserInstance<T> => {
+  const launch = async (): Promise<T> => {
+    // do nothing
+  };
+
+  const unlaunch = async (): Promise<void> => {
+    // do nothing
+  };
+
   const getHtmlPageCraigslist = async (
     _url: string,
     _nextPageJavascript?: string,
@@ -19,5 +30,5 @@ export default (): HeadlessBrowser => {
     });
   };
 
-  return { getHtmlPageCraigslist, getHtmlPageFacebook };
+  return { launch, unlaunch, getHtmlPageCraigslist, getHtmlPageFacebook };
 };

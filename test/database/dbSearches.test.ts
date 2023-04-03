@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals';
 import 'jest-extended';
 // import os from 'os';
-
-jest.mock('../../src/api/jsonDb/lowdbDriver');
+import JsonDb from '../../src/api/jsonDb/lowdbDriver';
+import { Searches } from '../../src/database/models/dbSearches';
 
 import * as dbSearches from '../../src/database/dbSearches';
 import {
@@ -15,6 +15,11 @@ import {
 } from '../../src/database/models/dbSearches';
 import { logger } from '../../src/utils/logger/logger';
 import * as dbSearchesTestData from './dataDbSearches/dbSearchesTestData';
+// import { JsonDb } from '../../src/api/jsonDb/JsonDb';
+
+jest.mock('../../src/api/jsonDb/lowdbDriver');
+
+type Database = Searches;
 
 // Some handy Jest spies.
 const saveDataSpy = jest.spyOn(dbSearches, 'saveData');
@@ -28,8 +33,11 @@ describe('dbSearches initialization', () => {
     initializeJest();
   });
 
-  const doNegativeTest = (element: unknown, phraseInError: string): void => {
-    const result = dbSearches.init(JSON.stringify(element));
+  // const doNegativeTest = (element: unknown, phraseInError: string): void => {
+  const doNegativeTest = (element: Searches, phraseInError: string): void => {
+    const jsonDb = JsonDb<Searches>();
+    jsonDb.setCacheDir(JSON.stringify(element));
+    const result = dbSearches.init(jsonDb);
     const negErrors: string[] = [];
     expect(result.isOk()).toBeFalse();
     expect(result.isErr()).toBeTrue();
@@ -41,15 +49,21 @@ describe('dbSearches initialization', () => {
     expect(negErrors[0]).toContain(phraseInError);
   };
 
-  test.skip('initializes when no database file is present', () => {
-    dbSearches.init('');
+  test('initializes when no database file is present', () => {
+    const jsonDb = JsonDb<Database>();
+    jsonDb.setCacheDir('');
+    dbSearches.init(jsonDb);
 
     expect(dbSearches.getValidEnabledSearches()).toBeEmpty();
     expect(saveDataSpy).toHaveBeenCalledTimes(0);
   });
 
   test('valid search', () => {
-    const result = dbSearches.init(JSON.stringify(dbSearchesTestData.valid));
+    const jsonDb = JsonDb<Database>();
+    jsonDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
+    const result = dbSearches.init(jsonDb);
+
+    // const result = dbSearches.init(JSON.stringify(dbSearchesTestData.valid));
     expect(result.isOk()).toBeTrue();
 
     let search = dbSearches.getSearchBySid('5');
@@ -130,47 +144,80 @@ describe('dbSearches initialization', () => {
   });
 
   test('sid missing', () => {
-    doNegativeTest(dbSearchesTestData.sidMissing, 'has no element');
+    doNegativeTest(
+      dbSearchesTestData.sidMissing as unknown as Searches,
+      'has no element',
+    );
   });
 
   test('sid wrong type', () => {
-    doNegativeTest(dbSearchesTestData.sidWrongType, 'not of type');
+    doNegativeTest(
+      dbSearchesTestData.sidWrongType as unknown as Searches,
+      'not of type',
+    );
   });
 
   test('sid has no value', () => {
-    doNegativeTest(dbSearchesTestData.sidHasNoValue, 'no value');
+    doNegativeTest(
+      dbSearchesTestData.sidHasNoValue as unknown as Searches,
+      'no value',
+    );
   });
 
   test('alias missing', () => {
-    doNegativeTest(dbSearchesTestData.aliasMissing, 'has no element');
+    doNegativeTest(
+      dbSearchesTestData.aliasMissing as unknown as Searches,
+      'has no element',
+    );
   });
 
   test('alias wrong type', () => {
-    doNegativeTest(dbSearchesTestData.aliasWrongType, 'not of type');
+    doNegativeTest(
+      dbSearchesTestData.aliasWrongType as unknown as Searches,
+      'not of type',
+    );
   });
 
   test('alias has no value', () => {
-    doNegativeTest(dbSearchesTestData.aliasHasNoValue, 'no value');
+    doNegativeTest(
+      dbSearchesTestData.aliasHasNoValue as unknown as Searches,
+      'no value',
+    );
   });
 
   test('alias missing', () => {
-    doNegativeTest(dbSearchesTestData.aliasMissing, 'has no element');
+    doNegativeTest(
+      dbSearchesTestData.aliasMissing as unknown as Searches,
+      'has no element',
+    );
   });
 
   test('alias wrong type', () => {
-    doNegativeTest(dbSearchesTestData.aliasWrongType, 'not of type');
+    doNegativeTest(
+      dbSearchesTestData.aliasWrongType as unknown as Searches,
+      'not of type',
+    );
   });
 
   test('alias has no value', () => {
-    doNegativeTest(dbSearchesTestData.aliasHasNoValue, 'no value');
+    doNegativeTest(
+      dbSearchesTestData.aliasHasNoValue as unknown as Searches,
+      'no value',
+    );
   });
 
   test('isEnabled missing', () => {
-    doNegativeTest(dbSearchesTestData.isEnabledMissing, 'has no element');
+    doNegativeTest(
+      dbSearchesTestData.isEnabledMissing as unknown as Searches,
+      'has no element',
+    );
   });
 
   test('isEnabled wrong type', () => {
-    doNegativeTest(dbSearchesTestData.isEnabledWrongType, 'not of type');
+    doNegativeTest(
+      dbSearchesTestData.isEnabledWrongType as unknown as Searches,
+      'not of type',
+    );
   });
 });
 
@@ -180,9 +227,10 @@ describe('dbSearches test suite', () => {
   });
 
   test('fetch enabled searches', () => {
-    const result = dbSearches.init(
-      JSON.stringify(dbSearchesTestData.enabledSearches),
-    );
+    const jsonDb = JsonDb<Searches>();
+    jsonDb.setCacheDir(JSON.stringify(dbSearchesTestData.enabledSearches));
+
+    const result = dbSearches.init(jsonDb);
     result.mapErr((errorMessages) =>
       errorMessages.forEach((msg) => logger.debug(msg)),
     );
@@ -194,14 +242,20 @@ describe('dbSearches test suite', () => {
   });
 
   test('fetch search by sid', () => {
-    dbSearches.init(JSON.stringify(dbSearchesTestData.valid));
+    const jsonDb = JsonDb<Searches>();
+    jsonDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
+
+    dbSearches.init(jsonDb);
     const search = dbSearches.getSearchBySid('5');
     expect(search).toContainKeys(['sid', 'alias', 'isEnabled']);
     expect(search.sid).toBe('5');
   });
 
   test('not fetch search by invalid sid', () => {
-    dbSearches.init(JSON.stringify(dbSearchesTestData.valid));
+    const jsonDb = JsonDb<Searches>();
+    jsonDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
+
+    dbSearches.init(jsonDb);
     const search = dbSearches.getSearchBySid('-9');
     expect(search).toBeUndefined();
   });
