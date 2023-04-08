@@ -1,3 +1,4 @@
+import fs from 'fs';
 import chalk from 'chalk';
 
 import { logger } from '../utils/logger/logger';
@@ -11,15 +12,44 @@ import {
   Search,
 } from '../database/models/dbSearches';
 import { getRandWaitTime } from './helper';
-import { waitWithProgress } from '../utils/utils';
+import { moveItemInArray, waitWithProgress } from '../utils/utils';
 import * as craigslistFetcher from './craigslist';
 import * as facebookFetcher from './facebook';
-import { cacheDir } from '../globals';
+import { cacheDir, craigslistCacheDir } from '../globals';
 // import HeadlessBrowserInstance from '../api/headlessBrowser/HeadlessBrowserInstance';
 // import * as puppeteer from 'puppeteer';
 
+const craigslistDefaults = <CraigslistFetchOptions>{
+  // Wait time between reqwests will be:
+  //
+  //   minWaitTimeBetweenRequests + random amount up to maxRandomExtraTimeBetweenRequest
+  //
+  minWaitTimeBetweenRequests: 2000, // milliseconds
+  maxRandomExtraTimeBetweenRequest: 5000, // milliseconds
+};
+
+export const defaultOptions = <FetchOptions>{
+  /**
+   * If false, then fetch search results from Craigslist/Facebook rather than files.
+   *
+   * Prod should be false.
+   */
+  debugFetchSearchResultsFromFiles: true,
+
+  /**
+   * For debugging, instead of waiting the full random wait time, wait for a very short
+   * time so things move along more quickly.
+   *
+   * Prod should be false.
+   */
+  debugUseShortRandomWaitTime: false,
+
+  craigslistFetchOptions: craigslistDefaults,
+};
+
 export type CraigslistJobDetails = {
   searchTerm: string;
+  searchTermNum: number;
   region: CraigslistRegion;
   craigslistSubcategory: CraigslistSubcategory;
 };
@@ -33,10 +63,13 @@ export type Job = {
   jid: number;
   sid: string;
   source: Source;
+  alias: string;
   details: CraigslistJobDetails | FacebookJobDetails;
   randomWaitTime: number;
   searchResultsHomeDir: string;
+  searchResultsFilename: string;
   url: string;
+  pageNum: number;
 };
 
 export type CraigslistFetchOptions = {
@@ -47,44 +80,27 @@ export type CraigslistFetchOptions = {
 export type FetchOptions = {
   debugUseShortRandomWaitTime?: boolean;
 
+  debugFetchSearchResultsFromFiles?: boolean;
+
   craigslistFetchOptions: CraigslistFetchOptions;
 };
 
 const warningColor = chalk.yellow;
 
-const craigslistDefaults = <CraigslistFetchOptions>{
-  // Wait time between reqwests will be:
-  //
-  //   minWaitTimeBetweenRequests + random amount up to maxRandomExtraTimeBetweenRequest
-  //
-  minWaitTimeBetweenRequests: 2000, // milliseconds
-  maxRandomExtraTimeBetweenRequest: 5000, // milliseconds
-};
-
-const defaults = <FetchOptions>{
-  /**
-   * For debugging, instead of waiting the full random wait time, wait for a very short
-   * time so things move along more quickly.
-   *
-   * Prod should be false.
-   */
-  debugUseShortRandomWaitTime: true,
-
-  craigslistFetchOptions: craigslistDefaults,
-};
-
 const logPrefix = '[fetcher] ';
 
-let options: FetchOptions = defaults;
+export const dateFormat = 'yyyy-MM-dd';
+
+let options: FetchOptions = defaultOptions;
 
 let browser: HBrowserInstance;
 
 const jobs = <Job[]>[];
 let jobIdCounter = 1;
 
-let jobPointer: number;
+// let jobPointer: number;
 
-const printJob = (job: Job): string => {
+export const printJob = (job: Job): string => {
   if (!job) {
     return '';
   }
@@ -93,9 +109,9 @@ const printJob = (job: Job): string => {
   switch (job.source) {
     case Source.craigslist:
       details = <CraigslistJobDetails>job.details;
-      detailsStr = `searchTerm=${chalk.dim(
-        details.searchTerm,
-      )},region=${chalk.dim(details.region)},subcategory=${chalk.dim(
+      detailsStr = `searchTerm=${chalk.dim(details.searchTerm)} (${chalk.dim(
+        details.searchTermNum,
+      )}),region=${chalk.dim(details.region)},subcategory=${chalk.dim(
         details.craigslistSubcategory,
       )}`;
       break;
@@ -114,14 +130,20 @@ const printJob = (job: Job): string => {
     job.randomWaitTime,
   )},searchResultsHomeDir=${chalk.dim(
     job.searchResultsHomeDir,
-  )},url=${chalk.dim(job.url)}${chalk.bold('}')}`;
+  )},filename=${chalk.dim(job.searchResultsFilename)},url=${chalk.dim(
+    job.url,
+  )}${chalk.bold('}')},pageNum=${chalk.dim(job.pageNum)}`;
 };
 
-const addJob = (
+export const buildCacheName = (job: Job): string =>
+  `${job.searchResultsHomeDir}/${job.searchResultsFilename}`;
+
+export const addJob = (
   search: Search,
   source: Source,
   jobDetails: CraigslistJobDetails | FacebookJobDetails,
-): void => {
+  pageNum = 1,
+): Job => {
   const craigslistJobDetails = <CraigslistJobDetails>jobDetails;
   const facebookJobDetails = <FacebookJobDetails>jobDetails;
 
@@ -136,6 +158,8 @@ const addJob = (
   }
 
   let url: string;
+  let searchResultsHomeDir = '';
+  let searchResultsFilename = '';
 
   switch (source) {
     case Source.craigslist:
@@ -143,6 +167,18 @@ const addJob = (
         craigslistJobDetails.region,
         craigslistJobDetails.craigslistSubcategory,
         jobDetails.searchTerm,
+        pageNum,
+      );
+      searchResultsHomeDir = craigslistFetcher.generateCacheDir(
+        cacheDir,
+        search.alias,
+        craigslistCacheDir,
+        craigslistJobDetails.region,
+        craigslistJobDetails.craigslistSubcategory,
+      );
+      searchResultsFilename = craigslistFetcher.generateCacheFilename(
+        craigslistJobDetails.searchTermNum,
+        pageNum,
       );
       break;
     case Source.facebook:
@@ -150,6 +186,7 @@ const addJob = (
         facebookJobDetails.region,
         facebookJobDetails.searchTerm,
       );
+      searchResultsHomeDir = '/tmp/ggg';
       break;
   }
 
@@ -157,25 +194,67 @@ const addJob = (
     jid: jobIdCounter++,
     sid: search.sid,
     source,
+    alias: search.alias,
     details: jobDetails,
     randomWaitTime,
-    searchResultsHomeDir: `${cacheDir}/${search.alias}`,
+    searchResultsHomeDir,
+    searchResultsFilename,
     url,
+    pageNum,
   };
 
   jobs.push(job);
+
+  return job;
 };
 
-const doJobSearchResults = async (job: Job): Promise<void> => {
-  // TIP: If not awaiting something with a promise, then create promise
+export const addAnotherPageToJob = (job: Job): void => {
+  logger.verbose(`adding a new job after job ${job.jid}`);
+  const pos = jobs.findIndex((j) => (j.jid = job.jid));
+  if (pos === -1) {
+    logger.warn(
+      `tried to add a next page for job ${job.jid} but it was not in my jobs list`,
+    );
+    return;
+  }
+
+  addJob(
+    dbSearches.getSearchBySid(job.sid),
+    job.source,
+    job.details,
+    job.pageNum + 1,
+  );
+  logger.verbose(`creating a new job, them moving it ${jobs.indexOf(job) + 1}`);
+  // Move the new job to one after the current job
+  moveItemInArray(jobs, jobs.length - 1, jobs.indexOf(job) + 1);
+  logger.verbose('new jobs!');
+  jobs.forEach((job) => {
+    logger.debug(`${printJob(job)}`);
+  });
+};
+
+/**
+ * Does the search for each vendor and saves the result in a cache.
+ *
+ * @returns true if there is a next page
+ */
+const doJobSearch = async (job: Job): Promise<boolean> => {
+  let nextPage = false;
   switch (job.source) {
     case Source.craigslist:
-      await craigslistFetcher.fetchSearchResults(browser, job);
+      nextPage = await craigslistFetcher.fetchSearchResults(browser, job);
       break;
     case Source.facebook:
+      // Facebook doesn't do multiple pages. It's a single page you keep scrolling.
       await facebookFetcher.fetchSearchResults(browser, job);
       break;
   }
+
+  // If there is a next page, then add it.
+  if (nextPage) {
+    addAnotherPageToJob(job);
+  }
+  return nextPage;
 };
 
 const getVendorJobs = (source: Source, search: Search): void => {
@@ -188,6 +267,7 @@ const getVendorJobs = (source: Source, search: Search): void => {
         (craigslistJobDetails: CraigslistJobDetails) => {
           addJob(search, source, {
             searchTerm: craigslistJobDetails.searchTerm,
+            searchTermNum: craigslistJobDetails.searchTermNum,
             region: craigslistJobDetails.region,
             craigslistSubcategory: craigslistJobDetails.craigslistSubcategory,
           });
@@ -224,32 +304,29 @@ const buildJobs = (): void => {
   });
 };
 
-/**
- * Initiate a search
- */
-export const doSearch = async (): Promise<void> => {
-  logger.info(`fetching search results...`);
-
-  // Initialize all variables that need it
-  jobPointer = 0;
-  jobs.length = 0;
-
-  buildJobs();
-
-  if (!jobs || jobs.length === 0) {
-    logger.warn(warningColor('nothing to fetch!'));
+const fetchFilesFromServer = async (): Promise<void> => {
+  if (options.debugFetchSearchResultsFromFiles) {
     return;
   }
 
-  // This is temporary until a better way is found to list the jobs
+  logger.info(`fetching search results...`);
+
+  // Remove cache directories. Add them to a set to make them unique
+  const cleanupSet = new Set<string>();
   jobs.forEach((job) => {
-    logger.debug(`${printJob(job)}`);
+    cleanupSet.add(job.searchResultsHomeDir);
+  });
+  Array.from(cleanupSet).forEach((value) => {
+    fs.rmSync(value, { recursive: true, force: true });
   });
 
+  let jobPointer = 0;
+
   while (jobPointer < jobs.length) {
+    logger.verbose(`jobPointer=${jobPointer}, jobs.length=${jobs.length}`);
     const job = jobs[jobPointer];
 
-    const doTheFetch = doJobSearchResults(job);
+    const doTheFetch = doJobSearch(job);
 
     const waitProgress = (
       _millisThisTick: number,
@@ -270,6 +347,55 @@ export const doSearch = async (): Promise<void> => {
   }
 };
 
+const readFilesFromCache = (): void => {
+  logger.debug('process files in cache here');
+
+  let jobPointer = 0;
+
+  while (jobPointer < jobs.length) {
+    const job = jobs[jobPointer];
+
+    // job.searchResultsHomeDir
+    const cacheName = buildCacheName(job);
+
+    logger.verbose(`reading ${cacheName}`);
+    logger.verbose(`url: ${job.url}`);
+    switch (job.source) {
+      case Source.craigslist:
+        craigslistFetcher.processSearchResultsPage(job);
+        break;
+      case Source.facebook:
+        break;
+    }
+    jobPointer++;
+  }
+};
+
+/**
+ * Initiate a search
+ */
+export const doSearch = async (): Promise<void> => {
+  // Initialize all variables that need it
+  jobs.length = 0;
+
+  buildJobs();
+
+  if (!jobs || jobs.length === 0) {
+    logger.warn(warningColor('nothing to fetch!'));
+    return;
+  }
+
+  // This is temporary until a better way is found to list the jobs
+  jobs.forEach((job) => {
+    logger.debug(`${printJob(job)}`);
+  });
+
+  await fetchFilesFromServer();
+
+  // Now process the downloaded results files
+  readFilesFromCache();
+};
+
 /**
  * Perform one-time initialization when the server starts.
  */
@@ -277,10 +403,18 @@ export const init = (
   headlessBrowserDriver: HBrowserInstance,
   opts?: FetchOptions,
 ): void => {
+  logger.debug('headlessBrowserDriver:', headlessBrowserDriver);
   browser = headlessBrowserDriver;
 
-  options = { ...defaults, ...(opts || {}) };
+  options = { ...defaultOptions, ...(opts || {}) };
 
+  if (options.debugFetchSearchResultsFromFiles) {
+    logger.warn(
+      warningColor(
+        `${logPrefix}DEBUG: ignoring the servers, fetching from files!`,
+      ),
+    );
+  }
   if (options.debugUseShortRandomWaitTime) {
     logger.warn(warningColor(`${logPrefix}DEBUG: using short wait time!`));
   }

@@ -16,6 +16,7 @@ export type ErrorWarnings = {
 };
 
 export const initAllDbs = (): Result<boolean, string[]> => {
+  logger.debug('initiating all the dbs!');
   if (!fs.existsSync(dbDir)) {
     logger.warn(
       `database directory doesn't exist, creating it: ${chalk.bold(dbDir)}`,
@@ -26,6 +27,7 @@ export const initAllDbs = (): Result<boolean, string[]> => {
 
   const postsDb = JsonDb<Posts>();
   postsDb.setCacheDir(`${dbDir}/dbPosts.json`);
+  logger.debug('even postDb');
   dbPosts.init(postsDb);
 
   // const fileSearches = `${dbDir}/dbSearches.json`;

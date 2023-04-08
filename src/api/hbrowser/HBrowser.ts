@@ -79,6 +79,7 @@ export type HeadlessBrowserResults = {
   html: string | Buffer;
   cookies?: HeadlessBrowserCookie[];
   json?: unknown;
+  nextPage?: boolean;
 };
 
 export interface HBrowserInstance {

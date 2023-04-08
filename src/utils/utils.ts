@@ -95,3 +95,24 @@ export const waitWithProgress = (
     tick();
   });
 };
+
+/**
+ * Modifies the array in place
+ */
+export const moveItemInArray = <T>(
+  workArray: T[],
+  fromIndex: number,
+  toIndex: number,
+): T[] => {
+  if (toIndex === fromIndex) {
+    return workArray;
+  }
+  const target = workArray[fromIndex];
+  const increment = toIndex < fromIndex ? -1 : 1;
+
+  for (let k = fromIndex; k !== toIndex; k += increment) {
+    workArray[k] = workArray[k + increment];
+  }
+  workArray[toIndex] = target;
+  return workArray;
+};

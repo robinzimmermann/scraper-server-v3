@@ -19,8 +19,6 @@ import * as dbSearchesTestData from './dataDbSearches/dbSearchesTestData';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
-type Database = Searches;
-
 // Some handy Jest spies.
 const saveDataSpy = jest.spyOn(dbSearches, 'saveData');
 
@@ -50,7 +48,7 @@ describe('dbSearches initialization', () => {
   };
 
   test('initializes when no database file is present', () => {
-    const jsonDb = JsonDb<Database>();
+    const jsonDb = JsonDb<Searches>();
     jsonDb.setCacheDir('');
     dbSearches.init(jsonDb);
 
@@ -59,7 +57,7 @@ describe('dbSearches initialization', () => {
   });
 
   test('valid search', () => {
-    const jsonDb = JsonDb<Database>();
+    const jsonDb = JsonDb<Searches>();
     jsonDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
     const result = dbSearches.init(jsonDb);
 

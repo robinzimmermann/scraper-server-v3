@@ -667,6 +667,7 @@ export const addLogWithWrite = (pid: string, msg: string): void => {
  */
 export const getValidEnabledSearches = (): Search[] => {
   const goodSearches: Search[] = [];
+  dbLogger.debug(`db size: ${dbData}`);
   Object.keys(dbData)
     .filter((sid) => {
       const result = isSearchValid(dbData[sid]);
