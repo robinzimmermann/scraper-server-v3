@@ -7,6 +7,7 @@ import { logger } from './utils/logger/logger';
 import { port, cacheDir } from './globals';
 import { initAllDbs } from './database/common';
 import * as fetcher from './fetcher/fetcher';
+// import * as fetcher2 from './fetcher/fetcher2';
 // import { defaultOptions, doSearch } from './fetcher/fetcher';
 import HBrowserInstance from './api/hbrowser/puppeteerDriver';
 // import { DateTime } from 'luxon';
@@ -86,6 +87,7 @@ if (startBrowser) {
 logger.info(chalk.green.bold('server ready'));
 
 fetcher.init(hbrowser);
+// fetcher2.init(hbrowser);
 await fetcher.doSearch(); // TODO This is temporary, browser user should start searches
 
 /*

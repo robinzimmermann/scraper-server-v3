@@ -14,7 +14,7 @@ import {
   Source,
 } from '../../src/database/models/dbSearches';
 import { logger } from '../../src/utils/logger/logger';
-import * as dbSearchesTestData from './dataDbSearches/dbSearchesTestData';
+import * as dbSearchesTestData from './testData/dbSearchesTestData';
 // import { JsonDb } from '../../src/api/jsonDb/JsonDb';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');

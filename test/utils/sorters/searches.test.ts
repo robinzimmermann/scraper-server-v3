@@ -1,7 +1,7 @@
 // import { jest } from '@jest/globals';
 import 'jest-extended';
 
-import * as searchesData from './data/searchesData';
+import * as searchesData from './testData/searchesTestData';
 import { rankComparator } from '../../../src/utils/sorters/searches';
 import { Search } from '../../../src/database/models/dbSearches';
 

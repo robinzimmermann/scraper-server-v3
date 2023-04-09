@@ -85,9 +85,9 @@ export type FetchOptions = {
   craigslistFetchOptions: CraigslistFetchOptions;
 };
 
-const warningColor = chalk.yellow;
-
 const logPrefix = '[fetcher] ';
+
+const warningColor = chalk.yellow;
 
 export const dateFormat = 'yyyy-MM-dd';
 
@@ -99,6 +99,11 @@ const jobs = <Job[]>[];
 let jobIdCounter = 1;
 
 // let jobPointer: number;
+
+// Only puboic for testing purposes.
+export const getJobs = (): Job[] => {
+  return jobs;
+};
 
 export const printJob = (job: Job): string => {
   if (!job) {
@@ -292,8 +297,9 @@ const getVendorJobs = (source: Source, search: Search): void => {
 
 /**
  * Build up the jobs that will be required by searches.
+ * Only public for testing purposes.
  */
-const buildJobs = (): void => {
+export const buildJobs = (): void => {
   // Create a job for each search. A search may result in multiple jobs
   const validSearches = dbSearches.getValidEnabledSearches();
   validSearches.forEach((search) => {
@@ -403,6 +409,9 @@ export const init = (
   headlessBrowserDriver: HBrowserInstance,
   opts?: FetchOptions,
 ): void => {
+  // Clear the list
+  jobs.length = 0;
+
   logger.debug('headlessBrowserDriver:', headlessBrowserDriver);
   browser = headlessBrowserDriver;
 

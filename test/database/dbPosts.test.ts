@@ -5,7 +5,7 @@ import JsonDb from '../../src/api/jsonDb/lowdbDriver';
 import { Posts } from '../../src/database/models/dbPosts';
 import * as dbPosts from '../../src/database/dbPosts';
 
-import * as dbPostsTestData from './dataDbSearches/dbPostsTestData';
+import * as dbPostsTestData from './testData/dbPostsTestData';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
