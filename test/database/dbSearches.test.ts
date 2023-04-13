@@ -15,15 +15,18 @@ import {
 } from '../../src/database/models/dbSearches';
 import { logger } from '../../src/utils/logger/logger';
 import * as dbSearchesTestData from './testData/dbSearchesTestData';
+import { SpiedFunction } from 'jest-mock';
 // import { JsonDb } from '../../src/api/jsonDb/JsonDb';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
-// Some handy Jest spies.
-const saveDataSpy = jest.spyOn(dbSearches, 'saveData');
+let searchesDb = JsonDb<Searches>();
+let writeSpy: SpiedFunction<() => void>;
 
 const initializeJest = (): void => {
   jest.clearAllMocks();
+  searchesDb = JsonDb<Searches>();
+  writeSpy = jest.spyOn(searchesDb, 'write');
 };
 
 describe('dbSearches initialization', () => {
@@ -48,23 +51,28 @@ describe('dbSearches initialization', () => {
   };
 
   test('initializes when no database file is present', () => {
-    const jsonDb = JsonDb<Searches>();
-    jsonDb.setCacheDir('');
-    dbSearches.init(jsonDb);
+    searchesDb.setCacheDir('');
+    dbSearches.init(searchesDb);
 
     expect(dbSearches.getValidEnabledSearches()).toBeEmpty();
-    expect(saveDataSpy).toHaveBeenCalledTimes(0);
+    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
   test('valid search', () => {
-    const jsonDb = JsonDb<Searches>();
-    jsonDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
-    const result = dbSearches.init(jsonDb);
+    searchesDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
+    const result = dbSearches.init(searchesDb);
 
     // const result = dbSearches.init(JSON.stringify(dbSearchesTestData.valid));
     expect(result.isOk()).toBeTrue();
 
+    expect(writeSpy).toHaveBeenCalledTimes(0);
+
     let search = dbSearches.getSearchBySid('5');
+    // This if is only here to satisfy typescript
+    if (!search) {
+      expect(search).toBeDefined();
+      return;
+    }
     expect(search.sid).toBe('5');
     expect(search.isEnabled).toBeBoolean();
     expect(typeof search.rank).toBe('number');
@@ -93,6 +101,11 @@ describe('dbSearches initialization', () => {
     expect(searchDetails).toBeFalsy();
 
     search = dbSearches.getSearchBySid('6');
+    // This if is only here to satisfy typescript
+    if (!search) {
+      expect(search).toBeDefined();
+      return;
+    }
     expect(search.sources).toIncludeSameMembers([Source.facebook]);
     searchDetails = search.craigslistSearchDetails;
     expect(searchDetails).toBeFalsy();
@@ -108,6 +121,11 @@ describe('dbSearches initialization', () => {
     );
 
     search = dbSearches.getSearchBySid('7');
+    // This if is only here to satisfy typescript
+    if (!search) {
+      expect(search).toBeDefined();
+      return;
+    }
     expect(search.sources).toIncludeSameMembers([
       Source.craigslist,
       Source.facebook,
@@ -225,10 +243,9 @@ describe('dbSearches test suite', () => {
   });
 
   test('fetch enabled searches', () => {
-    const jsonDb = JsonDb<Searches>();
-    jsonDb.setCacheDir(JSON.stringify(dbSearchesTestData.enabledSearches));
+    searchesDb.setCacheDir(JSON.stringify(dbSearchesTestData.enabledSearches));
 
-    const result = dbSearches.init(jsonDb);
+    const result = dbSearches.init(searchesDb);
     result.mapErr((errorMessages) =>
       errorMessages.forEach((msg) => logger.debug(msg)),
     );
@@ -240,20 +257,23 @@ describe('dbSearches test suite', () => {
   });
 
   test('fetch search by sid', () => {
-    const jsonDb = JsonDb<Searches>();
-    jsonDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
+    searchesDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
 
-    dbSearches.init(jsonDb);
+    dbSearches.init(searchesDb);
     const search = dbSearches.getSearchBySid('5');
+    // This if is only here to satisfy typescript
+    if (!search) {
+      expect(search).toBeDefined();
+      return;
+    }
     expect(search).toContainKeys(['sid', 'alias', 'isEnabled']);
     expect(search.sid).toBe('5');
   });
 
   test('not fetch search by invalid sid', () => {
-    const jsonDb = JsonDb<Searches>();
-    jsonDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
+    searchesDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
 
-    dbSearches.init(jsonDb);
+    dbSearches.init(searchesDb);
     const search = dbSearches.getSearchBySid('-9');
     expect(search).toBeUndefined();
   });

@@ -116,3 +116,23 @@ export const moveItemInArray = <T>(
   workArray[toIndex] = target;
   return workArray;
 };
+
+/**
+ * Return a unique list of combined arrays. Immutable, won't modify the parameters.
+ */
+export const mergeArrays = <T>(array1: T[], array2: T[]): T[] => {
+  const newArray = [...array1];
+  for (let i = 0; i < array2.length; i++) {
+    if (newArray.indexOf(array2[i]) === -1) {
+      newArray.push(array2[i]);
+    }
+  }
+  return newArray;
+};
+
+/**
+ * from https://stackoverflow.com/a/58550111/1360592
+ */
+export const isNumeric = (num: unknown): boolean =>
+  (typeof num === 'number' || (typeof num === 'string' && num.trim() !== '')) &&
+  !isNaN(num as number);

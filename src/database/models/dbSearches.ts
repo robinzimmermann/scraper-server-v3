@@ -310,3 +310,5 @@ export type Search = {
 export type Searches = {
   [sid: string]: Search;
 };
+
+export type Region = CraigslistRegion | FacebookRegion;

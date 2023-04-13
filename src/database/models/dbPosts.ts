@@ -1,12 +1,22 @@
+import { Source, Region, CraigslistSubcategory } from './dbSearches';
+
+export type CraiglistFields = {
+  subcategories: CraigslistSubcategory[];
+};
+
 export type Post = {
   pid: string;
   sid: string;
+  source: Source;
+  regions: Region[];
+  searchTerms: string[];
   title: string;
   postDate: string; // 2022-12-07
   price: number;
   priceStr: string;
   hood: string;
   thumbnailUrl: string;
+  extras?: CraiglistFields;
 };
 
 // pid: string;

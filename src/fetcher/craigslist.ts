@@ -22,6 +22,7 @@ import {
   addAnotherPageToJob,
 } from './fetcher';
 import { upsertPost } from '../database/dbPosts';
+import { CraiglistFields } from '../database/models/dbPosts';
 
 // For Craiglist, there is a job for each searchTerm by each region buy each subCategory.
 export const getJobs = (
@@ -143,6 +144,8 @@ const getPostDate = (data: string | undefined): string => {
 };
 
 export const processSearchResultsPage = (job: Job): void => {
+  const details = <CraigslistJobDetails>job.details;
+
   const cacheName = buildCacheName(job);
 
   const html = fs.readFileSync(cacheName);
@@ -236,7 +239,7 @@ export const processSearchResultsPage = (job: Job): void => {
       logger.warn(
         `${chalk.bold(pid)} missing image from [${chalk.bold(
           job.source,
-        )}|${chalk.bold(job.details.region)}|${chalk.bold(
+        )}|${chalk.bold(details.region)}|${chalk.bold(
           job.alias,
         )}], ${buildCacheName(job)}`,
       );
@@ -292,7 +295,7 @@ export const processSearchResultsPage = (job: Job): void => {
         if (i === 0) {
           postDate = getPostDate(el.data);
         } else {
-          hood = el.data || '';
+          hood = el.data?.trim().replace(/\s+/g, ' ') || '';
         }
       }
     });
@@ -316,8 +319,21 @@ export const processSearchResultsPage = (job: Job): void => {
     //   dateFormat,
     // );
 
-    const title = $('.titlestring', $result).text();
+    // Remove duplicate spaces
+    const title = $('.titlestring', $result).text().trim().replace(/\s+/g, ' ');
 
-    upsertPost(pid, job.sid, title, postDate, price, hood, thumbnailUrl);
+    upsertPost(
+      pid,
+      job.sid,
+      job.source,
+      details.region,
+      details.searchTerm,
+      title,
+      postDate,
+      price,
+      hood,
+      thumbnailUrl,
+      <CraiglistFields>{ subcategories: [details.craigslistSubcategory] },
+    );
   });
 };

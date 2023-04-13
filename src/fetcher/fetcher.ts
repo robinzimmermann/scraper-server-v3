@@ -223,12 +223,12 @@ export const addAnotherPageToJob = (job: Job): void => {
     return;
   }
 
-  addJob(
-    dbSearches.getSearchBySid(job.sid),
-    job.source,
-    job.details,
-    job.pageNum + 1,
-  );
+  const search = dbSearches.getSearchBySid(job.sid);
+  if (!search) {
+    logger.error(`search ${chalk.bold(job.sid)} does not exist`);
+    return;
+  }
+  addJob(search, job.source, job.details, job.pageNum + 1);
   logger.verbose(`creating a new job, them moving it ${jobs.indexOf(job) + 1}`);
   // Move the new job to one after the current job
   moveItemInArray(jobs, jobs.length - 1, jobs.indexOf(job) + 1);
@@ -400,6 +400,8 @@ export const doSearch = async (): Promise<void> => {
 
   // Now process the downloaded results files
   readFilesFromCache();
+
+  logger.info('searching complete');
 };
 
 /**

@@ -15,7 +15,7 @@ export const getHtmlPage = async (
 
   if (!browser) {
     return new Promise((_resolve, reject) => {
-      reject(new Error(''));
+      reject(Error(''));
     });
   }
 

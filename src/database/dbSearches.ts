@@ -27,10 +27,6 @@ let dbData: Database;
 const dbLoggerPrefix = '[dbSearches]';
 const dbLogger = DbLogger(dbLoggerPrefix);
 
-export const saveData = (): void => {
-  myJsonDb.write();
-};
-
 // const validateSearchTerms = (searchTerms: string[]): string | null => {
 //   if (searchTerms.length === 0) {
 //     return 'no search terms';
@@ -680,7 +676,10 @@ export const getValidEnabledSearches = (): Search[] => {
   return goodSearches;
 };
 
-export const getSearchBySid = (sid: string): Search => {
+export const getSearchBySid = (sid: string): Search | undefined => {
+  if (!dbData[sid]) {
+    return undefined;
+  }
   return dbData[sid];
 };
 

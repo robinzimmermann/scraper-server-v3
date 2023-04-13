@@ -8,7 +8,7 @@ export function notFound(
   next: NextFunction,
 ): void {
   res.status(404);
-  const error = new Error(`🔍 - Not Found - ${req.originalUrl}`);
+  const error = Error(`🔍 - Not Found - ${req.originalUrl}`);
   next(error);
 }
 
