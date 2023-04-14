@@ -1,5 +1,7 @@
 // import { logger } from './logger/logger';
 
+import { logger } from './logger/logger';
+
 export const isValueInEnum = <T extends { [name: string]: unknown }>(
   value: string,
   theEnum: T,
@@ -136,3 +138,37 @@ export const mergeArrays = <T>(array1: T[], array2: T[]): T[] => {
 export const isNumeric = (num: unknown): boolean =>
   (typeof num === 'number' || (typeof num === 'string' && num.trim() !== '')) &&
   !isNaN(num as number);
+/**
+ * Return `true` if the two arrays have the same values, in the same order.
+ * From: https://www.freecodecamp.org/news/how-to-compare-arrays-in-javascript/
+ */
+export const compareArrays = <T>(a: T[], b: T[]): boolean =>
+  a.length === b.length && a.every((element, index) => element === b[index]);
+
+/**
+ * Return the difference of the second array compared to the first.
+ *
+ * @param originalArr the array deemed "correct"
+ * @param comparisonArr the array being compared which may have differences to the originalArr
+ */
+export const differenceArrays = <T>(
+  originalArr: T[],
+  comparisonArr: T[],
+): T[] => {
+  const remove = new Set(originalArr);
+  logger.debug(`differenceArrays()`);
+  logger.debug(`  originalArr=${originalArr}`);
+  logger.debug(`  comparisonArr=${comparisonArr}`);
+  logger.debug(`  result=${comparisonArr.filter((k) => !remove.has(k))}`);
+
+  return comparisonArr.filter((k) => !remove.has(k));
+};
+
+//  differenceArrays = (arr1, arr2) => arr1.filter((x) => !arr2.includes(x));
+
+// array_diff = (a, b) => {
+//   const remove = new Set(a);
+//   console.log('set:', remove);
+//   return b.filter((k) => !remove.has(k));
+//   // return Array.from(remove);
+// };

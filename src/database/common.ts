@@ -25,24 +25,22 @@ export const initAllDbs = (): Result<boolean, string[]> => {
   }
   const errors = [] as string[];
 
-  const postsDb = JsonDb<Posts>();
-  postsDb.setCacheDir(`${dbDir}/dbPosts.json`);
-  const postsResult = dbPosts.init(postsDb);
-
-  // const fileSearches = `${dbDir}/dbSearches.json`;
-  // const searchesResult = dbSearches.init(fileSearches);
   const searchesDb = JsonDb<Searches>();
   searchesDb.setCacheDir(`${dbDir}/dbSearches.json`);
   const searchesResult = dbSearches.init(searchesDb);
 
-  if (postsResult.isErr()) {
-    postsResult.mapErr((messages: string[]) =>
+  const postsDb = JsonDb<Posts>();
+  postsDb.setCacheDir(`${dbDir}/dbPosts.json`);
+  const postsResult = dbPosts.init(postsDb);
+
+  if (searchesResult.isErr()) {
+    searchesResult.mapErr((messages: string[]) =>
       messages.forEach((msg) => errors.push(msg)),
     );
   }
 
-  if (searchesResult.isErr()) {
-    searchesResult.mapErr((messages: string[]) =>
+  if (postsResult.isErr()) {
+    postsResult.mapErr((messages: string[]) =>
       messages.forEach((msg) => errors.push(msg)),
     );
   }
