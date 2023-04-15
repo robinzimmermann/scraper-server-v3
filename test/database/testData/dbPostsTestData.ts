@@ -8,7 +8,7 @@ export const initialSearches = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
+      subcategories: ['tools', 'motorcycles'],
     },
   },
 };

@@ -30,7 +30,7 @@ describe('fetchers test suite', () => {
         craigslistSearchDetails: {
           searchTerms: ['demo hammer', 'grinder', 'shovel hammer'],
           regions: ['sf bayarea', 'reno'],
-          craigslistSubcategories: ['tools', 'electronics'],
+          subcategories: ['tools', 'electronics'],
         },
       },
     } as unknown as Searches;
@@ -81,7 +81,7 @@ describe('fetchers test suite', () => {
         craigslistSearchDetails: {
           searchTerms: ['demo hammer', 'grinder', 'shovel hammer'],
           regions: ['sf bayarea', 'reno'],
-          craigslistSubcategories: ['tools', 'electronics'],
+          subcategories: ['tools', 'electronics'],
         },
         facebookSearchDetails: {
           searchTerms: ['demo hammer', 'grinder', 'shovel hammer'],
@@ -113,7 +113,7 @@ describe('fetchers test suite', () => {
         craigslistSearchDetails: {
           searchTerms: ['demo hammer'],
           regions: ['sf bayarea'],
-          craigslistSubcategories: ['tools'],
+          subcategories: ['tools'],
         },
       },
     } as unknown as Searches;
@@ -137,7 +137,7 @@ describe('fetchers test suite', () => {
         craigslistSearchDetails: {
           searchTerms: ['demo hammer'],
           regions: ['sf bayareaX'],
-          craigslistSubcategories: ['tools'],
+          subcategories: ['tools'],
         },
       },
     } as unknown as Searches;
@@ -161,7 +161,7 @@ describe('fetchers test suite', () => {
         craigslistSearchDetails: {
           searchTerms: ['demo hammer'],
           regions: ['sf bayarea'],
-          craigslistSubcategories: ['toolsX'],
+          subcategories: ['toolsX'],
         },
       },
     } as unknown as Searches;

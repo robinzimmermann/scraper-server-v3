@@ -36,7 +36,7 @@ export const getJobs = (
   }
   searchDetails.searchTerms.forEach((searchTerm, i) =>
     searchDetails.regions.forEach((region) =>
-      searchDetails.craigslistSubcategories.forEach((craigslistSubcategory) =>
+      searchDetails.subcategories.forEach((craigslistSubcategory) =>
         callback({
           searchTerm,
           searchTermNum: i + 1,

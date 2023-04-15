@@ -78,7 +78,7 @@ describe('dbPosts initialization', () => {
         extras: { subcategories: ['tools'] },
       },
     } as unknown as Posts;
-    // jsonDb.setCacheDir(JSON.stringify(dbPostsTestData.valid));
+
     postsDb.setCacheDir(JSON.stringify(initialFile));
 
     const result = dbPosts.init(postsDb);
@@ -120,6 +120,7 @@ describe('dbPosts initialization', () => {
         thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
     } as unknown as Posts;
+
     postsDb.setCacheDir(JSON.stringify(initialFile));
 
     const result = dbPosts.init(postsDb);
@@ -2012,7 +2013,9 @@ describe('dbPosts test suite', () => {
       post.price,
       post.hood,
       post.thumbnailUrl,
-      <CraiglistFields>{ subcategories: [post.extras?.subcategories[0]] },
+      <CraiglistFields>{
+        subcategories: [post.extras?.subcategories[0]],
+      },
     );
 
     dbPosts.upsertPost(
@@ -2026,7 +2029,9 @@ describe('dbPosts test suite', () => {
       post.price,
       post.hood,
       post.thumbnailUrl,
-      <CraiglistFields>{ subcategories: [post.extras?.subcategories[1]] },
+      <CraiglistFields>{
+        subcategories: [post.extras?.subcategories[1]],
+      },
     );
 
     expect(writeSpy).toHaveBeenCalledTimes(2);

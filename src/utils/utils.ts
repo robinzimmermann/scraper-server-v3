@@ -1,7 +1,5 @@
 // import { logger } from './logger/logger';
 
-import { logger } from './logger/logger';
-
 export const isValueInEnum = <T extends { [name: string]: unknown }>(
   value: string,
   theEnum: T,
@@ -156,11 +154,6 @@ export const differenceArrays = <T>(
   comparisonArr: T[],
 ): T[] => {
   const remove = new Set(originalArr);
-  logger.debug(`differenceArrays()`);
-  logger.debug(`  originalArr=${originalArr}`);
-  logger.debug(`  comparisonArr=${comparisonArr}`);
-  logger.debug(`  result=${comparisonArr.filter((k) => !remove.has(k))}`);
-
   return comparisonArr.filter((k) => !remove.has(k));
 };
 

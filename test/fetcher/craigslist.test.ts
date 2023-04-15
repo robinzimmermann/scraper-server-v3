@@ -11,7 +11,7 @@ describe('fetchers test suite', () => {
     const searchDetails: CraigslistSearchDetails = {
       searchTerms: ['search1'],
       regions: [CraigslistRegion.losAngeles],
-      craigslistSubcategories: [CraigslistSubcategory.tools],
+      subcategories: [CraigslistSubcategory.tools],
     };
     const callbackArr: CraigslistJobDetails[] = [];
     const callback = (jobDetails: CraigslistJobDetails): void => {
@@ -32,7 +32,7 @@ describe('fetchers test suite', () => {
         CraigslistRegion.modesto,
         CraigslistRegion.reno,
       ],
-      craigslistSubcategories: [
+      subcategories: [
         CraigslistSubcategory.tools,
         CraigslistSubcategory.antiques,
         CraigslistSubcategory.carsAndTrucks,
@@ -92,12 +92,12 @@ describe('fetchers test suite', () => {
 /*
 export type CraigslistSearchDetails = {
   searchTerms: string[];
-  craigslistSubcategories: CraigslistSubcategory[];
+  subcategories: CraigslistSubcategory[];
   regions: CraigslistRegion[];
 };
 
 
   searchTerm: string;
   region: CraigslistRegion;
-  craigslistSubcategory: CraigslistSubcategory;
+  subcategories: CraigslistSubcategory;
 */

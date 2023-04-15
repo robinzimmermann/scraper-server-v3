@@ -7,7 +7,7 @@
 "craigslistSearchDetails": {
 "searchTerms": ["ktm 350", "SX-F"],
 "regions": ["sf bayarea", "inland empire", "reno"],
-"craigslistSubcategories": ["motorcycles"]
+"subcategories": ["motorcycles"]
 },
 "facebookSearchDetails": {
 "searchTerms": ["ktm 350", "SX-F"],

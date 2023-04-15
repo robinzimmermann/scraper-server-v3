@@ -309,63 +309,64 @@ const isSearchValid = (search: Search): Result<boolean, string[]> => {
         );
         return;
       }
-      const { regions } = searchDetails;
-      if (!(regions instanceof Array)) {
+      if (!Array.isArray(searchDetails.regions)) {
         buildError(
           `has ${chalk.bold(
             `${searchDetailsName}.regions`,
           )} which is not an ${chalk.bold('array')}`,
         );
-      }
-      if (regions.length === 0) {
-        buildError(
-          `has ${chalk.bold(`${searchDetailsName}.regions`)} with no values`,
-        );
-      }
-      // Make sure regions has valid values.
-      regions.forEach((region) => {
-        if (!isValueInEnum(region, CraigslistRegion)) {
+      } else {
+        const { regions } = searchDetails;
+        if (regions.length === 0) {
           buildError(
-            `has ${chalk.bold(
-              `${searchDetailsName}.regions`,
-            )} that contains an invalid value: ${chalk.bold(region)}`,
+            `has ${chalk.bold(`${searchDetailsName}.regions`)} with no values`,
           );
         }
-      });
+        // Make sure regions has valid values.
+        regions.forEach((region) => {
+          if (!isValueInEnum(region, CraigslistRegion)) {
+            buildError(
+              `has ${chalk.bold(
+                `${searchDetailsName}.regions`,
+              )} that contains an invalid value: ${chalk.bold(region)}`,
+            );
+          }
+        });
+      }
 
-      if (!('craigslistSubcategories' in searchDetails)) {
+      if (!('subcategories' in searchDetails)) {
         buildError(
           `has ${chalk.bold(searchDetailsName)} without a ${chalk.bold(
-            'craigslistSubcategories',
+            'subcategories',
           )} element`,
         );
         return;
       }
-      const { craigslistSubcategories } = searchDetails;
-      if (!(craigslistSubcategories instanceof Array)) {
+      const { subcategories } = searchDetails;
+      if (!Array.isArray(subcategories)) {
         buildError(
           `has ${chalk.bold(
-            `${searchDetailsName}.craigslistSubcategories`,
+            `${searchDetailsName}.subcategories`,
           )} which is not an ${chalk.bold('array')}`,
         );
-      }
-      if (craigslistSubcategories.length === 0) {
+      } else if (subcategories.length === 0) {
         buildError(
           `has ${chalk.bold(
-            `${searchDetailsName}.craigslistSubcategories`,
+            `${searchDetailsName}.subcategories`,
           )} with no values`,
         );
+      } else {
+        // Make sure subcategories has valid values.
+        subcategories.forEach((subcategory) => {
+          if (!isValueInEnum(subcategory, CraigslistSubcategory)) {
+            buildError(
+              `has ${chalk.bold(
+                `${searchDetailsName}.subcategories`,
+              )} that contains an invalid value: ${chalk.bold(subcategory)}`,
+            );
+          }
+        });
       }
-      // Make sure craigslistSubcategories has valid values.
-      craigslistSubcategories.forEach((subcategory) => {
-        if (!isValueInEnum(subcategory, CraigslistSubcategory)) {
-          buildError(
-            `has ${chalk.bold(
-              `${searchDetailsName}.craigslistSubcategories`,
-            )} that contains an invalid value: ${chalk.bold(subcategory)}`,
-          );
-        }
-      });
     };
 
     const checkFacebookSearchDetails = (
@@ -536,7 +537,48 @@ const isSearchValid = (search: Search): Result<boolean, string[]> => {
   checkPrimitiveProperty('isEnabled', 'boolean');
   checkPrimitiveProperty('rank', 'number');
 
+  let optionalField = 'minPrice' as keyof Search;
+  if (Object.prototype.hasOwnProperty.call(search, optionalField)) {
+    checkPrimitiveProperty(optionalField, 'number');
+  }
+
+  optionalField = 'maxPrice' as keyof Search;
+  if (Object.prototype.hasOwnProperty.call(search, optionalField)) {
+    checkPrimitiveProperty(optionalField, 'number');
+  }
+
   checkSourcesAreValid(search.sources);
+
+  /*
+  export type CraigslistSearchDetails = {
+  searchTerms: string[];
+  regions: CraigslistRegion[];
+  subcategories: CraigslistSubcategory[];
+};
+
+export type FacebookSearchRegionDetails = {
+  region: FacebookRegion;
+  distance: FacebookRadius;
+};
+
+export type FacebookSearchDetails = {
+  searchTerms: string[];
+  regionalDetails: FacebookSearchRegionDetails[];
+};
+
+export type Search = {
+  sid: string; //search id
+  alias: string; // common search term name that applies to all sources
+  isEnabled: boolean; // whether this will be included in the next search
+  rank: number;
+  minPrice?: number;
+  maxPrice?: number;
+  sources: Source[]; // list of sources this search should use
+  craigslistSearchDetails?: CraigslistSearchDetails;
+  facebookSearchDetails?: FacebookSearchDetails;
+  log?: string[];
+};
+*/
 
   if (errors.length > 0) {
     return err(errors);

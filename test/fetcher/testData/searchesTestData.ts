@@ -8,7 +8,7 @@ export const multipleJobs = {
     craigslistSearchDetails: {
       searchTerms: ['demo hammer', 'grinder', 'shovel hammer'],
       regions: ['sf bayarea', 'reno'],
-      craigslistSubcategories: ['tools'],
+      subcategories: ['tools'],
     },
   },
 };

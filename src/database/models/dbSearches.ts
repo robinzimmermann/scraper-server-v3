@@ -281,7 +281,7 @@ export enum FacebookRadius {
 export type CraigslistSearchDetails = {
   searchTerms: string[];
   regions: CraigslistRegion[];
-  craigslistSubcategories: CraigslistSubcategory[];
+  subcategories: CraigslistSubcategory[];
 };
 
 export type FacebookSearchRegionDetails = {

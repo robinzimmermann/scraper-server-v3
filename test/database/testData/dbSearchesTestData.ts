@@ -8,7 +8,7 @@ export const valid = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
+      subcategories: ['tools', 'motorcycles'],
     },
   },
   '6': {
@@ -34,7 +34,7 @@ export const valid = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
+      subcategories: ['tools', 'motorcycles'],
     },
     facebookSearchDetails: {
       searchTerms: ['search1', 'search2'],
@@ -55,7 +55,7 @@ export const sidMissing = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
+      subcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -70,7 +70,7 @@ export const sidWrongType = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
+      subcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -85,7 +85,7 @@ export const sidHasNoValue = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
+      subcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -99,7 +99,7 @@ export const aliasMissing = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
+      subcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -114,7 +114,7 @@ export const aliasWrongType = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
+      subcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -129,7 +129,7 @@ export const aliasHasNoValue = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
+      subcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -143,7 +143,7 @@ export const isEnabledMissing = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
+      subcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -158,7 +158,7 @@ export const isEnabledWrongType = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['tools', 'motorcycles'],
+      subcategories: ['tools', 'motorcycles'],
     },
   },
 };
@@ -173,7 +173,7 @@ export const enabledSearches = {
     craigslistSearchDetails: {
       searchTerms: ['search1', 'search2'],
       regions: ['sf bayarea', 'inland empire'],
-      craigslistSubcategories: ['motorcycles'],
+      subcategories: ['motorcycles'],
     },
   },
   '61': {
@@ -185,7 +185,7 @@ export const enabledSearches = {
     craigslistSearchDetails: {
       searchTerms: ['demolition hammer'],
       regions: ['sf bayarea'],
-      craigslistSubcategories: ['tools'],
+      subcategories: ['tools'],
     },
   },
   '62': {
@@ -196,7 +196,7 @@ export const enabledSearches = {
     craigslistSearchDetails: {
       searchTerms: ['demolition hammer'],
       regions: ['sf bayarea'],
-      craigslistSubcategories: ['tools'],
+      subcategories: ['tools'],
     },
   },
   '63': {
@@ -206,7 +206,7 @@ export const enabledSearches = {
     craigslistSearchDetails: {
       searchTerms: ['demolition hammer'],
       regions: ['sf bayarea'],
-      craigslistSubcategories: ['tools'],
+      subcategories: ['tools'],
     },
   },
 };

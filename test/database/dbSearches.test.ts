@@ -35,10 +35,10 @@ describe('dbSearches initialization', () => {
   });
 
   // const doNegativeTest = (element: unknown, phraseInError: string): void => {
-  const doNegativeTest = (element: Searches, phraseInError: string): void => {
-    const jsonDb = JsonDb<Searches>();
-    jsonDb.setCacheDir(JSON.stringify(element));
-    const result = dbSearches.init(jsonDb);
+  const doNegativeTest = (element: unknown, phraseInError: string): void => {
+    // const jsonDb = JsonDb<Searches>();
+    searchesDb.setCacheDir(JSON.stringify(element));
+    const result = dbSearches.init(searchesDb);
     const negErrors: string[] = [];
     expect(result.isOk()).toBeFalse();
     expect(result.isErr()).toBeTrue();
@@ -85,7 +85,7 @@ describe('dbSearches initialization', () => {
     expect(searchDetails).toContainAllKeys([
       'searchTerms',
       'regions',
-      'craigslistSubcategories',
+      'subcategories',
     ]);
     expect(searchDetails?.searchTerms).toBeArrayOfSize(2);
     expect(searchDetails?.regions).toBeArrayOfSize(2);
@@ -93,7 +93,7 @@ describe('dbSearches initialization', () => {
       CraigslistRegion.sfBayArea,
       CraigslistRegion.inlandEmpire,
     ]);
-    expect(searchDetails?.craigslistSubcategories).toIncludeSameMembers([
+    expect(searchDetails?.subcategories).toIncludeSameMembers([
       CraigslistSubcategory.motorcycles,
       CraigslistSubcategory.tools,
     ]);
@@ -135,14 +135,14 @@ describe('dbSearches initialization', () => {
     expect(searchDetails).toContainAllKeys([
       'searchTerms',
       'regions',
-      'craigslistSubcategories',
+      'subcategories',
     ]);
     expect(searchDetails?.searchTerms).toBeArrayOfSize(2);
     expect(searchDetails?.regions).toIncludeSameMembers([
       CraigslistRegion.sfBayArea,
       CraigslistRegion.inlandEmpire,
     ]);
-    expect(searchDetails?.craigslistSubcategories).toIncludeSameMembers([
+    expect(searchDetails?.subcategories).toIncludeSameMembers([
       CraigslistSubcategory.motorcycles,
       CraigslistSubcategory.tools,
     ]);
@@ -160,80 +160,578 @@ describe('dbSearches initialization', () => {
   });
 
   test('sid missing', () => {
-    doNegativeTest(
-      dbSearchesTestData.sidMissing as unknown as Searches,
-      'has no element',
-    );
+    doNegativeTest(dbSearchesTestData.sidMissing, 'has no element');
   });
 
   test('sid wrong type', () => {
-    doNegativeTest(
-      dbSearchesTestData.sidWrongType as unknown as Searches,
-      'not of type',
-    );
+    doNegativeTest(dbSearchesTestData.sidWrongType, 'not of type');
   });
 
   test('sid has no value', () => {
-    doNegativeTest(
-      dbSearchesTestData.sidHasNoValue as unknown as Searches,
-      'no value',
-    );
+    doNegativeTest(dbSearchesTestData.sidHasNoValue, 'no value');
   });
 
   test('alias missing', () => {
-    doNegativeTest(
-      dbSearchesTestData.aliasMissing as unknown as Searches,
-      'has no element',
-    );
+    doNegativeTest(dbSearchesTestData.aliasMissing, 'has no element');
   });
 
   test('alias wrong type', () => {
-    doNegativeTest(
-      dbSearchesTestData.aliasWrongType as unknown as Searches,
-      'not of type',
-    );
+    doNegativeTest(dbSearchesTestData.aliasWrongType, 'not of type');
   });
 
   test('alias has no value', () => {
-    doNegativeTest(
-      dbSearchesTestData.aliasHasNoValue as unknown as Searches,
-      'no value',
-    );
+    doNegativeTest(dbSearchesTestData.aliasHasNoValue, 'no value');
   });
 
   test('alias missing', () => {
-    doNegativeTest(
-      dbSearchesTestData.aliasMissing as unknown as Searches,
-      'has no element',
-    );
+    doNegativeTest(dbSearchesTestData.aliasMissing, 'has no element');
   });
 
   test('alias wrong type', () => {
-    doNegativeTest(
-      dbSearchesTestData.aliasWrongType as unknown as Searches,
-      'not of type',
-    );
+    doNegativeTest(dbSearchesTestData.aliasWrongType, 'not of type');
   });
 
   test('alias has no value', () => {
-    doNegativeTest(
-      dbSearchesTestData.aliasHasNoValue as unknown as Searches,
-      'no value',
-    );
+    doNegativeTest(dbSearchesTestData.aliasHasNoValue, 'no value');
   });
 
   test('isEnabled missing', () => {
-    doNegativeTest(
-      dbSearchesTestData.isEnabledMissing as unknown as Searches,
-      'has no element',
-    );
+    doNegativeTest(dbSearchesTestData.isEnabledMissing, 'has no element');
   });
 
   test('isEnabled wrong type', () => {
-    doNegativeTest(
-      dbSearchesTestData.isEnabledWrongType as unknown as Searches,
-      'not of type',
-    );
+    doNegativeTest(dbSearchesTestData.isEnabledWrongType, 'not of type');
+  });
+
+  test('valid minPrice', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        minPrice: 134,
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    searchesDb.setCacheDir(JSON.stringify(initialFile));
+
+    const result = dbSearches.init(searchesDb);
+
+    if (result.isErr()) {
+      result.mapErr((messages: string[]) =>
+        messages.forEach((msg) => logger.error(`${msg}`)),
+      );
+    }
+
+    expect(result.isOk()).toBeTrue();
+
+    const search = dbSearches.getSearchBySid('5');
+    // This if is here for Typescript
+    if (search) {
+      expect(search.minPrice).toBe(134);
+    } else {
+      expect(search).toBeDefined();
+    }
+
+    expect(writeSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test('minPrice is wrong type', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        minPrice: '234',
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+    doNegativeTest(initialFile, 'not of type');
+  });
+
+  test('valid maxPrice', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        maxPrice: 234,
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    searchesDb.setCacheDir(JSON.stringify(initialFile));
+
+    const result = dbSearches.init(searchesDb);
+
+    if (result.isErr()) {
+      result.mapErr((messages: string[]) =>
+        messages.forEach((msg) => logger.error(`${msg}`)),
+      );
+    }
+
+    expect(result.isOk()).toBeTrue();
+
+    const search = dbSearches.getSearchBySid('5');
+    // This if is here for Typescript
+    if (search) {
+      expect(search.maxPrice).toBe(234);
+    } else {
+      expect(search).toBeDefined();
+    }
+
+    expect(writeSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test('maxPrice is wrong type', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        maxPrice: '234',
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+    doNegativeTest(initialFile, 'not of type');
+  });
+
+  test('valid minPrice and maxPrice', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        minPrice: 134,
+        maxPrice: 234,
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    searchesDb.setCacheDir(JSON.stringify(initialFile));
+
+    const result = dbSearches.init(searchesDb);
+
+    if (result.isErr()) {
+      result.mapErr((messages: string[]) =>
+        messages.forEach((msg) => logger.error(`${msg}`)),
+      );
+    }
+
+    expect(result.isOk()).toBeTrue();
+
+    const search = dbSearches.getSearchBySid('5');
+    // This if is here for Typescript
+    if (search) {
+      expect(search.minPrice).toBe(134);
+      expect(search.maxPrice).toBe(234);
+    } else {
+      expect(search).toBeDefined();
+    }
+
+    expect(writeSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test('missing sources', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        // sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'has no value');
+  });
+
+  test('sources with wrong type', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: 123,
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'which is not');
+  });
+
+  test('empty sources', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: [],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'no values');
+  });
+
+  test('invalid source', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist', 'poop'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'not valid');
+  });
+
+  test('craigslist search with no details', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+      },
+    };
+
+    doNegativeTest(initialFile, 'craigslistSearchDetails');
+  });
+
+  test('facebook search with no details', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['facebook'],
+      },
+    };
+
+    doNegativeTest(initialFile, 'facebookSearchDetails');
+  });
+
+  test('craigslist search whose details have missing searchTerms', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          // searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'searchTerms');
+  });
+
+  test('craigslist search whose details have searchTerms with incorrect type', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: 123,
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'searchTerms');
+  });
+
+  test('craigslist search whose details has empty searchTerms', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: [],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'with no values');
+  });
+
+  test('craigslist search whose details have missing regions', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          // regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'regions');
+  });
+
+  test('craigslist search whose details have regions with incorrect type', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: 987,
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'regions');
+  });
+
+  test('craigslist search whose details has empty regions', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: [],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'with no values');
+  });
+
+  // aaa
+  test('craigslist search whose details have missing regions', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          // regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'regions');
+  });
+
+  test('craigslist search whose details have regions with incorrect type', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: 987,
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'regions');
+  });
+
+  test('craigslist search whose details has empty regions', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: [],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'with no values');
+  });
+
+  test('craigslist search whose details has invalid regions', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire', 'poop'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'invalid value');
+  });
+
+  test('craigslist search whose details have missing subcategories', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          // subcategories: ['tools', 'motorcycles'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'subcategories');
+  });
+
+  test('craigslist search whose details have subcategories with incorrect type', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: 987,
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'subcategories');
+  });
+
+  test('craigslist search whose details has empty subcategories', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: [],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'with no values');
+  });
+
+  test('craigslist search whose details has invalid subcategories', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles', 'poop'],
+        },
+      },
+    };
+
+    doNegativeTest(initialFile, 'invalid value');
   });
 });
 
