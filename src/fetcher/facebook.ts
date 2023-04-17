@@ -111,13 +111,15 @@ const processMhtFile = (job: Job): void => {
 };
 
 export const processSearchResultsPage = (job: Job): void => {
+  const cacheName = buildCacheName(job);
+  logger.verbose(`reading ${cacheName}`);
+  logger.verbose(`from url: ${job.url}`);
+
   // If there is an MHT file in the directory then convert it to HTML and move it.
   // That way we always operated on the HTML files.
   processMhtFile(job);
 
   const details = <FacebookJobDetails>job.details;
-
-  const cacheName = buildCacheName(job);
 
   const html = fs.readFileSync(cacheName);
 

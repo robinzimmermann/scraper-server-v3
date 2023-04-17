@@ -138,9 +138,11 @@ const getPostDate = (data: string | undefined): string => {
 };
 
 export const processSearchResultsPage = (job: Job): void => {
-  const details = <CraigslistJobDetails>job.details;
-
   const cacheName = buildCacheName(job);
+  logger.verbose(`reading ${cacheName}`);
+  logger.verbose(`from url: ${job.url}`);
+
+  const details = <CraigslistJobDetails>job.details;
 
   const html = fs.readFileSync(cacheName);
 

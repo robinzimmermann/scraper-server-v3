@@ -424,6 +424,10 @@ export const upsertPost = (
     }
   }
 
+  // dbLogger.verbose(
+  //   `upsertPost() upsertPost() upsertPost() source=${source}, pid=${pid}`,
+  // );
+
   const newPost: Post = {
     pid,
     sid,

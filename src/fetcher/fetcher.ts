@@ -435,25 +435,19 @@ const fetchFilesFromServer = async (): Promise<void> => {
 };
 
 const readFilesFromCache = (): void => {
-  logger.debug('process files in cache here');
-
   let jobPointer = 0;
 
   while (jobPointer < jobs.length) {
     const job = jobs[jobPointer];
 
-    // job.searchResultsHomeDir
-    const cacheName = buildCacheName(job);
-
-    logger.verbose(`reading ${cacheName}`);
-    logger.verbose(`url: ${job.url}`);
     switch (job.source) {
       case Source.craigslist:
-        craigslistFetcher.processSearchResultsPage(job);
+        logger.warn('temporarily ignoring craigslist files');
+        // craigslistFetcher.processSearchResultsPage(job);
         break;
       case Source.facebook:
-        logger.warn('temporaryily ignoring facebook files');
-        // facebookFetcher.processSearchResultsPage(job);
+        logger.warn('temporarily ignoring facebook files');
+        facebookFetcher.processSearchResultsPage(job);
         break;
     }
     jobPointer++;
