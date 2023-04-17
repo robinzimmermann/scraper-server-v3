@@ -83,8 +83,6 @@ export const generateCacheFilename = (
   searchTermNum: number,
   pageNum: number,
 ): string => {
-  // const details = job.details as CraigslistJobDetails;
-  // return `searchterm${details.searchTermNum}_pg${job.pageNum}.html`;
   return `searchterm${searchTermNum}_pg${pageNum}.html`;
 };
 
@@ -103,10 +101,6 @@ export const fetchSearchResults = async (
 
   if (results.html) {
     logger.verbose('looks like this craigslist page has a result to save');
-    // const cacheDir = generateCacheDir(job);
-    // const cacheFilename = generateCacheFilename(job);
-    // const cacheLocation = `${cacheDir}/${cacheFilename}`;
-    // const cacheLocation = `${job.searchResultsHomeDir}/${job.searchResultsFilename}`;
     const cacheLocation = buildCacheName(job);
     logger.verbose(`saving to filename=${chalk.bold(cacheLocation)}`);
     fs.mkdirSync(job.searchResultsHomeDir, { recursive: true });

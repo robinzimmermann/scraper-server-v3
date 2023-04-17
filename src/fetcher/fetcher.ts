@@ -1,5 +1,6 @@
 import fs from 'fs';
 import chalk from 'chalk';
+import tinycolor from 'tinycolor2';
 
 import { logger } from '../utils/logger/logger';
 import { HBrowserInstance } from '../api/hbrowser/HBrowser';
@@ -15,7 +16,7 @@ import { getRandWaitTime } from './helper';
 import { moveItemInArray, waitWithProgress } from '../utils/utils';
 import * as craigslistFetcher from './craigslist';
 import * as facebookFetcher from './facebook';
-import { cacheDir, craigslistCacheDir } from '../globals';
+import { cacheDir, craigslistCacheDir, facebookCacheDir } from '../globals';
 // import HeadlessBrowserInstance from '../api/headlessBrowser/HeadlessBrowserInstance';
 // import * as puppeteer from 'puppeteer';
 
@@ -54,9 +55,16 @@ export type CraigslistJobDetails = {
   craigslistSubcategory: CraigslistSubcategory;
 };
 
+export enum FacebookCacheFileType {
+  HTML = 'html',
+  MHT = 'mht',
+}
+
 export type FacebookJobDetails = {
   searchTerm: string;
+  searchTermNum: number;
   region: FacebookRegion;
+  fileType: FacebookCacheFileType;
 };
 
 export type Job = {
@@ -87,7 +95,7 @@ export type FetchOptions = {
 
 const logPrefix = '[fetcher] ';
 
-const warningColor = chalk.yellow;
+const warningColor = chalk.hex('#0000ff').bold.bgYellow;
 
 export const dateFormat = 'yyyy-MM-dd';
 
@@ -105,7 +113,8 @@ export const getJobs = (): Job[] => {
   return jobs;
 };
 
-export const printJob = (job: Job): string => {
+// Original version, keeping around as a backup
+export const printJob2 = (job: Job): string => {
   if (!job) {
     return '';
   }
@@ -122,9 +131,11 @@ export const printJob = (job: Job): string => {
       break;
     case Source.facebook:
       details = <FacebookJobDetails>job.details;
-      detailsStr = `searchTerm=${chalk.dim(
-        details.searchTerm,
-      )},region=${chalk.dim(details.region)}`;
+      detailsStr = `searchTerm=${chalk.dim(details.searchTerm)} (${chalk.dim(
+        details.searchTermNum,
+      )}),region=${chalk.dim(details.region)},fileType=${chalk.dim(
+        details.fileType,
+      )}`;
       break;
   }
   return `{job=${chalk.dim(job.jid)},search=${chalk.dim(
@@ -140,6 +151,65 @@ export const printJob = (job: Job): string => {
   )}${chalk.bold('}')},pageNum=${chalk.dim(job.pageNum)}`;
 };
 
+export const printJob = (job: Job, write = logger.debug): void => {
+  if (!job) {
+    return;
+  }
+
+  const baseColor = '#00fff6';
+  const nameColor = tinycolor(baseColor).darken(15).toHex();
+  const valColor = tinycolor(baseColor).darken(28).toHex();
+
+  const intro = (str: string): string => chalk.bold.hex(baseColor)(str);
+  const name = (name: string): string => chalk.hex(nameColor)(name);
+  const val = (value: unknown): string => chalk.hex(valColor)(value);
+
+  let details: CraigslistJobDetails | FacebookJobDetails;
+  let detailsStr: string;
+  switch (job.source) {
+    case Source.craigslist:
+      details = <CraigslistJobDetails>job.details;
+      detailsStr = `${name('craigslistSearchDetails')}={${name(
+        'searchTerm',
+      )}=${val(details.searchTerm)} (${val(details.searchTermNum)}), ${name(
+        'region',
+      )}=${val(details.region)}, ${name('subcategory')}=${val(
+        details.craigslistSubcategory,
+      )}}`;
+      break;
+    case Source.facebook:
+      details = <FacebookJobDetails>job.details;
+      detailsStr = `${name('facebookSearchDetails')}={${name(
+        'searchTerm',
+      )}=${val(details.searchTerm)} (${val(details.searchTermNum)}), ${name(
+        'region',
+      )}=${val(details.region)}, ${name('fileType')}=${val(details.fileType)}}`;
+      break;
+  }
+
+  write(`${intro('┌')}${intro('─'.repeat(125))}`);
+  write(
+    `${intro('│')} ${name('job')}=${val(job.jid)}, ${name('search')}=${val(
+      job.sid,
+    )}, ${name('source')}=${val(job.source)}, ${name('randomWaitTime')}=${val(
+      job.randomWaitTime,
+    )}, ${name('filename')}=${val(job.searchResultsFilename)}, ${name(
+      'pageNum',
+    )}=${val(job.pageNum)}`,
+  );
+  write(`${intro('│')} ${name('url')}=${val(job.url)}`);
+  write(
+    `${intro('│')} ${name('searchResultsHomeDir')}=${val(
+      job.searchResultsHomeDir,
+    )}`,
+  );
+  write(`${intro('└')} ${detailsStr}`);
+};
+
+/**
+ *
+ * @returns directory + filename
+ */
 export const buildCacheName = (job: Job): string =>
   `${job.searchResultsHomeDir}/${job.searchResultsFilename}`;
 
@@ -191,7 +261,15 @@ export const addJob = (
         facebookJobDetails.region,
         facebookJobDetails.searchTerm,
       );
-      searchResultsHomeDir = '/tmp/ggg';
+      searchResultsHomeDir = facebookFetcher.generateCacheDir(
+        cacheDir,
+        search.alias,
+        facebookCacheDir,
+        facebookJobDetails.region,
+      );
+      searchResultsFilename = facebookFetcher.generateCacheFilename(
+        facebookJobDetails.searchTermNum,
+      );
       break;
   }
 
@@ -213,29 +291,30 @@ export const addJob = (
   return job;
 };
 
+// Called if it's discovered a page has additional pages
 export const addAnotherPageToJob = (job: Job): void => {
   logger.verbose(`adding a new job after job ${job.jid}`);
-  const pos = jobs.findIndex((j) => (j.jid = job.jid));
+  const pos = jobs.findIndex((j) => j.jid === job.jid);
   if (pos === -1) {
     logger.warn(
       `tried to add a next page for job ${job.jid} but it was not in my jobs list`,
     );
     return;
   }
-
   const search = dbSearches.getSearchBySid(job.sid);
   if (!search) {
     logger.error(`search ${chalk.bold(job.sid)} does not exist`);
     return;
   }
-  addJob(search, job.source, job.details, job.pageNum + 1);
-  logger.verbose(`creating a new job, them moving it ${jobs.indexOf(job) + 1}`);
+
+  addJob(search, job.source, job.details, job.pageNum + 1); // Add a new job to the end
+  logger.verbose(`creating a new job, then moving it ${jobs.indexOf(job) + 1}`);
   // Move the new job to one after the current job
   moveItemInArray(jobs, jobs.length - 1, jobs.indexOf(job) + 1);
   logger.verbose('new jobs!');
-  jobs.forEach((job) => {
-    logger.debug(`${printJob(job)}`);
-  });
+  // jobs.forEach((job) => {
+  //   printJob(job);
+  // });
 };
 
 /**
@@ -285,7 +364,9 @@ const getVendorJobs = (source: Source, search: Search): void => {
         (facebookJobDetails: FacebookJobDetails) => {
           addJob(search, source, {
             searchTerm: facebookJobDetails.searchTerm,
+            searchTermNum: facebookJobDetails.searchTermNum,
             region: facebookJobDetails.region,
+            fileType: FacebookCacheFileType.HTML,
           });
         },
       );
@@ -371,6 +452,8 @@ const readFilesFromCache = (): void => {
         craigslistFetcher.processSearchResultsPage(job);
         break;
       case Source.facebook:
+        logger.warn('temporaryily ignoring facebook files');
+        // facebookFetcher.processSearchResultsPage(job);
         break;
     }
     jobPointer++;
@@ -392,14 +475,19 @@ export const doSearch = async (): Promise<void> => {
   }
 
   // This is temporary until a better way is found to list the jobs
-  jobs.forEach((job) => {
-    logger.debug(`${printJob(job)}`);
-  });
+  // jobs.forEach((job) => {
+  //   printJob(job);
+  // });
 
   await fetchFilesFromServer();
 
   // Now process the downloaded results files
   readFilesFromCache();
+
+  logger.verbose('final jobs:');
+  jobs.forEach((job) => {
+    printJob(job);
+  });
 
   logger.info('searching complete');
 };
@@ -414,7 +502,6 @@ export const init = (
   // Clear the list
   jobs.length = 0;
 
-  logger.debug('headlessBrowserDriver:', headlessBrowserDriver);
   browser = headlessBrowserDriver;
 
   options = { ...defaultOptions, ...(opts || {}) };

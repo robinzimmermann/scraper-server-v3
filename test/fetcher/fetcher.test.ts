@@ -196,4 +196,49 @@ describe('fetchers test suite', () => {
     const jobs = fetcher.getJobs();
     expect(jobs).toHaveLength(0);
   });
+
+  test('adding an additional job', () => {
+    // This is to test a bug that was originally in the code.
+    const searches = {
+      '101': {
+        sid: '101',
+        alias: 'demolition hammer',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist', 'facebook'],
+        craigslistSearchDetails: {
+          searchTerms: ['demo hammer', 'grinder', 'shovel hammer'],
+          regions: ['sf bayarea', 'reno'],
+          subcategories: ['tools', 'electronics'],
+        },
+        facebookSearchDetails: {
+          searchTerms: ['demo hammer', 'grinder', 'shovel hammer'],
+          regionalDetails: [
+            { region: 'walnut creek', distance: 5 },
+            { region: 'los angeles', distance: 5 },
+          ],
+        },
+      },
+    } as unknown as Searches;
+
+    const jsonDb = JsonDb<Searches>();
+    jsonDb.setCacheDir(JSON.stringify(searches));
+    dbSearches.init(jsonDb);
+
+    fetcher.buildJobs();
+    const jobs = fetcher.getJobs();
+
+    // logger.verbose('before');
+    // jobs.forEach((job) => {
+    //   fetcher.printJob(job);
+    // });
+    const originalJid = jobs[0].jid;
+    fetcher.addAnotherPageToJob(jobs[3]);
+    // logger.verbose('after');
+    // jobs.forEach((job) => {
+    //   fetcher.printJob(job);
+    // });
+
+    expect(jobs[0].jid).toBe(originalJid);
+  });
 });

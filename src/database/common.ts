@@ -16,7 +16,6 @@ export type ErrorWarnings = {
 };
 
 export const initAllDbs = (): Result<boolean, string[]> => {
-  logger.debug('initiating all the dbs!');
   if (!fs.existsSync(dbDir)) {
     logger.warn(
       `database directory doesn't exist, creating it: ${chalk.bold(dbDir)}`,

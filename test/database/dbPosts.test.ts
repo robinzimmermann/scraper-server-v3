@@ -1351,7 +1351,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty hood element', () => {
+  test('craiglist post with an empty hood element should work', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1373,17 +1373,7 @@ describe('dbPosts initialization', () => {
 
     const result = dbPosts.init(postsDb);
 
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('hood');
-    }
+    expect(result.isOk()).toBeTrue();
 
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });

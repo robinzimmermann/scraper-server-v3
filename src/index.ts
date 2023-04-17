@@ -54,7 +54,6 @@ const startServer = async (): Promise<void> => {
         return;
       }
 
-      logger.debug('i am finished starting the server');
       resolve();
     });
   });
@@ -78,16 +77,13 @@ if (startBrowser) {
 }
 
 if (startBrowser) {
-  logger.verbose('starting both browser and server!');
   await Promise.all([hbrowser.launch(), startServer()]);
 } else {
-  logger.warn('not starting a browser');
   await Promise.all([startServer()]);
 }
 logger.info(chalk.green.bold('server ready'));
 
 fetcher.init(hbrowser);
-// fetcher2.init(hbrowser);
 await fetcher.doSearch(); // TODO This is temporary, browser user should start searches
 
 /*

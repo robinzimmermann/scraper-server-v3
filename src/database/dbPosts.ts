@@ -183,7 +183,9 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
     error(`has no element ${chalk.bold('hood')}`);
   } else if (!(typeof post.hood === 'string')) {
     error(`has ${chalk.bold('hood')} that is not a string`);
-  } else if (post.hood.length === 0) {
+  } else if (post.hood.length === 0 && post.source !== Source.craigslist) {
+    // Craiglist posts sometimes have no hood, so a blank hood can
+    // be ignored for Craigslist.
     error(`has a ${chalk.bold('hood')} with no value`);
   }
 
@@ -432,7 +434,7 @@ export const upsertPost = (
     postDate,
     price,
     priceStr: currencyFormatter.format(price),
-    hood,
+    hood: hood ? hood : '',
     thumbnailUrl,
     extras: source === Source.craigslist ? extras : undefined,
   };
