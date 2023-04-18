@@ -7,7 +7,7 @@ import {
 } from '../../src/database/models/dbSearches';
 
 describe('fetchers test suite', () => {
-  test('simple mix', () => {
+  test('simple mix works', () => {
     const searchDetails: CraigslistSearchDetails = {
       searchTerms: ['search1'],
       regions: [CraigslistRegion.losAngeles],
@@ -24,7 +24,7 @@ describe('fetchers test suite', () => {
     // expect(callbackArr[0]).
   });
 
-  test('complex mix', () => {
+  test('complex mix works', () => {
     const searchDetails: CraigslistSearchDetails = {
       searchTerms: ['search1', 'search2'],
       regions: [

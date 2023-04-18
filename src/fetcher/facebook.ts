@@ -112,14 +112,24 @@ const processMhtFile = (job: Job): void => {
 
 export const processSearchResultsPage = (job: Job): void => {
   const cacheName = buildCacheName(job);
-  logger.verbose(`reading ${cacheName}`);
+  logger.verbose(`job ${job.jid}: reading ${cacheName}`);
   logger.verbose(`from url: ${job.url}`);
 
-  // If there is an MHT file in the directory then convert it to HTML and move it.
-  // That way we always operated on the HTML files.
-  processMhtFile(job);
-
   const details = <FacebookJobDetails>job.details;
+
+  // Check if there is an MHTML file.
+  // processMhtFile(job);
+  const mhtmlFilename =
+    job.searchResultsFilename.substring(
+      0,
+      job.searchResultsFilename.lastIndexOf('.html'),
+    ) + '.mht';
+  logger.verbose(`mhtmlFilename=${mhtmlFilename}`);
+
+  if (!fs.existsSync(cacheName)) {
+    logger.warn(`not found: ${cacheName}`);
+    return;
+  }
 
   const html = fs.readFileSync(cacheName);
 
@@ -190,7 +200,6 @@ export const processSearchResultsPage = (job: Job): void => {
       .text()
       .replace(/\s+/g, ' ');
 
-    logger.debug(`upsertPosting!`);
     upsertPost(
       pid,
       job.sid,
@@ -204,4 +213,9 @@ export const processSearchResultsPage = (job: Job): void => {
       thumbnailUrl,
     );
   });
+  // After printing the progress, move the next line
+  process.stdout.write('\r');
+  logger.debug(
+    `processed ${$results.length} facebook posts for job ${job.jid}`,
+  );
 };

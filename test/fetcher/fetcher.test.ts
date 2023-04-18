@@ -19,7 +19,7 @@ describe('fetchers test suite', () => {
     initializeJest();
   });
 
-  test('create multiple craigslist jobs', () => {
+  test('create multiple craigslist jobs works', () => {
     const searches = {
       '101': {
         sid: '101',
@@ -43,7 +43,7 @@ describe('fetchers test suite', () => {
     expect(jobs).toHaveLength(12);
   });
 
-  test('create multiple facebook jobs', () => {
+  test('create multiple facebook jobs works', () => {
     const searches = {
       '102': {
         sid: '102',
@@ -70,7 +70,7 @@ describe('fetchers test suite', () => {
     expect(jobs).toHaveLength(6);
   });
 
-  test('create multiple craigslist and facebook jobs', () => {
+  test('create multiple craigslist and facebook jobs works', () => {
     const searches = {
       '101': {
         sid: '101',
@@ -102,7 +102,7 @@ describe('fetchers test suite', () => {
     expect(jobs).toHaveLength(18);
   });
 
-  test('create job with invalid source', () => {
+  test('create job with invalid source fails', () => {
     const searches = {
       '101': {
         sid: '101',
@@ -126,7 +126,7 @@ describe('fetchers test suite', () => {
     expect(jobs).toHaveLength(0);
   });
 
-  test('create craiglist job with invalid region', () => {
+  test('create craiglist job with invalid region fails', () => {
     const searches = {
       '101': {
         sid: '101',
@@ -150,7 +150,7 @@ describe('fetchers test suite', () => {
     expect(jobs).toHaveLength(0);
   });
 
-  test('create craiglist job with invalid category', () => {
+  test('create craiglist job with invalid category fails', () => {
     const searches = {
       '101': {
         sid: '101',
@@ -174,7 +174,7 @@ describe('fetchers test suite', () => {
     expect(jobs).toHaveLength(0);
   });
 
-  test('create facebook job with invalid region', () => {
+  test('create facebook job with invalid region fails', () => {
     const searches = {
       '101': {
         sid: '101',
@@ -197,7 +197,7 @@ describe('fetchers test suite', () => {
     expect(jobs).toHaveLength(0);
   });
 
-  test('adding an additional job', () => {
+  test('adding an additional job works', () => {
     // This is to test a bug that was originally in the code.
     const searches = {
       '101': {

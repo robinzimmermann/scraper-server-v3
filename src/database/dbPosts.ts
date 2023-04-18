@@ -47,7 +47,7 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
   const errors: string[] = [];
 
   // Check PID element is present
-  if (!Object.prototype.hasOwnProperty.call(post, 'pid')) {
+  if (post.pid === undefined) {
     errors.push(`a post has no element ${chalk.bold('pid')}`);
     return err(errors);
   }
@@ -75,11 +75,16 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
   };
 
   // Check SID element is present
-  if (!Object.prototype.hasOwnProperty.call(post, 'sid')) {
-    error(`has no element ${chalk.bold('sid')}`);
-  } else if (typeof post.sid !== 'string') {
-    error(`has invalid type of ${chalk.bold('sid')}: ${typeof post.sid}`);
-  } else if (!dbSearches.getSearchBySid(post.sid)) {
+  // if (!Object.prototype.hasOwnProperty.call(post, 'sid')) {
+  //   logger.verbose('eee');
+  //   error(`has no element ${chalk.bold('sid')}`);
+  // }
+  // else if (typeof post.sid !== 'string') {
+  //   logger.verbose('fff');
+  //   error(`has invalid type of ${chalk.bold('sid')}: ${typeof post.sid}`);
+  // }
+  // else
+  if (!dbSearches.getSearchBySid(post.sid)) {
     error(
       `references a search ${chalk.bold(
         'sid',
@@ -91,7 +96,7 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
     return err(errors);
   }
 
-  if (!Object.prototype.hasOwnProperty.call(post, 'source')) {
+  if (post.source === undefined) {
     error(`has no element ${chalk.bold('source')}`);
   } else if (!utils.isValueInEnum(post.source, Source)) {
     error(
@@ -105,7 +110,7 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
     return err(errors);
   }
 
-  if (!Object.prototype.hasOwnProperty.call(post, 'regions')) {
+  if (post.regions === undefined) {
     error(`has no element ${chalk.bold('regions')}`);
   } else if (!Array.isArray(post.regions)) {
     error(`has ${chalk.bold('regions')} that is not an array`);
@@ -125,7 +130,7 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
       );
   }
 
-  if (!Object.prototype.hasOwnProperty.call(post, 'searchTerms')) {
+  if (post.searchTerms === undefined) {
     error(`has no element ${chalk.bold('searchTerms')}`);
   } else if (!Array.isArray(post.searchTerms)) {
     error(`has ${chalk.bold('searchTerms')} that is not an array`);
@@ -133,7 +138,7 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
     error(`has ${chalk.bold('searchTerms')} with no elements`);
   }
 
-  if (!Object.prototype.hasOwnProperty.call(post, 'title')) {
+  if (post.title === undefined) {
     error(`has no element ${chalk.bold('title')}`);
   } else if (!(typeof post.title === 'string')) {
     error(`has ${chalk.bold('title')} that is not a string`);
@@ -141,31 +146,38 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
     error(`has a ${chalk.bold('title')} with no value`);
   }
 
-  if (!Object.prototype.hasOwnProperty.call(post, 'postDate')) {
+  if (post.postDate === undefined) {
     error(`has no element ${chalk.bold('postDate')}`);
   } else if (!(typeof post.postDate === 'string')) {
     error(`has ${chalk.bold('postDate')} that is not a string`);
-  } else if (post.postDate.length === 0) {
-    error(`has a ${chalk.bold('postDate')} with no value`);
-  } else if (!dateChecker.test(post.postDate)) {
-    error(
-      `invalid format of ${chalk.bold('postDate')}: ${chalk.bold(
-        post.postDate,
-      )} (should be 'YYYY-MM-DD')`,
-    );
+  } else if (post.source !== Source.facebook || post.postDate.length > 0) {
+    // Facebook Marketplace doesn't include post dates on its search results page,
+    // so they may be blank.
+    // The future postDate tests only apply if the post is not Facebook, or it is Facebook,
+    // but the postDate is supplied
+
+    if (post.postDate.length === 0) {
+      error(`has a ${chalk.bold('postDate')} with no value`);
+    } else if (!dateChecker.test(post.postDate)) {
+      error(
+        `invalid format of ${chalk.bold('postDate')}: ${chalk.bold(
+          post.postDate,
+        )} (should be 'YYYY-MM-DD')`,
+      );
+    }
+
+    if (post.price === undefined) {
+      error(`has no element ${chalk.bold('price')}`);
+    } else if (!(typeof post.price === 'number')) {
+      error(
+        `has ${chalk.bold('price')} that is not a number: ${chalk.bold(
+          post.price,
+        )}`,
+      );
+    }
   }
 
-  if (!Object.prototype.hasOwnProperty.call(post, 'price')) {
-    error(`has no element ${chalk.bold('price')}`);
-  } else if (!(typeof post.price === 'number')) {
-    error(
-      `has ${chalk.bold('price')} that is not a number: ${chalk.bold(
-        post.price,
-      )}`,
-    );
-  }
-
-  if (!Object.prototype.hasOwnProperty.call(post, 'priceStr')) {
+  if (post.priceStr === undefined) {
     error(`has no element ${chalk.bold('priceStr')}`);
   } else if (!(typeof post.priceStr === 'string')) {
     error(`has ${chalk.bold('priceStr')} that is not a string`);
@@ -179,7 +191,7 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
     );
   }
 
-  if (!Object.prototype.hasOwnProperty.call(post, 'hood')) {
+  if (post.hood === undefined) {
     error(`has no element ${chalk.bold('hood')}`);
   } else if (!(typeof post.hood === 'string')) {
     error(`has ${chalk.bold('hood')} that is not a string`);
@@ -189,7 +201,7 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
     error(`has a ${chalk.bold('hood')} with no value`);
   }
 
-  if (!Object.prototype.hasOwnProperty.call(post, 'thumbnailUrl')) {
+  if (post.thumbnailUrl === undefined) {
     error(`has no element ${chalk.bold('thumbnailUrl')}`);
   } else if (!(typeof post.thumbnailUrl === 'string')) {
     error(`has ${chalk.bold('thumbnailUrl')} that is not a string`);
@@ -197,8 +209,8 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
     error(`has a ${chalk.bold('thumbnailUrl')} with no value`);
   }
 
-  if (Object.prototype.hasOwnProperty.call(post, 'extras')) {
-    if (post.source !== Source.craigslist) {
+  if (post.extras !== undefined) {
+    if (post.source === Source.facebook) {
       error(
         `has ${chalk.bold('extras')} element when the source is ${chalk.bold(
           post.source,
@@ -208,7 +220,7 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
       const actualElementKeys = post.extras
         ? Object.keys(post.extras)
         : <string[]>[];
-      if (!Object.prototype.hasOwnProperty.call(post.extras, 'subcategories')) {
+      if (post.extras.subcategories === undefined) {
         error(
           `has ${chalk.bold('extras')} with no element ${chalk.bold(
             'subcategories',
@@ -410,23 +422,19 @@ export const upsertPost = (
   hood: string,
   thumbnailUrl: string,
   extras?: CraiglistFields,
-): void => {
+): Result<Post, string[]> => {
+  const errors = <string[]>[];
   if (source === Source.craigslist) {
     if (!extras) {
-      throw Error(
+      errors.push(
         'upsertPost() Craiglists posts must have an "extras" element',
       );
-    }
-    if (!extras.subcategories) {
-      throw new Error(
+    } else if (!extras.subcategories) {
+      errors.push(
         'upsertPost() Craiglists posts must have "extras" with a Craigslist subcategory',
       );
     }
   }
-
-  // dbLogger.verbose(
-  //   `upsertPost() upsertPost() upsertPost() source=${source}, pid=${pid}`,
-  // );
 
   const newPost: Post = {
     pid,
@@ -509,29 +517,16 @@ export const upsertPost = (
         : undefined,
   };
 
-  // console.log(
-  //   `upsertPost() dbPost.pid=${dbPost.pid}, dbPost.source=${dbPost.source}/${
-  //     dbData[pid].source
-  //   }, is craigslist=${dbPost.source === Source.craigslist}`,
-  // );
-  // console.log(`dbPost: ${JSON.stringify(dbPost, null, 2)}`);
-  // if (dbPost.source === Source.craigslist) {
-  //   console.log('111');
-  //   // Necessary extra if for Typescript
-  //   if (dbPost.extras) {
-  //     console.log('222');
-  //     dbPost.extras.subcategories = mergeCraigslistSubcategories();
-  //     console.log(`got back: ${dbPost.extras.subcategories}`);
-  //     console.log(`dbPost again: ${JSON.stringify(dbPost, null, 2)}`);
-  //     console.log(`dbData[pid] again: ${JSON.stringify(dbData[pid], null, 2)}`);
-  //   }
-  // }
-
-  /*
-  const post = data.posts[pid];
-
-  post.year = guessTheYear(post);
-
-  */
-  postsDb.write();
+  const result = isPostValid(dbData[pid]);
+  if (result.isOk()) {
+    postsDb.write();
+    return ok(dbData[pid]);
+  } else {
+    return err(result.error);
+    // result.mapErr((resultErrors) => {
+    //   resultErrors.forEach((msg) => {
+    //     logger.error(msg);
+    //   });
+    // });
+  }
 };

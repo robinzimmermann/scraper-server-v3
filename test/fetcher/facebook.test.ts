@@ -7,7 +7,7 @@ import {
 } from '../../src/database/models/dbSearches';
 
 describe('fetchers test suite', () => {
-  test('simple mix', () => {
+  test('simple mix works', () => {
     const searchDetails: FacebookSearchDetails = {
       searchTerms: ['search1'],
       regionalDetails: [
@@ -27,7 +27,7 @@ describe('fetchers test suite', () => {
     expect(callbackArr).toHaveLength(1);
   });
 
-  test('complex mix', () => {
+  test('complex mix works', () => {
     const searchDetails: FacebookSearchDetails = {
       searchTerms: ['search1', 'search2'],
       regionalDetails: [

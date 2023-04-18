@@ -58,7 +58,7 @@ describe('dbSearches initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('valid search', () => {
+  test('valid search works', () => {
     searchesDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
     const result = dbSearches.init(searchesDb);
 
@@ -159,51 +159,51 @@ describe('dbSearches initialization', () => {
     );
   });
 
-  test('sid missing', () => {
+  test('sid missing fails', () => {
     doNegativeTest(dbSearchesTestData.sidMissing, 'has no element');
   });
 
-  test('sid wrong type', () => {
+  test('sid wrong type fails', () => {
     doNegativeTest(dbSearchesTestData.sidWrongType, 'not of type');
   });
 
-  test('sid has no value', () => {
+  test('sid has no value fails', () => {
     doNegativeTest(dbSearchesTestData.sidHasNoValue, 'no value');
   });
 
-  test('alias missing', () => {
+  test('alias missing fails', () => {
     doNegativeTest(dbSearchesTestData.aliasMissing, 'has no element');
   });
 
-  test('alias wrong type', () => {
+  test('alias wrong type fails', () => {
     doNegativeTest(dbSearchesTestData.aliasWrongType, 'not of type');
   });
 
-  test('alias has no value', () => {
+  test('alias has no value fails', () => {
     doNegativeTest(dbSearchesTestData.aliasHasNoValue, 'no value');
   });
 
-  test('alias missing', () => {
+  test('alias missing fails', () => {
     doNegativeTest(dbSearchesTestData.aliasMissing, 'has no element');
   });
 
-  test('alias wrong type', () => {
+  test('alias wrong type fails', () => {
     doNegativeTest(dbSearchesTestData.aliasWrongType, 'not of type');
   });
 
-  test('alias has no value', () => {
+  test('alias has no value fails', () => {
     doNegativeTest(dbSearchesTestData.aliasHasNoValue, 'no value');
   });
 
-  test('isEnabled missing', () => {
+  test('isEnabled missing fails', () => {
     doNegativeTest(dbSearchesTestData.isEnabledMissing, 'has no element');
   });
 
-  test('isEnabled wrong type', () => {
+  test('isEnabled wrong type fails', () => {
     doNegativeTest(dbSearchesTestData.isEnabledWrongType, 'not of type');
   });
 
-  test('valid minPrice', () => {
+  test('valid minPrice works', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -243,7 +243,7 @@ describe('dbSearches initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('minPrice is wrong type', () => {
+  test('minPrice is wrong type fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -262,7 +262,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'not of type');
   });
 
-  test('valid maxPrice', () => {
+  test('valid maxPrice works', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -302,7 +302,7 @@ describe('dbSearches initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('maxPrice is wrong type', () => {
+  test('maxPrice is wrong type fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -321,7 +321,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'not of type');
   });
 
-  test('valid minPrice and maxPrice', () => {
+  test('valid minPrice and maxPrice works', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -363,7 +363,7 @@ describe('dbSearches initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('missing sources', () => {
+  test('missing sources fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -382,7 +382,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'has no value');
   });
 
-  test('sources with wrong type', () => {
+  test('sources with wrong type fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -401,7 +401,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'which is not');
   });
 
-  test('empty sources', () => {
+  test('empty sources fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -420,7 +420,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'no values');
   });
 
-  test('invalid source', () => {
+  test('invalid source fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -439,7 +439,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'not valid');
   });
 
-  test('craigslist search with no details', () => {
+  test('craigslist search with no details fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -453,7 +453,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'craigslistSearchDetails');
   });
 
-  test('facebook search with no details', () => {
+  test('facebook search with no details fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -467,7 +467,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'facebookSearchDetails');
   });
 
-  test('craigslist search whose details have missing searchTerms', () => {
+  test('craigslist search whose details have missing searchTerms fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -486,7 +486,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'searchTerms');
   });
 
-  test('craigslist search whose details have searchTerms with incorrect type', () => {
+  test('craigslist search whose details have searchTerms with incorrect type fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -505,7 +505,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'searchTerms');
   });
 
-  test('craigslist search whose details has empty searchTerms', () => {
+  test('craigslist search whose details has empty searchTerms fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -524,7 +524,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'with no values');
   });
 
-  test('craigslist search whose details have missing regions', () => {
+  test('craigslist search whose details have missing regions fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -543,7 +543,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'regions');
   });
 
-  test('craigslist search whose details have regions with incorrect type', () => {
+  test('craigslist search whose details have regions with incorrect type fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -562,7 +562,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'regions');
   });
 
-  test('craigslist search whose details has empty regions', () => {
+  test('craigslist search whose details has empty regions fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -582,7 +582,7 @@ describe('dbSearches initialization', () => {
   });
 
   // aaa
-  test('craigslist search whose details have missing regions', () => {
+  test('craigslist search whose details have missing regions fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -601,7 +601,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'regions');
   });
 
-  test('craigslist search whose details have regions with incorrect type', () => {
+  test('craigslist search whose details have regions with incorrect type fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -620,7 +620,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'regions');
   });
 
-  test('craigslist search whose details has empty regions', () => {
+  test('craigslist search whose details has empty regions fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -639,7 +639,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'with no values');
   });
 
-  test('craigslist search whose details has invalid regions', () => {
+  test('craigslist search whose details has invalid regions fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -658,7 +658,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'invalid value');
   });
 
-  test('craigslist search whose details have missing subcategories', () => {
+  test('craigslist search whose details have missing subcategories fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -677,7 +677,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'subcategories');
   });
 
-  test('craigslist search whose details have subcategories with incorrect type', () => {
+  test('craigslist search whose details have subcategories with incorrect type fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -696,7 +696,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'subcategories');
   });
 
-  test('craigslist search whose details has empty subcategories', () => {
+  test('craigslist search whose details has empty subcategories fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -715,7 +715,7 @@ describe('dbSearches initialization', () => {
     doNegativeTest(initialFile, 'with no values');
   });
 
-  test('craigslist search whose details has invalid subcategories', () => {
+  test('craigslist search whose details has invalid subcategories fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -740,7 +740,7 @@ describe('dbSearches test suite', () => {
     initializeJest();
   });
 
-  test('fetch enabled searches', () => {
+  test('fetch enabled searches works', () => {
     searchesDb.setCacheDir(JSON.stringify(dbSearchesTestData.enabledSearches));
 
     const result = dbSearches.init(searchesDb);
@@ -754,7 +754,7 @@ describe('dbSearches test suite', () => {
     expect(searches[1]).toEqual(expect.objectContaining({ sid: '60' }));
   });
 
-  test('fetch search by sid', () => {
+  test('fetch search by sid works', () => {
     searchesDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
 
     dbSearches.init(searchesDb);
@@ -768,7 +768,7 @@ describe('dbSearches test suite', () => {
     expect(search.sid).toBe('5');
   });
 
-  test('not fetch search by invalid sid', () => {
+  test('fetch search by invalid sid fails', () => {
     searchesDb.setCacheDir(JSON.stringify(dbSearchesTestData.valid));
 
     dbSearches.init(searchesDb);

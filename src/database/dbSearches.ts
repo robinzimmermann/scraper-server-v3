@@ -219,7 +219,7 @@ const isSearchValid = (search: Search): Result<boolean, string[]> => {
   const errors: string[] = [];
 
   // Check SID element is present
-  if (!Object.prototype.hasOwnProperty.call(search, 'sid')) {
+  if (search.sid === undefined) {
     errors.push(`search has no element ${chalk.bold('sid')}`);
     return err(errors);
   }
@@ -538,12 +538,12 @@ const isSearchValid = (search: Search): Result<boolean, string[]> => {
   checkPrimitiveProperty('rank', 'number');
 
   let optionalField = 'minPrice' as keyof Search;
-  if (Object.prototype.hasOwnProperty.call(search, optionalField)) {
+  if (search[optionalField] !== undefined) {
     checkPrimitiveProperty(optionalField, 'number');
   }
 
   optionalField = 'maxPrice' as keyof Search;
-  if (Object.prototype.hasOwnProperty.call(search, optionalField)) {
+  if (search[optionalField] !== undefined) {
     checkPrimitiveProperty(optionalField, 'number');
   }
 

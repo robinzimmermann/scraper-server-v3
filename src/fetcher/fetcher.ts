@@ -189,13 +189,15 @@ export const printJob = (job: Job, write = logger.debug): void => {
 
   write(`${intro('┌')}${intro('─'.repeat(125))}`);
   write(
-    `${intro('│')} ${name('job')}=${val(job.jid)}, ${name('search')}=${val(
+    `${intro('│')} ${name('jid')}=${val(job.jid)}, ${name('sid')}=${val(
       job.sid,
-    )}, ${name('source')}=${val(job.source)}, ${name('randomWaitTime')}=${val(
-      job.randomWaitTime,
-    )}, ${name('filename')}=${val(job.searchResultsFilename)}, ${name(
+    )}, ${name('source')}=${val(job.source)}, ${name('alias')}=${val(
+      job.alias,
+    )}, ${name('randomWaitTime')}=${val(job.randomWaitTime)}, ${name(
       'pageNum',
-    )}=${val(job.pageNum)}`,
+    )}=${val(job.pageNum)}, ${name('filename')}=${val(
+      job.searchResultsFilename,
+    )}`,
   );
   write(`${intro('│')} ${name('url')}=${val(job.url)}`);
   write(

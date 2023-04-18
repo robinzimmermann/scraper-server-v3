@@ -4,11 +4,7 @@ import { SpiedFunction } from 'jest-mock';
 
 import JsonDb from '../../src/api/jsonDb/lowdbDriver';
 // import { Posts } from '../../src/database/models/dbPosts';
-import {
-  CraiglistFields,
-  Post,
-  Posts,
-} from '../../src/database/models/dbPosts';
+import { Posts } from '../../src/database/models/dbPosts';
 import * as dbPosts from '../../src/database/dbPosts';
 import {
   CraigslistRegion,
@@ -61,7 +57,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('valid craigslist post', () => {
+  test('valid craigslist post should work', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -104,7 +100,7 @@ describe('dbPosts initialization', () => {
     expect(post.thumbnailUrl).toBe('https://somewhere.com/imageABC');
   });
 
-  test('valid facebook post', () => {
+  test('valid facebook post should work', () => {
     const initialFile = {
       '888': {
         pid: '888',
@@ -152,7 +148,7 @@ describe('dbPosts initialization', () => {
     expect(post.thumbnailUrl).toBe('https://somewhere.com/imageXYZ');
   });
 
-  test('invalid craigslist post with no pid', () => {
+  test('invalid craigslist post with no pid fails', () => {
     const initialFile = {
       '123': {
         // pid: '123',
@@ -189,7 +185,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('invalid craigslist post with pid wrong type', () => {
+  test('invalid craigslist post with pid wrong type fails', () => {
     const initialFile = {
       '123': {
         pid: 123,
@@ -226,7 +222,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('invalid craigslist post with pid with blank string', () => {
+  test('invalid craigslist post with pid with blank string fails', () => {
     const initialFile = {
       '123': {
         pid: '',
@@ -315,7 +311,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test("valid craigslist post that does not match it's key", () => {
+  test("valid craigslist post that does not match it's key fails", () => {
     const initialFile = {
       abc: {
         pid: '123',
@@ -352,7 +348,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post mising sid', () => {
+  test('post mising sid fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -389,7 +385,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post invalid type for sid', () => {
+  test('post invalid type for sid fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -426,7 +422,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test("post sid doesn't exist", () => {
+  test("post sid doesn't exist fails", () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -463,7 +459,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post mising source', () => {
+  test('post mising source fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -500,7 +496,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid source', () => {
+  test('post with invalid source fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -537,7 +533,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no regions element', () => {
+  test('post with no regions element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -574,7 +570,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of regions', () => {
+  test('post with invalid type of regions fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -611,7 +607,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty regions element', () => {
+  test('post with an empty regions element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -648,7 +644,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an invalid regions value', () => {
+  test('post with an invalid regions value fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -685,7 +681,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no searchTerms element', () => {
+  test('post with no searchTerms element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -722,7 +718,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of searchTerms', () => {
+  test('post with invalid type of searchTerms fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -759,7 +755,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty searchTerms element', () => {
+  test('post with an empty searchTerms element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -796,7 +792,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no title element', () => {
+  test('post with no title element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -833,7 +829,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of title', () => {
+  test('post with invalid type of title fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -870,7 +866,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty title element', () => {
+  test('post with an empty title element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -907,7 +903,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no postDate element', () => {
+  test('post with no postDate element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -944,7 +940,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of postDate', () => {
+  test('post with invalid type of postDate fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -981,7 +977,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty postDate element', () => {
+  test('post with an empty postDate element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1018,7 +1014,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('postDate has invalid format', () => {
+  test('postDate has invalid format fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1055,7 +1051,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no price element', () => {
+  test('post with no price element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1092,7 +1088,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of price', () => {
+  test('post with invalid type of price fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1129,7 +1125,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no priceStr element', () => {
+  test('post with no priceStr element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1166,7 +1162,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of priceStr', () => {
+  test('post with invalid type of priceStr fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1203,7 +1199,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty priceStr element', () => {
+  test('post with an empty priceStr element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1240,7 +1236,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('priceStr has invalid format', () => {
+  test('priceStr has invalid format fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1277,7 +1273,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no hood element', () => {
+  test('post with no hood element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1314,7 +1310,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of hood', () => {
+  test('post with invalid type of hood fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1378,7 +1374,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no thumbnailUrl element', () => {
+  test('post with no thumbnailUrl element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1415,7 +1411,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of thumbnailUrl', () => {
+  test('post with invalid type of thumbnailUrl fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1452,7 +1448,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty thumbnailUrl element', () => {
+  test('post with an empty thumbnailUrl element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1489,7 +1485,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('facebook post with extras element', () => {
+  test('facebook post with extras element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1526,7 +1522,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('craigslit post with no extras element', () => {
+  test('craigslit post with no extras element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1563,7 +1559,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('craigslit post with no extras.subcategories element', () => {
+  test('craigslit post with no extras.subcategories element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1600,7 +1596,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('craigslit post with extras.subcategories of wrong type', () => {
+  test('craigslit post with extras.subcategories of wrong type fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1637,7 +1633,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('craigslit post with extras.subcategories that is empty', () => {
+  test('craigslit post with extras.subcategories that is empty fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1674,7 +1670,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('craigslit post with extras.subcategories with invalid type', () => {
+  test('craigslit post with extras.subcategories with invalid type fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1711,7 +1707,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('craigslit post with extras.subcategories with invalid value', () => {
+  test('craigslit post with extras.subcategories with invalid value fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1748,7 +1744,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test("craigslit post with element in extras that doesn't exist", () => {
+  test("craigslit post with element in extras that doesn't exist fails", () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1785,7 +1781,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test("post with element doesn't exist", () => {
+  test("post with element doesn't exist fails", () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1821,353 +1817,5 @@ describe('dbPosts initialization', () => {
     }
 
     expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-});
-
-describe('dbPosts test suite', () => {
-  beforeEach(() => {
-    initializeJest();
-  });
-
-  test('adding a craigslist post', () => {
-    const post = <Post>{
-      pid: '123',
-      sid: '1',
-      source: Source.craigslist,
-      regions: [CraigslistRegion.modesto],
-      searchTerms: ['search1'],
-      title: 'An amazing thing',
-      postDate: '2023-02-17',
-      price: 20,
-      priceStr: '$20',
-      hood: 'modesto',
-      thumbnailUrl: 'https://somewhere.com/imageABC',
-      extras: { subcategories: ['tools'] },
-    };
-
-    postsDb.setCacheDir('');
-    dbPosts.init(postsDb);
-
-    dbPosts.upsertPost(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-      post.extras,
-    );
-
-    expect(dbPosts.getPosts()).toContainAllKeys(['123']);
-    expect(writeSpy).toHaveBeenCalledTimes(1);
-  });
-
-  test('adding a craigslist post without extras', () => {
-    const post = <Post>{
-      pid: '123',
-      sid: '1',
-      source: Source.craigslist,
-      regions: [CraigslistRegion.modesto],
-      searchTerms: ['search1'],
-      title: 'An amazing thing',
-      postDate: '2023-02-17',
-      price: 20,
-      priceStr: '$20',
-      hood: 'modesto',
-      thumbnailUrl: 'https://somewhere.com/imageABC',
-    };
-
-    postsDb.setCacheDir('');
-    dbPosts.init(postsDb);
-
-    expect(() =>
-      dbPosts.upsertPost(
-        post.pid,
-        post.sid,
-        post.source,
-        post.regions[0],
-        post.searchTerms[0],
-        post.title,
-        post.postDate,
-        post.price,
-        post.hood,
-        post.thumbnailUrl,
-      ),
-    ).toThrow(Error);
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('adding a craigslist post with empty extras', () => {
-    const post = <Post>{
-      pid: '123',
-      sid: '1',
-      source: Source.craigslist,
-      regions: [CraigslistRegion.modesto],
-      searchTerms: ['search1'],
-      title: 'An amazing thing',
-      postDate: '2023-02-17',
-      price: 20,
-      priceStr: '$20',
-      hood: 'modesto',
-      thumbnailUrl: 'https://somewhere.com/imageABC',
-      extras: {},
-    };
-
-    postsDb.setCacheDir('');
-    dbPosts.init(postsDb);
-
-    expect(() =>
-      dbPosts.upsertPost(
-        post.pid,
-        post.sid,
-        post.source,
-        post.regions[0],
-        post.searchTerms[0],
-        post.title,
-        post.postDate,
-        post.price,
-        post.hood,
-        post.thumbnailUrl,
-        post.extras,
-      ),
-    ).toThrow(Error);
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('adding a facebook post', () => {
-    const post = <Post>{
-      pid: '888',
-      sid: '1',
-      source: Source.facebook,
-      regions: [FacebookRegion.reno],
-      searchTerms: ['search1'],
-      title: 'An amazing thing',
-      postDate: '2023-02-17',
-      price: 20,
-      priceStr: '$20',
-      hood: 'reno-ish',
-      thumbnailUrl: 'https://somewhere.com/imageXYZ',
-    };
-
-    postsDb.setCacheDir('');
-    dbPosts.init(postsDb);
-
-    dbPosts.upsertPost(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-    );
-
-    expect(dbPosts.getPosts()).toContainAllKeys(['888']);
-    expect(writeSpy).toHaveBeenCalledTimes(1);
-  });
-
-  test('adding a craigslist post with overlapping fields', () => {
-    const post = <Post>{
-      pid: '123',
-      sid: '1',
-      source: 'craigslist',
-      regions: ['reno', 'modesto'],
-      searchTerms: ['search2', 'search1'],
-      title: 'An amazing thing',
-      postDate: '2023-02-17',
-      price: 20,
-      priceStr: '$20',
-      hood: 'modesto',
-      thumbnailUrl: 'https://somewhere.com/imageABC',
-      extras: { subcategories: ['tools', 'motorcycles'] },
-    };
-
-    postsDb.setCacheDir('');
-    dbPosts.init(postsDb);
-
-    dbPosts.upsertPost(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-      <CraiglistFields>{
-        subcategories: [post.extras?.subcategories[0]],
-      },
-    );
-
-    dbPosts.upsertPost(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[1],
-      post.searchTerms[1],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-      <CraiglistFields>{
-        subcategories: [post.extras?.subcategories[1]],
-      },
-    );
-
-    expect(writeSpy).toHaveBeenCalledTimes(2);
-
-    const newPost = dbPosts.getPost('123');
-
-    // Should be sorted
-    expect(newPost.regions).toHaveLength(2);
-    expect(newPost.regions[0]).toBe('modesto');
-    expect(newPost.regions[1]).toBe('reno');
-
-    expect(newPost.searchTerms).toHaveLength(2);
-    // Should be sorted
-    expect(newPost.searchTerms[0]).toBe('search1');
-    expect(newPost.searchTerms[1]).toBe('search2');
-
-    expect(newPost).toHaveProperty('extras');
-    expect(newPost.extras).toHaveProperty('subcategories');
-    expect(newPost.extras?.subcategories).toHaveLength(2);
-    // Should be sorted
-    expect(newPost.extras?.subcategories[0]).toBe('motorcycles');
-    expect(newPost.extras?.subcategories[1]).toBe('tools');
-  });
-
-  test('adding a facebook post with overlapping fields', () => {
-    const post = <Post>{
-      pid: '888',
-      sid: '1',
-      source: 'facebook',
-      regions: ['reno', 'telluride'],
-      searchTerms: ['search2', 'search1'],
-      title: 'An amazing thing',
-      postDate: '2023-02-17',
-      price: 20,
-      priceStr: '$20',
-      hood: 'reno-ish',
-      thumbnailUrl: 'https://somewhere.com/imageXYZ',
-    };
-
-    postsDb.setCacheDir('');
-    dbPosts.init(postsDb);
-
-    dbPosts.upsertPost(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-    );
-
-    dbPosts.upsertPost(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[1],
-      post.searchTerms[1],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-    );
-
-    expect(writeSpy).toHaveBeenCalledTimes(2);
-
-    const newPost = dbPosts.getPost('888');
-
-    // Should be sorted
-    expect(newPost.regions).toHaveLength(2);
-    expect(newPost.regions[0]).toBe('reno');
-    expect(newPost.regions[1]).toBe('telluride');
-
-    expect(newPost.searchTerms).toHaveLength(2);
-    // Should be sorted
-    expect(newPost.searchTerms[0]).toBe('search1');
-    expect(newPost.searchTerms[1]).toBe('search2');
-  });
-
-  test('adding multiple craigslist posts', () => {
-    const post1 = <Post>{
-      pid: '123',
-      sid: '1',
-      source: Source.craigslist,
-      regions: [CraigslistRegion.modesto],
-      searchTerms: ['search1'],
-      title: 'An amazing thing',
-      postDate: '2023-02-17',
-      price: 20,
-      priceStr: '$20',
-      hood: 'modesto',
-      thumbnailUrl: 'https://somewhere.com/imageABC',
-      extras: { subcategories: ['tools'] },
-    };
-
-    const post2 = <Post>{
-      pid: '124',
-      sid: '2',
-      source: Source.craigslist,
-      regions: [CraigslistRegion.reno],
-      searchTerms: ['search2'],
-      title: 'Something different',
-      postDate: '2023-02-18',
-      price: 33,
-      priceStr: '$33',
-      hood: 'Fallon',
-      thumbnailUrl: 'https://somewhere.com/imageXYZ',
-      extras: { subcategories: ['motorcycles'] },
-    };
-
-    postsDb.setCacheDir('');
-    dbPosts.init(postsDb);
-
-    dbPosts.upsertPost(
-      post1.pid,
-      post1.sid,
-      post1.source,
-      post1.regions[0],
-      post1.searchTerms[0],
-      post1.title,
-      post1.postDate,
-      post1.price,
-      post1.hood,
-      post1.thumbnailUrl,
-      post1.extras,
-    );
-
-    dbPosts.upsertPost(
-      post2.pid,
-      post2.sid,
-      post2.source,
-      post2.regions[0],
-      post2.searchTerms[0],
-      post2.title,
-      post2.postDate,
-      post2.price,
-      post2.hood,
-      post2.thumbnailUrl,
-      post2.extras,
-    );
-
-    expect(dbPosts.getPosts()).toContainAllKeys(['123', '124']);
-    expect(writeSpy).toHaveBeenCalledTimes(2);
   });
 });
