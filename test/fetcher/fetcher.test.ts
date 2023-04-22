@@ -3,6 +3,7 @@ import * as fetcher from '../../src/fetcher/fetcher';
 import JsonDb from '../../src/api/jsonDb/lowdbDriver';
 import * as dbSearches from '../../src/database/dbSearches';
 import HBrowserInstance from '../../src/api/hbrowser/puppeteerDriver';
+// import { logger } from '../../src/utils/logger/logger';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 jest.mock('../../src/api/hbrowser/puppeteerDriver');
@@ -228,17 +229,25 @@ describe('fetchers test suite', () => {
     fetcher.buildJobs();
     const jobs = fetcher.getJobs();
 
-    // logger.verbose('before');
-    // jobs.forEach((job) => {
-    //   fetcher.printJob(job);
-    // });
-    const originalJid = jobs[0].jid;
+    jobs.forEach((job) => {
+      fetcher.printJob(job);
+    });
+    const originalJid0 = jobs[0].jid;
+    const originalJid1 = jobs[1].jid;
+    const originalJid2 = jobs[2].jid;
+    const originalJid3 = jobs[3].jid;
+    const originalJid4 = jobs[4].jid;
+
     fetcher.addAnotherPageToJob(jobs[3]);
-    // logger.verbose('after');
+
     // jobs.forEach((job) => {
     //   fetcher.printJob(job);
     // });
 
-    expect(jobs[0].jid).toBe(originalJid);
+    expect(jobs[0].jid).toBe(originalJid0);
+    expect(jobs[1].jid).toBe(originalJid1);
+    expect(jobs[2].jid).toBe(originalJid2);
+    expect(jobs[3].jid).toBe(originalJid3);
+    expect(jobs[5].jid).toBe(originalJid4);
   });
 });

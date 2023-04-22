@@ -71,13 +71,12 @@ export type Job = {
   jid: number;
   sid: string;
   source: Source;
-  alias: string;
-  details: CraigslistJobDetails | FacebookJobDetails;
   randomWaitTime: number;
   searchResultsHomeDir: string;
   searchResultsFilename: string;
   url: string;
   pageNum: number;
+  details: CraigslistJobDetails | FacebookJobDetails;
 };
 
 export type CraigslistFetchOptions = {
@@ -108,7 +107,7 @@ let jobIdCounter = 1;
 
 // let jobPointer: number;
 
-// Only puboic for testing purposes.
+// Only public for testing purposes.
 export const getJobs = (): Job[] => {
   return jobs;
 };
@@ -187,13 +186,15 @@ export const printJob = (job: Job, write = logger.debug): void => {
       break;
   }
 
+  const search = dbSearches.getSearchBySid(job.sid);
+
   write(`${intro('┌')}${intro('─'.repeat(125))}`);
   write(
     `${intro('│')} ${name('jid')}=${val(job.jid)}, ${name('sid')}=${val(
       job.sid,
-    )}, ${name('source')}=${val(job.source)}, ${name('alias')}=${val(
-      job.alias,
-    )}, ${name('randomWaitTime')}=${val(job.randomWaitTime)}, ${name(
+    )} ${val(`(${search?.alias})`)}, ${name('source')}=${val(
+      job.source,
+    )},${name('randomWaitTime')}=${val(job.randomWaitTime)}, ${name(
       'pageNum',
     )}=${val(job.pageNum)}, ${name('filename')}=${val(
       job.searchResultsFilename,
@@ -226,11 +227,16 @@ export const addJob = (
 
   let randomWaitTime = 0;
   // For vendors that need random wait time, set it.
+  const useShortWaitTime =
+    options.debugUseShortRandomWaitTime ||
+    options.debugFetchSearchResultsFromFiles
+      ? true
+      : false;
   if (source === Source.craigslist) {
     randomWaitTime = getRandWaitTime(
       options.craigslistFetchOptions.minWaitTimeBetweenRequests,
       options.craigslistFetchOptions.maxRandomExtraTimeBetweenRequest,
-      options.debugUseShortRandomWaitTime,
+      useShortWaitTime,
     );
   }
 
@@ -349,7 +355,7 @@ const getVendorJobs = (source: Source, search: Search): void => {
   switch (source) {
     case Source.craigslist:
       craigslistFetcher.getJobs(
-        search.craigslistSearchDetails,
+        search,
         (craigslistJobDetails: CraigslistJobDetails) => {
           addJob(search, source, {
             searchTerm: craigslistJobDetails.searchTerm,
@@ -362,7 +368,7 @@ const getVendorJobs = (source: Source, search: Search): void => {
       break;
     case Source.facebook:
       facebookFetcher.getJobs(
-        search.facebookSearchDetails,
+        search,
         (facebookJobDetails: FacebookJobDetails) => {
           addJob(search, source, {
             searchTerm: facebookJobDetails.searchTerm,
@@ -370,6 +376,11 @@ const getVendorJobs = (source: Source, search: Search): void => {
             region: facebookJobDetails.region,
             fileType: FacebookCacheFileType.HTML,
           });
+          // In the case of Facebook, the cache files may have been downloaded by node using Puppeteer.
+          // Or they may have been downloaded by hand by a human, since Facebook is good at noticing the
+          // automation of Puppeteer and blocking it.
+          // In the case of manually saving the files, they are in MTHTML format, rather than Puppeteer's HTML
+          // format.
         },
       );
       break;
@@ -444,11 +455,11 @@ const readFilesFromCache = (): void => {
 
     switch (job.source) {
       case Source.craigslist:
-        logger.warn('temporarily ignoring craigslist files');
-        // craigslistFetcher.processSearchResultsPage(job);
+        // logger.warn(`job: ${job.jid} temporarily ignoring craigslist files`);
+        craigslistFetcher.processSearchResultsPage(job);
         break;
       case Source.facebook:
-        logger.warn('temporarily ignoring facebook files');
+        // logger.warn(`job: ${job.jid} temporarily ignoring facebook files`);
         facebookFetcher.processSearchResultsPage(job);
         break;
     }

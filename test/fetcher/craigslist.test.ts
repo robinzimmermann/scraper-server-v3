@@ -2,22 +2,29 @@ import { CraigslistJobDetails } from '../../src/fetcher/fetcher';
 import * as CraigslistFetcher from '../../src/fetcher/craigslist';
 import {
   CraigslistRegion,
-  CraigslistSearchDetails,
   CraigslistSubcategory,
+  Search,
 } from '../../src/database/models/dbSearches';
 
 describe('fetchers test suite', () => {
   test('simple mix works', () => {
-    const searchDetails: CraigslistSearchDetails = {
-      searchTerms: ['search1'],
-      regions: [CraigslistRegion.losAngeles],
-      subcategories: [CraigslistSubcategory.tools],
+    const search = <Search>{
+      sid: '101',
+      alias: 'demolition hammer',
+      isEnabled: true,
+      rank: 85,
+      sources: ['craigslist'],
+      craigslistSearchDetails: {
+        searchTerms: ['search1'],
+        regions: [CraigslistRegion.losAngeles],
+        subcategories: [CraigslistSubcategory.tools],
+      },
     };
     const callbackArr: CraigslistJobDetails[] = [];
     const callback = (jobDetails: CraigslistJobDetails): void => {
       callbackArr.push(jobDetails);
     };
-    CraigslistFetcher.getJobs(searchDetails, callback);
+    CraigslistFetcher.getJobs(search, callback);
 
     expect(true).toBe(true);
     expect(callbackArr).toHaveLength(1);
@@ -25,25 +32,32 @@ describe('fetchers test suite', () => {
   });
 
   test('complex mix works', () => {
-    const searchDetails: CraigslistSearchDetails = {
-      searchTerms: ['search1', 'search2'],
-      regions: [
-        CraigslistRegion.losAngeles,
-        CraigslistRegion.modesto,
-        CraigslistRegion.reno,
-      ],
-      subcategories: [
-        CraigslistSubcategory.tools,
-        CraigslistSubcategory.antiques,
-        CraigslistSubcategory.carsAndTrucks,
-      ],
+    const search = <Search>{
+      sid: '101',
+      alias: 'demolition hammer',
+      isEnabled: true,
+      rank: 85,
+      sources: ['craigslist'],
+      craigslistSearchDetails: {
+        searchTerms: ['search1', 'search2'],
+        regions: [
+          CraigslistRegion.losAngeles,
+          CraigslistRegion.modesto,
+          CraigslistRegion.reno,
+        ],
+        subcategories: [
+          CraigslistSubcategory.tools,
+          CraigslistSubcategory.antiques,
+          CraigslistSubcategory.carsAndTrucks,
+        ],
+      },
     };
     const callbackArr: CraigslistJobDetails[] = [];
 
     const callback = (jobDetails: CraigslistJobDetails): void => {
       callbackArr.push(jobDetails);
     };
-    CraigslistFetcher.getJobs(searchDetails, callback);
+    CraigslistFetcher.getJobs(search, callback);
 
     expect(true).toBe(true);
     expect(callbackArr).toHaveLength(18);

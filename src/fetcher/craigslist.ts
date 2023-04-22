@@ -12,6 +12,7 @@ import {
   CraigslistRegion,
   getCraigslistSubcategoryCode,
   getCraigslistBaseUrl,
+  Search,
 } from '../database/models/dbSearches';
 import { logger } from '../utils/logger/logger';
 import {
@@ -26,10 +27,12 @@ import { CraiglistFields } from '../database/models/dbPosts';
 
 // For Craiglist, there is a job for each searchTerm by each region buy each subCategory.
 export const getJobs = (
-  searchDetails: CraigslistSearchDetails | undefined,
+  search: Search,
   callback: (craigslistJobDetails: CraigslistJobDetails) => void,
 ): Job[] => {
   const jobs: Job[] = [];
+  const searchDetails = <CraigslistSearchDetails>search.craigslistSearchDetails;
+
   if (!searchDetails) {
     // Can't assume we were legit given a parameter, must handle the undefined case
     return jobs;
@@ -37,7 +40,7 @@ export const getJobs = (
   searchDetails.searchTerms.forEach((searchTerm, i) =>
     searchDetails.regions.forEach((region) =>
       searchDetails.subcategories.forEach((craigslistSubcategory) =>
-        callback({
+        callback(<CraigslistJobDetails>{
           searchTerm,
           searchTermNum: i + 1,
           region,
@@ -77,7 +80,7 @@ export const generateCacheDir = (
 };
 
 /**
- * Just the filename
+ * Just the filename + extension
  */
 export const generateCacheFilename = (
   searchTermNum: number,
@@ -139,8 +142,6 @@ const getPostDate = (data: string | undefined): string => {
 
 export const processSearchResultsPage = (job: Job): void => {
   const cacheName = buildCacheName(job);
-  logger.verbose(`reading ${cacheName}`);
-  logger.verbose(`from url: ${job.url}`);
 
   const details = <CraigslistJobDetails>job.details;
 
@@ -236,7 +237,7 @@ export const processSearchResultsPage = (job: Job): void => {
         `${chalk.bold(pid)} missing image from [${chalk.bold(
           job.source,
         )}|${chalk.bold(details.region)}|${chalk.bold(
-          job.alias,
+          job.sid,
         )}], ${buildCacheName(job)}`,
       );
       // thumbnailUrl =
@@ -332,4 +333,10 @@ export const processSearchResultsPage = (job: Job): void => {
       <CraiglistFields>{ subcategories: [details.craigslistSubcategory] },
     );
   });
+
+  logger.debug(
+    `processed ${results.length} ${job.source} post${
+      $results.length !== 1 ? 's' : ''
+    } for job ${job.jid}`,
+  );
 };
