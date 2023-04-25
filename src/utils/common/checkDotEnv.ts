@@ -8,7 +8,6 @@ export function dotenvExists(file: string): boolean {
     return false;
   } else {
     dotenv.config({ path: file });
-    // logger.info('Using .env file to get config environment variables');
     return true;
   }
 }

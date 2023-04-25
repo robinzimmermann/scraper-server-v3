@@ -1,6 +1,6 @@
 import fs from 'fs';
+
 import chalk from 'chalk';
-// import * as cheerio from 'cheerio';
 
 import app from './app';
 import { logger } from './utils/logger/logger';
@@ -81,10 +81,12 @@ if (startBrowser) {
 } else {
   await Promise.all([startServer()]);
 }
-logger.info(chalk.green.bold('server ready'));
 
 fetcher.init(hbrowser);
-await fetcher.doSearch(); // TODO This is temporary, browser user should start searches
+
+logger.info(chalk.green.bold('server ready'));
+
+// await fetcher.doSearch(); // TODO This is temporary, browser user should start searches
 
 /*
 const $ = cheerio.load(
