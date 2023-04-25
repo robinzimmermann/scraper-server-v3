@@ -4,6 +4,10 @@ import express, { Express, Request, Response } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
+import chalk from 'chalk';
+import tinycolor from 'tinycolor2';
+
+import * as globals from '../globals';
 
 // import { logger } from '../utils/logger/logger';
 
@@ -60,6 +64,49 @@ morgan.token('statusColor', (_req: Request, res: Response, _args) => {
   return '\x1b[' + color + 'm' + status + '\x1b[0m';
 });
 
+morgan.token('methodImmediate', (req: Request, _res: Response, _args) => {
+  const darkenAmount = 35;
+  let color: string;
+  switch (req.method) {
+    case 'GET':
+      color = tinycolor(globals.restColorGet).darken(darkenAmount).toString();
+      break;
+    case 'POST':
+      color = tinycolor(globals.restColorPost).darken(darkenAmount).toString();
+      break;
+    case 'PUT':
+      color = tinycolor(globals.restColoroPut).darken(darkenAmount).toString();
+      break;
+    case 'DELETE':
+      color = tinycolor(globals.restColorDelete)
+        .darken(darkenAmount)
+        .toString();
+      break;
+    default:
+      color = tinycolor('#FFFF00').darken(darkenAmount).toString();
+  }
+  return chalk.bold.hex(color)(`${req.method}`);
+});
+
+morgan.token('method', (req: Request, _res: Response, _args) => {
+  let color = '#FFFF00';
+  switch (req.method) {
+    case 'GET':
+      color = globals.restColorGet;
+      break;
+    case 'POST':
+      color = globals.restColorPost;
+      break;
+    case 'PUT':
+      color = globals.restColoroPut;
+      break;
+    case 'DELETE':
+      color = globals.restColorDelete;
+      break;
+  }
+  return chalk.bold.hex(color)(`${req.method}`);
+});
+
 const configureExpressApp = (app: Express): void => {
   // app.set('port', process.env.PORT);
   // app.set('static_home', process.env.STATIC_HOME);
@@ -73,6 +120,18 @@ const configureExpressApp = (app: Express): void => {
   // });
 
   // app.use(morgan('combined'));
+  app.use(
+    morgan(
+      `:timestamp [\x1b[34mdebug  \x1b[0m] :methodImmediate ${chalk.dim(
+        ':url',
+      )}`,
+      {
+        skip: ignoreRequestsForLogging,
+        immediate: true,
+      },
+    ),
+  );
+
   app.use(
     morgan(
       ':timestamp [\x1b[34mdebug  \x1b[0m] :method :url :statusColor :response-time ms :res[content-length]',
