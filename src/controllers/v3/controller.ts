@@ -1,18 +1,10 @@
 import { Request, Response } from 'express';
-// import path from 'path';
-// import { fileURLToPath } from 'url';
-// import { HttpException } from '../../models/httpException.model';
 
-// console.log('loading src/controllers/v3/controller.ts');
-//
 import { publicDir } from '../../globals';
-// const __dirname = path.dirname(fileURLToPath(import.meta.url)) + '/public';
-// console.log(`global publicDir = ${publicDir}`);
-// import { publicDir } from '../../../server';
-// const publicDir = '';
 import { RES_SUCCESS } from './models';
+import * as fetcher from '../../fetcher/fetcher';
 
-const rootHandler = (_req: Request, res: Response): void => {
+export const rootHandler = (_req: Request, res: Response): void => {
   // res.status(200).send('v3 root');xxsxzz
   // res.sendFile(
   //   '/Users/rozimmermann/doc/2021.10.18_Craigslist-scraper/express-api-starter-ts/public/v3.html',
@@ -20,16 +12,25 @@ const rootHandler = (_req: Request, res: Response): void => {
   res.sendFile(`${publicDir}/v3.html`);
 };
 
-const isAliveHandler = (_req: Request, res: Response): void => {
+export const isAliveHandler = (_req: Request, res: Response): void => {
   const result: RES_SUCCESS = { success: true };
   res.status(200).json(result);
 };
 
-const exampleHandler = (_req: Request, res: Response): void => {
+export const startScanHandler = async (
+  _req: Request,
+  res: Response,
+): Promise<void> => {
+  await fetcher.doSearch();
+  const result: RES_SUCCESS = { success: true };
+  res.status(200).json(result);
+};
+
+export const exampleHandler = (_req: Request, res: Response): void => {
   res.status(200).json({ stuff: 'v3 example request' });
 };
 
-const deadHandler = (_req: Request, res: Response): void => {
+export const deadHandler = (_req: Request, res: Response): void => {
   res.status(400).json({ stuff: 'v3 dead request (' + _req.method + ')' });
 };
 
@@ -37,5 +38,3 @@ const deadHandler = (_req: Request, res: Response): void => {
 //     //Throwing some error
 //     next(new HttpException(400,'Bad Request'));
 // };
-
-export { rootHandler, isAliveHandler, exampleHandler, deadHandler };

@@ -1,4 +1,5 @@
-import fs from 'fs';
+import { promises as fsp } from 'fs';
+// import fs from 'fs';
 import * as cheerio from 'cheerio';
 import { Parser } from 'fast-mhtml';
 
@@ -22,10 +23,11 @@ import {
 } from './fetcher';
 import * as fetcher from './fetcher';
 import { upsertPost } from '../database/dbPosts';
+import * as utils from '../utils/utils';
 
 const mhtmlParser = new Parser();
 
-const figureOutFilesForJobs = (search: Search): void => {
+const figureOutFilesForJobs = async (search: Search): Promise<void> => {
   // Get the relevant jobs for this search, but only the first page.
   // We're going to decide if we should choose the HTML version or the MHTNL version.
   const jobs = fetcher
@@ -37,12 +39,25 @@ const figureOutFilesForJobs = (search: Search): void => {
         job.pageNum === 1,
     );
 
-  jobs.forEach((job) => {
+  let jobPointer = 0;
+  while (jobPointer < jobs.length) {
+    const job = jobs[jobPointer];
+    logger.verbose(`doin' facebook job ${job.jid} (hopefully in order)`);
+    // }
+    // jobs.forEach(async (job) => {
     // Check whether to use HMTL or MHTML
     const htmlPath = buildCacheName(job);
     const mhtmlPath = htmlPath.replace('.html', '.mht');
-    const htmlStats = fs.existsSync(htmlPath) ? fs.statSync(htmlPath) : null;
-    const mhtmlStats = fs.existsSync(mhtmlPath) ? fs.statSync(mhtmlPath) : null;
+    //    const htmlStats = fs.existsSync(htmlPath) ? await fsp.stat(htmlPath) : null;
+    logger.verbose('111a');
+    const htmlStats = (await utils.fileExists(htmlPath))
+      ? await fsp.stat(htmlPath)
+      : null;
+    logger.verbose('111b');
+    const mhtmlStats = (await utils.fileExists(mhtmlPath))
+      ? await fsp.stat(mhtmlPath)
+      : null;
+    logger.verbose('111c');
     let useMhtmlfile = false;
     if (htmlStats) {
       if (mhtmlStats) {
@@ -74,14 +89,16 @@ const figureOutFilesForJobs = (search: Search): void => {
       );
       (job.details as FacebookJobDetails).fileType = FacebookCacheFileType.MHT;
     }
-  });
+
+    jobPointer++;
+  }
 };
 
 // For Facebook, there is a job for each searchTerm by each region buy each subCategory.
-export const getJobs = (
+export const getJobs = async (
   search: Search,
   callback: (facebookJobDetails: FacebookJobDetails) => void,
-): Job[] => {
+): Promise<Job[]> => {
   // TODO Remove this variable and change return of function to void. Same for Craigslist version. The variable isn't used.
   const jobsDeleteMe: Job[] = [];
   const searchDetails = <FacebookSearchDetails>search.facebookSearchDetails;
@@ -97,7 +114,7 @@ export const getJobs = (
     ),
   );
 
-  figureOutFilesForJobs(search);
+  await figureOutFilesForJobs(search);
 
   /*
   // Get the relevant jobs for this search, but only the first page.
@@ -212,24 +229,30 @@ export const fetchSearchResults = async (
   // });
 };
 
-export const processSearchResultsPage = (job: Job): void => {
+export const processSearchResultsPage = async (job: Job): Promise<void> => {
   const cacheName = buildCacheName(job);
 
   const details = <FacebookJobDetails>job.details;
 
-  if (!fs.existsSync(cacheName)) {
+  // if (!fs.existsSync(cacheName)) {
+  if (!(await utils.fileExists(cacheName))) {
     logger.warn(`not found: ${cacheName}`);
     return;
   }
 
   let html: Buffer | string;
-  const fileContents = fs.readFileSync(cacheName);
+  // const fileContents = fs.readFileSync(cacheName);
+  const fileContents = await fsp.readFile(cacheName); // AAA do it!
+  // logger.debug(`job ${job.jid}: ${JSON.stringify(job, null, 2)}`);
+  // logger.debug(fileContents);
 
   if (
     (job.details as FacebookJobDetails).fileType === FacebookCacheFileType.HTML
   ) {
+    logger.verbose('111222 aaa');
     html = fileContents;
   } else {
+    logger.verbose('111222 bbb');
     const result = mhtmlParser
       .parse(fileContents) // parse file contents
       .rewrite() // rewrite all links

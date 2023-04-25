@@ -349,7 +349,7 @@ const doJobSearch = async (job: Job): Promise<boolean> => {
   return nextPage;
 };
 
-const getVendorJobs = (source: Source, search: Search): void => {
+const getVendorJobs = async (source: Source, search: Search): Promise<void> => {
   // Within craigslist sources, there are individual jobs for search terms, and then individual jobs for regions within each search term
   // Within facebook sources, there are individual jobs for search terms, and regions
   switch (source) {
@@ -367,7 +367,7 @@ const getVendorJobs = (source: Source, search: Search): void => {
       );
       break;
     case Source.facebook:
-      facebookFetcher.getJobs(
+      await facebookFetcher.getJobs(
         search,
         (facebookJobDetails: FacebookJobDetails) => {
           addJob(search, source, {
@@ -393,19 +393,23 @@ const getVendorJobs = (source: Source, search: Search): void => {
  * Build up the jobs that will be required by searches.
  * Only public for testing purposes.
  */
-export const buildJobs = (): void => {
+export const buildJobs = async (): Promise<void> => {
   // Create a job for each search. A search may result in multiple jobs
   const validSearches = dbSearches.getValidEnabledSearches();
-  validSearches.forEach((search) => {
+  for (let i = 0; i < validSearches.length; i++) {
+    const search = validSearches[i];
     // Add separate jobs for each source of a search
-    search.sources.sort().forEach((source) => {
-      getVendorJobs(source, search);
-    });
-  });
+    const sources = search.sources.sort();
+    for (let j = 0; j <= sources.length; j++) {
+      const source = sources[j];
+      await getVendorJobs(source, search);
+    }
+  }
 };
 
 const fetchFilesFromServer = async (): Promise<void> => {
   if (options.debugFetchSearchResultsFromFiles) {
+    logger.verbose('debug says go back');
     return;
   }
 
@@ -447,20 +451,21 @@ const fetchFilesFromServer = async (): Promise<void> => {
   }
 };
 
-const readFilesFromCache = (): void => {
+const readFilesFromCache = async (): Promise<void> => {
   let jobPointer = 0;
 
   while (jobPointer < jobs.length) {
     const job = jobs[jobPointer];
+    logger.verbose(`readFilesFromCache() for job ${job.jid}`);
 
     switch (job.source) {
       case Source.craigslist:
         // logger.warn(`job: ${job.jid} temporarily ignoring craigslist files`);
-        craigslistFetcher.processSearchResultsPage(job);
+        await craigslistFetcher.processSearchResultsPage(job);
         break;
       case Source.facebook:
         // logger.warn(`job: ${job.jid} temporarily ignoring facebook files`);
-        facebookFetcher.processSearchResultsPage(job);
+        await facebookFetcher.processSearchResultsPage(job);
         break;
     }
     jobPointer++;
@@ -474,7 +479,7 @@ export const doSearch = async (): Promise<void> => {
   // Initialize all variables that need it
   jobs.length = 0;
 
-  buildJobs();
+  await buildJobs();
 
   if (!jobs || jobs.length === 0) {
     logger.warn(warningColor('nothing to fetch!'));
@@ -486,14 +491,17 @@ export const doSearch = async (): Promise<void> => {
   //   printJob(job);
   // });
 
+  logger.verbose('STARTING TO FETCH FILES');
   await fetchFilesFromServer();
 
+  logger.verbose('STARTING TO READ FROM CACHE');
   // Now process the downloaded results files
-  readFilesFromCache();
+  await readFilesFromCache();
 
   logger.verbose('final jobs:');
   jobs.forEach((job) => {
-    printJob(job);
+    logger.debug(`job ${job.jid}, woot`);
+    // printJob(job);
   });
 
   logger.info('searching complete');

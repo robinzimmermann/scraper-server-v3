@@ -1,4 +1,5 @@
-import fs from 'fs';
+import { promises as fsp } from 'fs';
+// import fs from 'fs';
 import chalk from 'chalk';
 import * as cheerio from 'cheerio';
 import { DateTime } from 'luxon';
@@ -106,8 +107,8 @@ export const fetchSearchResults = async (
     logger.verbose('looks like this craigslist page has a result to save');
     const cacheLocation = buildCacheName(job);
     logger.verbose(`saving to filename=${chalk.bold(cacheLocation)}`);
-    fs.mkdirSync(job.searchResultsHomeDir, { recursive: true });
-    fs.writeFileSync(cacheLocation, results.html);
+    await fsp.mkdir(job.searchResultsHomeDir, { recursive: true });
+    await fsp.writeFile(cacheLocation, results.html);
   } else {
     // This should never happen
     logger.verbose('looks like this craigslist page has no result to save');
@@ -140,12 +141,12 @@ const getPostDate = (data: string | undefined): string => {
   }
 };
 
-export const processSearchResultsPage = (job: Job): void => {
+export const processSearchResultsPage = async (job: Job): Promise<void> => {
   const cacheName = buildCacheName(job);
 
   const details = <CraigslistJobDetails>job.details;
 
-  const html = fs.readFileSync(cacheName);
+  const html = await fsp.readFile(cacheName);
 
   // $ is cheerio root
   const $ = cheerio.load(html);
