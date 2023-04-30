@@ -1,5 +1,4 @@
 import fs from 'fs';
-
 import chalk from 'chalk';
 
 import app from './app';
@@ -7,14 +6,9 @@ import { logger } from './utils/logger/logger';
 import { port, cacheDir } from './globals';
 import { initAllDbs } from './database/common';
 import * as fetcher from './fetcher/fetcher';
-// import * as fetcher2 from './fetcher/fetcher2';
-// import { defaultOptions, doSearch } from './fetcher/fetcher';
 import HBrowserInstance from './api/hbrowser/puppeteerDriver';
-// import { DateTime } from 'luxon';
 
-const startBrowser = fetcher.defaultOptions.debugFetchSearchResultsFromFiles
-  ? false
-  : true;
+const startBrowser = fetcher.defaultOptions.debugFetchSearchResultsFromFiles ? false : true;
 
 const hbrowser = HBrowserInstance();
 
@@ -22,15 +16,13 @@ const startServer = async (): Promise<void> => {
   return new Promise((resolve) => {
     app.listen(port, async () => {
       logger.info(
-        `server is starting at ${chalk.bold(
-          `http://localhost:${port}`,
-        )} in ${chalk.bold(app.get('env'))} mode...`,
+        `server is starting at ${chalk.bold(`http://localhost:${port}`)} in ${chalk.bold(
+          app.get('env'),
+        )} mode...`,
       );
 
       if (!fs.existsSync(cacheDir)) {
-        logger.warn(
-          `The cache directory does not exist, creating it: ${cacheDir}`,
-        );
+        logger.warn(`The cache directory does not exist, creating it: ${cacheDir}`);
         fs.mkdirSync(cacheDir);
       }
 

@@ -21,10 +21,7 @@ export const getDateTimestamp = (): string => {
     hour12: false,
   } as Intl.DateTimeFormatOptions;
   const timestampFormat = new Intl.DateTimeFormat('en-US', timestampOptions);
-  const result = timestampFormat
-    .format(new Date())
-    .replace(',', '')
-    .replaceAll('/', '-');
+  const result = timestampFormat.format(new Date()).replace(',', '').replaceAll('/', '-');
   return result;
 };
 
@@ -102,11 +99,7 @@ export const waitWithProgress = (
 /**
  * Modifies the array in place
  */
-export const moveItemInArray = <T>(
-  workArray: T[],
-  fromIndex: number,
-  toIndex: number,
-): T[] => {
+export const moveItemInArray = <T>(workArray: T[], fromIndex: number, toIndex: number): T[] => {
   if (toIndex === fromIndex) {
     return workArray;
   }
@@ -152,10 +145,7 @@ export const compareArrays = <T>(a: T[], b: T[]): boolean =>
  * @param originalArr the array deemed "correct"
  * @param comparisonArr the array being compared which may have differences to the originalArr
  */
-export const differenceArrays = <T>(
-  originalArr: T[],
-  comparisonArr: T[],
-): T[] => {
+export const differenceArrays = <T>(originalArr: T[], comparisonArr: T[]): T[] => {
   const remove = new Set(originalArr);
   return comparisonArr.filter((k) => !remove.has(k));
 };
@@ -189,4 +179,18 @@ export const fileExists = async (filename: string): Promise<boolean> => {
       throw _err;
     }
   }
+};
+
+/**
+ * Returns "a" or "an" depending on whether `str` begins with a vowel or not
+ */
+export const getAorAn = (str: string): string => {
+  if (!str) {
+    return '';
+  }
+  return ['a', 'e', 'i', 'o', 'u'].includes(str[0].toLowerCase()) ? 'an' : 'a';
+};
+
+export const removeAnsiCodes = (str: string): string => {
+  return str.replace(/\033\[[0-9;]*m/g, '');
 };

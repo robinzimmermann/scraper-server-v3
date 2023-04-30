@@ -3,19 +3,10 @@ import 'jest-extended';
 import { SpiedFunction } from 'jest-mock';
 
 import JsonDb from '../../src/api/jsonDb/lowdbDriver';
-// import { Posts } from '../../src/database/models/dbPosts';
-import {
-  CraiglistFields,
-  Post,
-  Posts,
-} from '../../src/database/models/dbPosts';
+import { CraiglistFields, Post, Posts } from '../../src/database/models/dbPosts';
 import * as dbPosts from '../../src/database/dbPosts';
 import * as dbSearches from '../../src/database/dbSearches';
-import {
-  CraigslistRegion,
-  Searches,
-  Source,
-} from '../../src/database/models/dbSearches';
+import { CraigslistRegion, Searches, Source } from '../../src/database/models/dbSearches';
 import * as postsDbData from './testData/dbPostsTestData';
 import { FacebookRegion } from '../../src/database/models/dbSearches';
 import { logger } from '../../src/utils/logger/logger';
@@ -29,10 +20,7 @@ let writeSpy: SpiedFunction<() => void>;
 const searchesDb = JsonDb<Searches>();
 const searchesDbData = postsDbData.initialSearches;
 
-const printResultErrors = (
-  result: Result<Post, string[]>,
-  lg = logger.error,
-): void => {
+const printResultErrors = (result: Result<Post, string[]>, lg = logger.error): void => {
   result.mapErr((messages: string[]) => messages.forEach((msg) => lg(msg)));
 };
 
@@ -126,7 +114,6 @@ describe('dbPosts test suite', () => {
     // Javascript guard is needed to the contents of result
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
-      // printResultErrors(result, logger.info);
     }
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });

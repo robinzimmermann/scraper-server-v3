@@ -5,10 +5,12 @@ import chalk from 'chalk';
 import JsonDb from '../api/jsonDb/lowdbDriver';
 import * as dbPosts from '../database/dbPosts';
 import * as dbSearches from '../database/dbSearches';
+import * as dbUserPrefs from '../database/dbUserPrefs';
 import { dbDir } from '../globals';
 import { logger } from '../../src/utils/logger/logger';
 import { Posts } from './models/dbPosts';
 import { Searches } from './models/dbSearches';
+import { UserPrefs } from './models/dbUserPrefs';
 
 export type ErrorWarnings = {
   errors?: string[];
@@ -32,6 +34,10 @@ export const initAllDbs = (): Result<boolean, string[]> => {
   postsDb.setCacheDir(`${dbDir}/dbPosts.json`);
   const postsResult = dbPosts.init(postsDb);
 
+  const userPrefsDb = JsonDb<UserPrefs>();
+  userPrefsDb.setCacheDir(`${dbDir}/dbUserPrefs.json`);
+  const userPrefsResult = dbUserPrefs.init(userPrefsDb);
+
   if (searchesResult.isErr()) {
     searchesResult.mapErr((messages: string[]) =>
       messages.forEach((msg) => errors.push(msg)),
@@ -40,6 +46,12 @@ export const initAllDbs = (): Result<boolean, string[]> => {
 
   if (postsResult.isErr()) {
     postsResult.mapErr((messages: string[]) =>
+      messages.forEach((msg) => errors.push(msg)),
+    );
+  }
+
+  if (userPrefsResult.isErr()) {
+    userPrefsResult.mapErr((messages: string[]) =>
       messages.forEach((msg) => errors.push(msg)),
     );
   }

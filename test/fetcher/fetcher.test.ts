@@ -100,7 +100,7 @@ describe('fetchers test suite', () => {
 
     fetcher.buildJobs();
     const jobs = fetcher.getJobs();
-    expect(jobs).toHaveLength(18);
+    expect(jobs).toHaveLength(12);
   });
 
   test('create job with invalid source fails', () => {

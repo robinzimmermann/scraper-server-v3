@@ -90,6 +90,8 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
         'sid',
       )} that doesn't exist: ${chalk.bold(post.sid)}`,
     );
+  } else if (typeof post.sid !== 'string') {
+    error(`has invalid type of ${chalk.bold('sid')}: ${typeof post.sid}`);
   }
   // Don't continue if there are errors
   if (errors.length > 0) {
