@@ -18,6 +18,7 @@
     "prettier"
   ],
   "plugins": ["import", "@typescript-eslint"],
+  "ignorePatterns": ["jest.config.js"],
   "settings": {
     "import/parsers": {
       "@typescript-eslint/parser": [".ts", ".tsx"]
