@@ -185,7 +185,6 @@ export const arrayHasValidEnumElements = <T, E extends { [name: string]: unknown
   const arr = parent[prop] as [];
 
   arr.forEach((element) => {
-    logger.verbose(`checking out ${element} for ${JSON.stringify(propName)}`);
     if (!isValueInEnum(element, theEnum)) {
       errors.push(
         `${chalk.bold(parentStrForError)} has ${chalk.bold(
