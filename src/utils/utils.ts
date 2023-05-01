@@ -1,5 +1,4 @@
 import { promises as fsp } from 'fs';
-import { logger } from './logger/logger';
 
 // import { logger } from './logger/logger';
 
@@ -163,19 +162,15 @@ export const differenceArrays = <T>(originalArr: T[], comparisonArr: T[]): T[] =
  * Asynchronously check if a file exists.
  */
 export const fileExists = async (filename: string): Promise<boolean> => {
-  logger.verbose(`trying ${filename}`);
   try {
     await fsp.access(filename);
     return true;
     // } catch (err: NodeJS.ErrnoException) {
   } catch (err) {
     const _err = <NodeJS.ErrnoException>err;
-    logger.verbose(`error: ${JSON.stringify(_err, null, 2)}`);
     if (_err.code === 'ENOENT') {
-      logger.verbose('RETURNING FALSE');
       return false;
     } else {
-      logger.verbose('THROWING!');
       throw _err;
     }
   }

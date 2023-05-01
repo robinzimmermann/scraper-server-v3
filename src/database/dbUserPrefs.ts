@@ -1,9 +1,9 @@
 import { Result, ok, err } from 'neverthrow';
 
 import { JsonDb } from '../api/jsonDb/JsonDb';
-import { DbLogger } from './util';
+import { DbLogger, ElementType } from './utils';
 import { SearchPrefs, UserPrefs } from './models/dbUserPrefs';
-import { appendErrors, propIsCorrectType, propIsPresent } from './utils';
+import { appendErrors, propIsCorrectType1, propIsPresent } from './utils';
 
 export type Database = UserPrefs;
 
@@ -20,15 +20,13 @@ const isSearchPrefsValid = (searchPrefs: SearchPrefs): Result<boolean, string[]>
   Object.keys(searchPrefs).forEach((searchPrefSid) => {
     const searchPref = searchPrefs[searchPrefSid];
 
-    // const prop = getPpAsKey('sid');
-    const propIsPResult = propIsPresent(
+    const propIsPresentResult = propIsPresent(
       searchPref,
       `userPrefs.searchPrefs.${searchPrefSid}`,
       'sid',
     );
-    if (propIsPResult.isErr()) {
-      // propIsPResult.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
-      appendErrors(errors, propIsPResult);
+    if (propIsPresentResult.isErr()) {
+      appendErrors(errors, propIsPresentResult);
     }
   });
 
@@ -42,50 +40,25 @@ const isSearchPrefsValid = (searchPrefs: SearchPrefs): Result<boolean, string[]>
 const isDbValid = (): Result<boolean, string[]> => {
   const errors: string[] = [];
 
-  // const propIsPresent = (propName: string): boolean => {
-  //   const prop = getPpAsKey(propName);
-  //   const propIsPresentResult = dbData[prop] !== undefined;
-  //   if (!propIsPresentResult) {
-  //     errors.push(
-  //       `userPrefs has no element ${chalk.bold(JSON.stringify(prop))}`,
-  //     );
-  //   }
-  //   return propIsPresentResult;
-  // };
-
-  // const propIsCorrectType = (propName: string, eType: string): boolean => {
-  //   const prop = getPpAsKey(propName);
-  //   const propIsCorectTypeResult = dbData[prop] !== undefined;
-  //   if (typeof dbData[prop] !== eType) {
-  //     errors.push(
-  //       `userPrefs has ${getAorAn(propName)} ${chalk.bold(
-  //         propName,
-  //       )} element that is not ${getAorAn(eType)} ${chalk.bold(eType)}`,
-  //     );
-  //   }
-  //   return propIsCorectTypeResult;
-  // };
-
   let propName = 'isUndoing';
-  let expectedType = 'boolean';
-  const propIsPResult3 = propIsPresent(dbData, 'userPrefs', propName);
-  if (propIsPResult3.isOk()) {
-    const userPrefsErrors1 = propIsCorrectType(dbData, 'userPrefs', propName, expectedType);
-
+  let expectedType = ElementType.boolean;
+  let propIsPresentResult = propIsPresent(dbData, 'userPrefs', propName);
+  if (propIsPresentResult.isOk()) {
+    const userPrefsErrors1 = propIsCorrectType1(dbData, 'userPrefs', propName, expectedType);
     if (userPrefsErrors1.isOk()) {
       // All is good, do nothing
     } else {
       userPrefsErrors1.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
     }
   } else {
-    propIsPResult3.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
+    propIsPresentResult.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
   }
 
   propName = 'displayMinimalPostcards';
-  expectedType = 'boolean';
-  const propIsPResult = propIsPresent(dbData, 'userPrefs', propName);
-  if (propIsPResult.isOk()) {
-    const userPrefsErrors1 = propIsCorrectType(dbData, 'userPrefs', propName, expectedType);
+  expectedType = ElementType.boolean;
+  propIsPresentResult = propIsPresent(dbData, 'userPrefs', propName);
+  if (propIsPresentResult.isOk()) {
+    const userPrefsErrors1 = propIsCorrectType1(dbData, 'userPrefs', propName, expectedType);
 
     if (userPrefsErrors1.isOk()) {
       // All is good, do nothing
@@ -93,29 +66,26 @@ const isDbValid = (): Result<boolean, string[]> => {
       userPrefsErrors1.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
     }
   } else {
-    propIsPResult.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
+    propIsPresentResult.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
   }
 
   propName = 'searchPrefs';
-  expectedType = 'object';
-  const propIsPResult2 = propIsPresent(dbData, 'userPrefs', propName);
-  if (propIsPResult2.isOk()) {
-    const userPrefsErrors = propIsCorrectType(dbData, 'userPrefs', propName, expectedType);
+  expectedType = ElementType.object;
+  propIsPresentResult = propIsPresent(dbData, 'userPrefs', propName);
+  if (propIsPresentResult.isOk()) {
+    const userPrefsErrors = propIsCorrectType1(dbData, 'userPrefs', propName, expectedType);
     if (userPrefsErrors.isOk()) {
       const searchPrefsErrors = isSearchPrefsValid(dbData.searchPrefs);
-      // searchPrefsErrors.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
       if (searchPrefsErrors.isOk()) {
         // All is good, do nothing
       } else {
         appendErrors(errors, searchPrefsErrors);
       }
     } else {
-      // userPrefsErrors.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
       appendErrors(errors, userPrefsErrors);
     }
   } else {
-    // propIsPResult2.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
-    appendErrors(errors, propIsPResult2);
+    appendErrors(errors, propIsPresentResult);
   }
 
   if (errors.length > 0) {

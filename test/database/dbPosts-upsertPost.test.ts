@@ -9,8 +9,6 @@ import * as dbSearches from '../../src/database/dbSearches';
 import { CraigslistRegion, Searches, Source } from '../../src/database/models/dbSearches';
 import * as postsDbData from './testData/dbPostsTestData';
 import { FacebookRegion } from '../../src/database/models/dbSearches';
-import { logger } from '../../src/utils/logger/logger';
-import { Result } from 'neverthrow';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
@@ -19,10 +17,6 @@ let writeSpy: SpiedFunction<() => void>;
 
 const searchesDb = JsonDb<Searches>();
 const searchesDbData = postsDbData.initialSearches;
-
-const printResultErrors = (result: Result<Post, string[]>, lg = logger.error): void => {
-  result.mapErr((messages: string[]) => messages.forEach((msg) => lg(msg)));
-};
 
 const initializeJest = (): void => {
   jest.clearAllMocks();
@@ -114,6 +108,7 @@ describe('dbPosts test suite', () => {
     // Javascript guard is needed to the contents of result
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['123', 'postDate', 'with no value']);
     }
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
@@ -149,10 +144,6 @@ describe('dbPosts test suite', () => {
       post.thumbnailUrl,
     );
 
-    // Javascript guard is needed to the contents of result
-    if (result.isErr()) {
-      printResultErrors(result);
-    }
     expect(result.isOk()).toBeTrue();
     expect(writeSpy).toHaveBeenCalledTimes(1);
   });

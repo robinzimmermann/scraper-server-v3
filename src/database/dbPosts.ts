@@ -4,7 +4,13 @@ import { Result, ok, err } from 'neverthrow';
 import { CraiglistFields, Post, Posts } from './models/dbPosts';
 import { JsonDb } from '../api/jsonDb/JsonDb';
 // import jsonDb from '../api/jsonDb/JsonDb';
-import { DbLogger } from './util';
+import {
+  DbLogger,
+  ElementType,
+  arrayHasElements,
+  arrayHasValidEnumElements,
+  propHasChars,
+} from './utils';
 import {
   Source,
   Region,
@@ -15,6 +21,7 @@ import {
 import * as dbSearches from './dbSearches';
 import * as utils from '../utils/utils';
 import { isNumeric } from '../utils/utils';
+import { appendErrors, propIsCorrectType1 as propIsCorrectType, propIsPresent } from './utils';
 
 export type Database = Posts;
 
@@ -29,8 +36,7 @@ const dbLogger = DbLogger(dbLoggerPrefix);
 const dateChecker = /^202[3-9]-[01][0-9]-[0123][0-9]$/;
 
 // To check a string matches currency
-const currencyChecker =
-  /([$*\s]*(?:\d{1,3}(?:[\s,]\d{3})+|\d+)(?:.\d{2})?([\s]*[a-z-A-Z]{0,3}))/;
+const currencyChecker = /([$*\s]*(?:\d{1,3}(?:[\s,]\d{3})+|\d+)(?:.\d{2})?([\s]*[a-z-A-Z]{0,3}))/;
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -38,242 +44,331 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0,
 });
 
-// export const saveData = (): void => {
-//   // dbFile.write();
-//   jsonDb.write();
-// };
+/**
+ * Assume extras field exists
+ */
+const isExtrasValid = (extras: CraiglistFields, errPrefix: string): Result<boolean, string[]> => {
+  const errors: string[] = [];
+
+  const propName = 'subcategories';
+
+  const subcategoriesTypeErrors = propIsCorrectType(extras, errPrefix, propName, ElementType.array);
+  if (subcategoriesTypeErrors.isOk()) {
+    const propHasStringLength = propHasChars(extras, errPrefix, propName);
+    if (propHasStringLength.isOk()) {
+      const enumElementsErrors = arrayHasValidEnumElements(
+        extras,
+        errPrefix,
+        propName,
+        CraigslistSubcategory,
+      );
+      if (enumElementsErrors.isOk()) {
+        const actualElementKeys = Object.keys(extras);
+        if (utils.differenceArrays([propName], actualElementKeys).length === 0) {
+          // All good, do nothing
+        } else {
+          const arr = utils.differenceArrays([propName], actualElementKeys);
+          errors.push(
+            `${errPrefix} has ${chalk.bold('extras')} element with extra keys: ${chalk.bold(
+              arr.join(', '),
+            )}`,
+          );
+        }
+      } else {
+        appendErrors(errors, enumElementsErrors);
+      }
+    } else {
+      appendErrors(errors, propHasStringLength);
+    }
+  } else {
+    appendErrors(errors, subcategoriesTypeErrors);
+  }
+
+  if (errors.length > 0) {
+    return err(errors);
+  } else {
+    return ok(true);
+  }
+};
 
 const isPostValid = (post: Post): Result<boolean, string[]> => {
   const errors: string[] = [];
 
-  // Check PID element is present
-  if (post.pid === undefined) {
-    errors.push(`a post has no element ${chalk.bold('pid')}`);
+  // Check that some important elements are there first, before continuing with the standard error checks.
+  let propName = 'pid';
+  let expectedType = ElementType.string;
+  let propIsPresentResult = propIsPresent(post, 'post', propName);
+  let propIsCorrectTypeResult: Result<boolean, string[]>;
+  if (propIsPresentResult.isOk()) {
+    propIsCorrectTypeResult = propIsCorrectType(post, `post ${post.pid}`, propName, expectedType);
+    if (propIsCorrectTypeResult.isOk()) {
+      if (!isNumeric(post.pid)) {
+        errors.push(`a post has a ${chalk.bold('pid')} element that is not numeric string`);
+        // return err(errors);
+      }
+    } else {
+      appendErrors(errors, propIsCorrectTypeResult);
+    }
+  } else {
+    appendErrors(errors, propIsPresentResult);
+    // return err(errors);
+  }
+
+  // Don't continue if there are errors
+  if (errors.length > 0) {
     return err(errors);
   }
 
-  if (typeof post.pid !== 'string') {
-    errors.push(
-      `a post has a ${chalk.bold('pid')} element that is not a ${chalk.bold(
-        'string',
-      )}`,
-    );
-    return err(errors);
-  }
-
-  if (!isNumeric(post.pid)) {
-    errors.push(
-      `a post has a ${chalk.bold('pid')} element that is not numeric`,
-    );
-    return err(errors);
-  }
-
-  const errPrefix = `post ${post.pid}`;
+  const errPrefix = chalk.bold(`post ${post.pid}`);
 
   const error = (msg: string): void => {
     errors.push(`${errPrefix} ${msg}`);
   };
 
-  // Check SID element is present
-  // if (!Object.prototype.hasOwnProperty.call(post, 'sid')) {
-  //   logger.verbose('eee');
-  //   error(`has no element ${chalk.bold('sid')}`);
-  // }
-  // else if (typeof post.sid !== 'string') {
-  //   logger.verbose('fff');
-  //   error(`has invalid type of ${chalk.bold('sid')}: ${typeof post.sid}`);
-  // }
-  // else
-  if (!dbSearches.getSearchBySid(post.sid)) {
-    error(
-      `references a search ${chalk.bold(
-        'sid',
-      )} that doesn't exist: ${chalk.bold(post.sid)}`,
-    );
-  } else if (typeof post.sid !== 'string') {
-    error(`has invalid type of ${chalk.bold('sid')}: ${typeof post.sid}`);
-  }
-  // Don't continue if there are errors
-  if (errors.length > 0) {
-    return err(errors);
-  }
-
-  if (post.source === undefined) {
-    error(`has no element ${chalk.bold('source')}`);
-  } else if (!utils.isValueInEnum(post.source, Source)) {
-    error(
-      `has invalid value for ${chalk.bold('source')}: ${chalk.bold(
-        post.source,
-      )}`,
-    );
-  }
-  // Don't continue if there are errors
-  if (errors.length > 0) {
-    return err(errors);
-  }
-
-  if (post.regions === undefined) {
-    error(`has no element ${chalk.bold('regions')}`);
-  } else if (!Array.isArray(post.regions)) {
-    error(`has ${chalk.bold('regions')} that is not an array`);
-  } else if (post.regions.length === 0) {
-    error(`has ${chalk.bold('regions')} with no elements`);
-  } else {
-    const enumName =
-      post.source === Source.craigslist ? CraigslistRegion : FacebookRegion;
-    post.regions
-      .filter((region) => !utils.isValueInEnum(region, enumName))
-      .forEach((region) =>
+  propName = 'sid';
+  expectedType = ElementType.string;
+  propIsPresentResult = propIsPresent(post, errPrefix, propName);
+  if (propIsPresentResult.isOk()) {
+    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
+    if (propIsCorrectTypeResult.isOk()) {
+      if (!dbSearches.getSearchBySid(post.sid)) {
         error(
-          `has ${post.source} ${chalk.bold(
-            'regions',
-          )} which contains an invalid value: ${chalk.bold(region)}`,
-        ),
-      );
-  }
-
-  if (post.searchTerms === undefined) {
-    error(`has no element ${chalk.bold('searchTerms')}`);
-  } else if (!Array.isArray(post.searchTerms)) {
-    error(`has ${chalk.bold('searchTerms')} that is not an array`);
-  } else if (post.searchTerms.length === 0) {
-    error(`has ${chalk.bold('searchTerms')} with no elements`);
-  }
-
-  if (post.title === undefined) {
-    error(`has no element ${chalk.bold('title')}`);
-  } else if (!(typeof post.title === 'string')) {
-    error(`has ${chalk.bold('title')} that is not a string`);
-  } else if (post.title.length === 0) {
-    error(`has a ${chalk.bold('title')} with no value`);
-  }
-
-  if (post.postDate === undefined) {
-    error(`has no element ${chalk.bold('postDate')}`);
-  } else if (!(typeof post.postDate === 'string')) {
-    error(`has ${chalk.bold('postDate')} that is not a string`);
-  } else if (post.source !== Source.facebook || post.postDate.length > 0) {
-    // Facebook Marketplace doesn't include post dates on its search results page,
-    // so they may be blank.
-    // The future postDate tests only apply if the post is not Facebook, or it is Facebook,
-    // but the postDate is supplied
-
-    if (post.postDate.length === 0) {
-      error(`has a ${chalk.bold('postDate')} with no value`);
-    } else if (!dateChecker.test(post.postDate)) {
-      error(
-        `invalid format of ${chalk.bold('postDate')}: ${chalk.bold(
-          post.postDate,
-        )} (should be 'YYYY-MM-DD')`,
-      );
-    }
-
-    if (post.price === undefined) {
-      error(`has no element ${chalk.bold('price')}`);
-    } else if (!(typeof post.price === 'number')) {
-      error(
-        `has ${chalk.bold('price')} that is not a number: ${chalk.bold(
-          post.price,
-        )}`,
-      );
-    }
-  }
-
-  if (post.priceStr === undefined) {
-    error(`has no element ${chalk.bold('priceStr')}`);
-  } else if (!(typeof post.priceStr === 'string')) {
-    error(`has ${chalk.bold('priceStr')} that is not a string`);
-  } else if (post.priceStr.length === 0) {
-    error(`has a ${chalk.bold('priceStr')} with no value`);
-  } else if (!currencyChecker.test(post.priceStr)) {
-    error(
-      `invalid format of ${chalk.bold('priceStr')}: ${chalk.bold(
-        post.priceStr,
-      )}`,
-    );
-  }
-
-  if (post.hood === undefined) {
-    error(`has no element ${chalk.bold('hood')}`);
-  } else if (!(typeof post.hood === 'string')) {
-    error(`has ${chalk.bold('hood')} that is not a string`);
-  } else if (post.hood.length === 0 && post.source !== Source.craigslist) {
-    // Craiglist posts sometimes have no hood, so a blank hood can
-    // be ignored for Craigslist.
-    error(`has a ${chalk.bold('hood')} with no value`);
-  }
-
-  if (post.thumbnailUrl === undefined) {
-    error(`has no element ${chalk.bold('thumbnailUrl')}`);
-  } else if (!(typeof post.thumbnailUrl === 'string')) {
-    error(`has ${chalk.bold('thumbnailUrl')} that is not a string`);
-  } else if (post.thumbnailUrl.length === 0) {
-    error(`has a ${chalk.bold('thumbnailUrl')} with no value`);
-  }
-
-  if (post.extras !== undefined) {
-    if (post.source === Source.facebook) {
-      error(
-        `has ${chalk.bold('extras')} element when the source is ${chalk.bold(
-          post.source,
-        )}`,
-      );
-    } else {
-      const actualElementKeys = post.extras
-        ? Object.keys(post.extras)
-        : <string[]>[];
-      if (post.extras.subcategories === undefined) {
-        error(
-          `has ${chalk.bold('extras')} with no element ${chalk.bold(
-            'subcategories',
-          )}`,
+          `references a search ${chalk.bold('sid')} that doesn't exist: ${chalk.bold(post.sid)}`,
         );
-      } else if (
-        utils.differenceArrays(['subcategories'], actualElementKeys).length !==
-        0
-      ) {
-        const arr = utils.differenceArrays(
-          ['subcategories'],
-          actualElementKeys,
-        );
-        error(
-          `has ${chalk.bold('extras')} element with extra keys: ${chalk.bold(
-            arr.join(', '),
-          )}`,
-        );
-      } else if (!Array.isArray(post.extras?.subcategories)) {
-        error(
-          `has ${chalk.bold('extras')} with ${chalk.bold(
-            'subcategories',
-          )} that is not an array`,
-        );
-      } else if (post.extras?.subcategories.length === 0) {
-        error(
-          `has ${chalk.bold('extras')} with ${chalk.bold(
-            'subcategories',
-          )} with no elements`,
-        );
-      } else {
-        post.extras?.subcategories
-          .filter(
-            (subcategory) =>
-              !utils.isValueInEnum(subcategory, CraigslistSubcategory),
-          )
-          .forEach((subcategory) =>
-            error(
-              `has ${'post.extras.subcategories'} which contains an invalid value: ${chalk.bold(
-                subcategory,
-              )}`,
-            ),
-          );
       }
+    } else {
+      appendErrors(errors, propIsCorrectTypeResult);
     }
-  } else if (post.source === Source.craigslist) {
-    error(
-      `has a source of ${chalk.bold(post.source)} but no ${chalk.bold(
-        'extras',
-      )} element`,
-    );
+  } else {
+    appendErrors(errors, propIsPresentResult);
+  }
+
+  propName = 'source';
+  propIsPresentResult = propIsPresent(post, errPrefix, propName);
+  if (propIsPresentResult.isOk()) {
+    if (!utils.isValueInEnum(post.source, Source)) {
+      error(`has invalid value for ${chalk.bold('source')}: ${chalk.bold(post.source)}`);
+    }
+  } else {
+    appendErrors(errors, propIsPresentResult);
+    // return err(errors);
+  }
+
+  // Don't continue if there are errors
+  if (errors.length > 0) {
+    return err(errors);
+  }
+
+  propName = 'regions';
+  expectedType = ElementType.array;
+  propIsPresentResult = propIsPresent(post, 'post', propName);
+  if (propIsPresentResult.isOk()) {
+    const postTypeErrors = propIsCorrectType(post, errPrefix, propName, expectedType);
+    if (postTypeErrors.isOk()) {
+      const postArrayLengthErrors = arrayHasElements(post, errPrefix, propName);
+      if (postArrayLengthErrors.isOk()) {
+        const theEnum = post.source === Source.craigslist ? CraigslistRegion : FacebookRegion;
+        const postArrayEnumElementsErrors = arrayHasValidEnumElements(
+          post,
+          errPrefix,
+          propName,
+          theEnum,
+        );
+        if (postArrayEnumElementsErrors.isOk()) {
+          // All is good, do nothing
+        } else {
+          appendErrors(errors, postArrayEnumElementsErrors);
+        }
+      } else {
+        appendErrors(errors, postArrayLengthErrors);
+      }
+    } else {
+      appendErrors(errors, postTypeErrors);
+    }
+  } else {
+    appendErrors(errors, propIsPresentResult);
+  }
+
+  propName = 'searchTerms';
+  expectedType = ElementType.array;
+  propIsPresentResult = propIsPresent(post, 'post', propName);
+  if (propIsPresentResult.isOk()) {
+    const postTypeErrors = propIsCorrectType(post, errPrefix, propName, expectedType);
+    if (postTypeErrors.isOk()) {
+      const postArrayLengthErrors = arrayHasElements(post, errPrefix, propName);
+      if (postArrayLengthErrors.isOk()) {
+        // All is good, do nothing
+      } else {
+        appendErrors(errors, postArrayLengthErrors);
+      }
+    } else {
+      appendErrors(errors, postTypeErrors);
+    }
+  } else {
+    appendErrors(errors, propIsPresentResult);
+  }
+
+  propName = 'title';
+  expectedType = ElementType.string;
+  propIsPresentResult = propIsPresent(post, errPrefix, propName);
+  if (propIsPresentResult.isOk()) {
+    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
+    if (propIsCorrectTypeResult.isOk()) {
+      const propHasStringLength = propHasChars(post, errPrefix, propName);
+      if (propHasStringLength.isOk()) {
+        // All is good, do nothing
+      } else {
+        appendErrors(errors, propHasStringLength);
+      }
+    } else {
+      appendErrors(errors, propIsCorrectTypeResult);
+    }
+  } else {
+    appendErrors(errors, propIsPresentResult);
+  }
+
+  propName = 'postDate';
+  expectedType = ElementType.string;
+  propIsPresentResult = propIsPresent(post, errPrefix, propName);
+  if (propIsPresentResult.isOk()) {
+    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
+    if (propIsCorrectTypeResult.isOk()) {
+      const propHasStringLength = propHasChars(post, errPrefix, propName);
+      if (propHasStringLength.isOk()) {
+        if (dateChecker.test(post.postDate)) {
+          // All is good, do nothing
+        } else {
+          error(
+            `invalid format of ${chalk.bold(propName)}: ${chalk.bold(
+              post.postDate,
+            )} (should be 'YYYY-MM-DD')`,
+          );
+        }
+      } else {
+        // Facebook Marketplace doesn't include post dates on its search results page,
+        // so they may be blank.
+        // The future postDate tests only apply if the post is not Facebook, or it is Facebook,
+        // but the postDate is supplied
+        if (post.source !== Source.facebook) {
+          appendErrors(errors, propHasStringLength);
+        }
+      }
+    } else {
+      appendErrors(errors, propIsCorrectTypeResult);
+    }
+  } else {
+    appendErrors(errors, propIsPresentResult);
+  }
+
+  propName = 'price';
+  expectedType = ElementType.number;
+  propIsPresentResult = propIsPresent(post, errPrefix, propName);
+  if (propIsPresentResult.isOk()) {
+    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
+    if (propIsCorrectTypeResult.isOk()) {
+      // All is good, do nothing
+    } else {
+      appendErrors(errors, propIsCorrectTypeResult);
+    }
+  } else {
+    appendErrors(errors, propIsPresentResult);
+  }
+
+  propName = 'priceStr';
+  expectedType = ElementType.string;
+  propIsPresentResult = propIsPresent(post, errPrefix, propName);
+  if (propIsPresentResult.isOk()) {
+    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
+    if (propIsCorrectTypeResult.isOk()) {
+      const propHasStringLength = propHasChars(post, errPrefix, propName);
+      if (propHasStringLength.isOk()) {
+        if (currencyChecker.test(post.priceStr)) {
+          // All is good, do nothing
+        } else {
+          error(`invalid format of ${chalk.bold(propName)}: ${chalk.bold(post.postDate)}`);
+        }
+      } else {
+        // Facebook Marketplace doesn't include post dates on its search results page,
+        // so they may be blank.
+        // The future postDate tests only apply if the post is not Facebook, or it is Facebook,
+        // but the postDate is supplied
+        if (post.source !== Source.facebook) {
+          appendErrors(errors, propHasStringLength);
+        }
+      }
+    } else {
+      appendErrors(errors, propIsCorrectTypeResult);
+    }
+  } else {
+    appendErrors(errors, propIsPresentResult);
+  }
+
+  propName = 'hood';
+  expectedType = ElementType.string;
+  propIsPresentResult = propIsPresent(post, errPrefix, propName);
+  if (propIsPresentResult.isOk()) {
+    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
+    if (propIsCorrectTypeResult.isOk()) {
+      const propHasStringLength = propHasChars(post, errPrefix, propName);
+      if (propHasStringLength.isOk()) {
+        // All is good, do nothing
+      } else {
+        // Craiglist posts sometimes have no hood, so a blank hood can
+        // be ignored for Craigslist.
+        if (post.source !== Source.craigslist) {
+          appendErrors(errors, propHasStringLength);
+        }
+      }
+    } else {
+      appendErrors(errors, propIsCorrectTypeResult);
+    }
+  } else {
+    appendErrors(errors, propIsPresentResult);
+  }
+
+  propName = 'thumbnailUrl';
+  expectedType = ElementType.string;
+  propIsPresentResult = propIsPresent(post, errPrefix, propName);
+  if (propIsPresentResult.isOk()) {
+    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
+    if (propIsCorrectTypeResult.isOk()) {
+      const propHasStringLength = propHasChars(post, errPrefix, propName);
+      if (propHasStringLength.isOk()) {
+        // All is good, do nothing
+      } else {
+        appendErrors(errors, propHasStringLength);
+      }
+    } else {
+      appendErrors(errors, propIsCorrectTypeResult);
+    }
+  } else {
+    appendErrors(errors, propIsPresentResult);
+  }
+
+  propName = 'extras';
+  expectedType = ElementType.object;
+  propIsPresentResult = propIsPresent(post, errPrefix, propName);
+  if (propIsPresentResult.isOk()) {
+    // Only Craigslist posts should have this field.
+    if (post.source !== Source.craigslist) {
+      error(`has ${chalk.bold('extras')} element when the source is ${chalk.bold(post.source)}`);
+    }
+    const extrasTypeErrors = propIsCorrectType(post, errPrefix, propName, expectedType);
+    if (extrasTypeErrors.isOk() && post.extras) {
+      const extrasErrors = isExtrasValid(post.extras, errPrefix);
+      if (extrasErrors.isOk()) {
+        // All is good, do nothing
+      } else {
+        appendErrors(errors, extrasErrors);
+      }
+    } else {
+      appendErrors(errors, extrasTypeErrors);
+    }
+  } else {
+    // This is a mandatory field for Craigslist posts.
+    if (post.source === Source.craigslist) {
+      appendErrors(errors, propIsPresentResult);
+    }
   }
 
   // Make sure there are no additional elements which shouldn't be there.
@@ -296,28 +391,8 @@ const isPostValid = (post: Post): Result<boolean, string[]> => {
     actualElementKeys,
   );
   if (arr.length !== 0) {
-    error(`has extra keys: ${chalk.bold(arr.join(', '))}`);
+    error(`has unknown keys: ${chalk.bold(arr.join(', '))}`);
   }
-  /*
-export type CraiglistFields = {
-  subcategories: CraigslistSubcategory[];
-};
-
-export type Post = {
-  pid: string;
-  sid: string;
-  source: Source;
-  regions: Region[];
-  searchTerms: string[];
-  title: string;
-  postDate: string; // 2022-12-07
-  price: number;
-  priceStr: string;
-  hood: string;
-  thumbnailUrl: string;
-  extras?: CraiglistFields;
-};
-*/
 
   if (errors.length > 0) {
     return err(errors);
@@ -341,11 +416,7 @@ const isDbValid = (): Result<boolean, string[]> => {
       });
     } else {
       if (post.pid !== pid) {
-        errors.push(
-          `post ${chalk.bold(post.pid)} does not match it's key: ${chalk.bold(
-            pid,
-          )}`,
-        );
+        errors.push(`post ${chalk.bold(post.pid)} does not match its key: ${chalk.bold(pid)}`);
       }
     }
   });
@@ -428,13 +499,9 @@ export const upsertPost = (
   const errors = <string[]>[];
   if (source === Source.craigslist) {
     if (!extras) {
-      errors.push(
-        'upsertPost() Craiglists posts must have an "extras" element',
-      );
+      errors.push('upsertPost() Craiglists posts must have an "extras" element');
     } else if (!extras.subcategories) {
-      errors.push(
-        'upsertPost() Craiglists posts must have "extras" with a Craigslist subcategory',
-      );
+      errors.push('upsertPost() Craiglists posts must have "extras" with a Craigslist subcategory');
     }
   }
 
@@ -461,9 +528,7 @@ export const upsertPost = (
   const dbPost = dbData[pid];
 
   const mergeRegions = (): Region[] => {
-    return postExists
-      ? utils.mergeArrays(dbPost.regions, newPost.regions).sort()
-      : newPost.regions;
+    return postExists ? utils.mergeArrays(dbPost.regions, newPost.regions).sort() : newPost.regions;
   };
 
   const mergeSearchTerms = (): string[] => {
@@ -477,10 +542,7 @@ export const upsertPost = (
   const mergeCraigslistSubcategories = (): CraigslistSubcategory[] => {
     return postExists
       ? utils
-          .mergeArrays(
-            dbPost.extras?.subcategories || [],
-            newPost.extras?.subcategories || [],
-          )
+          .mergeArrays(dbPost.extras?.subcategories || [], newPost.extras?.subcategories || [])
           .sort()
       : newPost?.extras?.subcategories || [];
 
@@ -514,9 +576,7 @@ export const upsertPost = (
     postDate: dbPost.postDate ? dbPost.postDate : postDate, // Keep the original postDate
     searchTerms: mergeSearchTerms(),
     extras:
-      source === Source.craigslist
-        ? { subcategories: mergeCraigslistSubcategories() }
-        : undefined,
+      source === Source.craigslist ? { subcategories: mergeCraigslistSubcategories() } : undefined,
   };
 
   const result = isPostValid(dbData[pid]);

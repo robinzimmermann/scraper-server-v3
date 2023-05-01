@@ -15,12 +15,7 @@ import {
   getFacebookLocation,
 } from '../database/models/dbSearches';
 import { logger } from '../utils/logger/logger';
-import {
-  FacebookCacheFileType,
-  FacebookJobDetails,
-  Job,
-  buildCacheName,
-} from './fetcher';
+import { FacebookCacheFileType, FacebookJobDetails, Job, buildCacheName } from './fetcher';
 import * as fetcher from './fetcher';
 import { upsertPost } from '../database/dbPosts';
 import * as utils from '../utils/utils';
@@ -32,31 +27,19 @@ const figureOutFilesForJobs = async (search: Search): Promise<void> => {
   // We're going to decide if we should choose the HTML version or the MHTNL version.
   const jobs = fetcher
     .getJobs()
-    .filter(
-      (job) =>
-        job.source === Source.facebook &&
-        job.sid === search.sid &&
-        job.pageNum === 1,
-    );
+    .filter((job) => job.source === Source.facebook && job.sid === search.sid && job.pageNum === 1);
 
   let jobPointer = 0;
   while (jobPointer < jobs.length) {
     const job = jobs[jobPointer];
-    logger.verbose(`doin' facebook job ${job.jid} (hopefully in order)`);
-    // }
-    // jobs.forEach(async (job) => {
     // Check whether to use HMTL or MHTML
     const htmlPath = buildCacheName(job);
     const mhtmlPath = htmlPath.replace('.html', '.mht');
     //    const htmlStats = fs.existsSync(htmlPath) ? await fsp.stat(htmlPath) : null;
     logger.verbose('111a');
-    const htmlStats = (await utils.fileExists(htmlPath))
-      ? await fsp.stat(htmlPath)
-      : null;
+    const htmlStats = (await utils.fileExists(htmlPath)) ? await fsp.stat(htmlPath) : null;
     logger.verbose('111b');
-    const mhtmlStats = (await utils.fileExists(mhtmlPath))
-      ? await fsp.stat(mhtmlPath)
-      : null;
+    const mhtmlStats = (await utils.fileExists(mhtmlPath)) ? await fsp.stat(mhtmlPath) : null;
     logger.verbose('111c');
     let useMhtmlfile = false;
     if (htmlStats) {
@@ -83,10 +66,7 @@ const figureOutFilesForJobs = async (search: Search): Promise<void> => {
       }
     }
     if (useMhtmlfile) {
-      job.searchResultsFilename = job.searchResultsFilename.replace(
-        '.html',
-        '.mht',
-      );
+      job.searchResultsFilename = job.searchResultsFilename.replace('.html', '.mht');
       (job.details as FacebookJobDetails).fileType = FacebookCacheFileType.MHT;
     }
 
@@ -175,10 +155,7 @@ export const getJobs = async (
   return jobsDeleteMe;
 };
 
-export const composeUrl = (
-  region: FacebookRegion,
-  searchTerm: string,
-): string => {
+export const composeUrl = (region: FacebookRegion, searchTerm: string): string => {
   return `https://facebook.com/marketplace/${getFacebookLocation(
     region,
   )}/search/?query=${encodeURIComponent(searchTerm)}`;
@@ -203,17 +180,9 @@ export const generateCacheFilename = (searchTermNum: number): string => {
   return `searchterm${searchTermNum}.html`;
 };
 
-export const fetchSearchResults = async (
-  browser: HBrowserInstance,
-  job: Job,
-): Promise<void> => {
-  logger.silly(
-    `facebook.fetchSearchResults() job ${job.jid} about to contact the facebook server`,
-  );
-  const results = await browser.getHtmlPageFacebook(
-    job.url,
-    job.details.searchTerm,
-  );
+export const fetchSearchResults = async (browser: HBrowserInstance, job: Job): Promise<void> => {
+  logger.silly(`facebook.fetchSearchResults() job ${job.jid} about to contact the facebook server`);
+  const results = await browser.getHtmlPageFacebook(job.url, job.details.searchTerm);
   logger.verbose(`got back from faceboook search: ${JSON.stringify(results)}`);
   // logger.silly(
   //   `facebook.fetchSearchResults() job ${job.jid} about to contact the server`,
@@ -246,9 +215,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
   // logger.debug(`job ${job.jid}: ${JSON.stringify(job, null, 2)}`);
   // logger.debug(fileContents);
 
-  if (
-    (job.details as FacebookJobDetails).fileType === FacebookCacheFileType.HTML
-  ) {
+  if ((job.details as FacebookJobDetails).fileType === FacebookCacheFileType.HTML) {
     logger.verbose('111222 aaa');
     html = fileContents;
   } else {
@@ -258,9 +225,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
       .rewrite() // rewrite all links
       .spit(); // return all contents
 
-    html = result
-      .filter((r) => r.type === 'text/html')
-      .map((r) => r.content)[0];
+    html = result.filter((r) => r.type === 'text/html').map((r) => r.content)[0];
   }
 
   // $ is cheerio root
@@ -274,9 +239,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
   }
 
   $results.each((_index: number, result: cheerio.Element) => {
-    process.stdout.write(
-      `\rjob ${job.jid}: [${_index + 1} / ${$results.length}]`,
-    );
+    process.stdout.write(`\rjob ${job.jid}: [${_index + 1} / ${$results.length}]`);
     const $result = $(result);
 
     let postUrl = $('a', $result).attr('href')?.split('?')[0];
@@ -309,10 +272,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
       return;
     }
 
-    const $priceSection = $(
-      '.xkhd6sd.xjkvuk6.x4uap5.x1iorvi4.x1q0g3np.x78zum5',
-      $result,
-    );
+    const $priceSection = $('.xkhd6sd.xjkvuk6.x4uap5.x1iorvi4.x1q0g3np.x78zum5', $result);
 
     const price = Number(
       $('span', $priceSection)
@@ -322,10 +282,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
     );
 
     // Lots of duplicate spaces, so remove them
-    const hood = $('.x676frb span', $result)
-      .first()
-      .text()
-      .replace(/\s+/g, ' ');
+    const hood = $('.x676frb span', $result).first().text().replace(/\s+/g, ' ');
 
     const title = $('.x1lliihq.x6ikm8r.x10wlt62.x1n2onr6', $result)
       .first()
@@ -348,8 +305,8 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
   // After printing the progress, move the next line
   process.stdout.write('\r');
   logger.debug(
-    `processed ${$results.length} ${job.source} post${
-      $results.length !== 1 ? 's' : ''
-    } for job ${job.jid}`,
+    `processed ${$results.length} ${job.source} post${$results.length !== 1 ? 's' : ''} for job ${
+      job.jid
+    }`,
   );
 };

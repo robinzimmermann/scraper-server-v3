@@ -6,11 +6,7 @@ import JsonDb from '../../src/api/jsonDb/lowdbDriver';
 // import { Posts } from '../../src/database/models/dbPosts';
 import { Posts } from '../../src/database/models/dbPosts';
 import * as dbPosts from '../../src/database/dbPosts';
-import {
-  CraigslistRegion,
-  Searches,
-  Source,
-} from '../../src/database/models/dbSearches';
+import { CraigslistRegion, Searches, Source } from '../../src/database/models/dbSearches';
 import { FacebookRegion } from '../../src/database/models/dbSearches';
 import * as postsDbData from './testData/dbPostsTestData';
 import * as dbSearches from '../../src/database/dbSearches';
@@ -172,14 +168,8 @@ describe('dbPosts initialization', () => {
 
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('pid');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['post', 'has no element', 'pid']);
     }
 
     expect(writeSpy).toHaveBeenCalledTimes(0);
@@ -209,14 +199,8 @@ describe('dbPosts initialization', () => {
 
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('pid');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['123', 'pid', 'that is not a', 'string']);
     }
 
     expect(writeSpy).toHaveBeenCalledTimes(0);
@@ -311,7 +295,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test("valid craigslist post that does not match it's key fails", () => {
+  test('valid craigslist post that does not match its key fails', () => {
     const initialFile = {
       abc: {
         pid: '123',
@@ -483,14 +467,8 @@ describe('dbPosts initialization', () => {
 
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('source');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['123', 'has no element', 'source']);
     }
 
     expect(writeSpy).toHaveBeenCalledTimes(0);
@@ -644,7 +622,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an invalid regions value fails', () => {
+  test('craigslist post with an invalid regions value fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -668,14 +646,38 @@ describe('dbPosts initialization', () => {
 
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('regions');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['123', 'regions', 'invalid value', 'mars']);
+    }
+
+    expect(writeSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test('facebook post with an invalid regions value fails', () => {
+    const initialFile = {
+      '124': {
+        pid: '124',
+        sid: '1',
+        source: 'facebook',
+        regions: ['telluride', 'mars'],
+        searchTerms: ['search1'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'near dirk',
+        thumbnailUrl: 'https://somewhere.com/imageABC',
+      },
+    } as unknown as Posts;
+
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+
+    const result = dbPosts.init(postsDb);
+
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['124', 'regions', 'invalid value', 'mars']);
     }
 
     expect(writeSpy).toHaveBeenCalledTimes(0);
@@ -927,14 +929,8 @@ describe('dbPosts initialization', () => {
 
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('postDate');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['123', 'has no element', 'postDate']);
     }
 
     expect(writeSpy).toHaveBeenCalledTimes(0);
@@ -1014,7 +1010,7 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('postDate has invalid format fails', () => {
+  test('postDate with invalid format fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1768,20 +1764,14 @@ describe('dbPosts initialization', () => {
 
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('dummy');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['123', 'extras', 'extra keys', 'dummy']);
     }
 
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test("post with element doesn't exist fails", () => {
+  test('post with fake element fails', () => {
     const initialFile = {
       '123': {
         pid: '123',
@@ -1806,14 +1796,8 @@ describe('dbPosts initialization', () => {
 
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('dummy');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['123', 'has unknown keys', 'dummy']);
     }
 
     expect(writeSpy).toHaveBeenCalledTimes(0);
