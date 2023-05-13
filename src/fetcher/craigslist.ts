@@ -59,9 +59,7 @@ export const composeUrl = (
   searchTerm: string,
   pageNum: number,
 ): string => {
-  return `https://${getCraigslistBaseUrl(
-    region,
-  )}/search/${getCraigslistSubcategoryCode(
+  return `https://${getCraigslistBaseUrl(region)}/search/${getCraigslistSubcategoryCode(
     subCategory,
   )}?query=${encodeURIComponent(searchTerm)}#search=1~gallery~${pageNum - 1}~0`;
 };
@@ -83,20 +81,14 @@ export const generateCacheDir = (
 /**
  * Just the filename + extension
  */
-export const generateCacheFilename = (
-  searchTermNum: number,
-  pageNum: number,
-): string => {
+export const generateCacheFilename = (searchTermNum: number, pageNum: number): string => {
   return `searchterm${searchTermNum}_pg${pageNum}.html`;
 };
 
 /**
  * @returns true if there is a next page
  */
-export const fetchSearchResults = async (
-  browser: HBrowserInstance,
-  job: Job,
-): Promise<boolean> => {
+export const fetchSearchResults = async (browser: HBrowserInstance, job: Job): Promise<boolean> => {
   logger.silly(
     `craigslist.fetchSearchResults() job ${job.jid} about to contact the craigslist server`,
   );
@@ -144,7 +136,7 @@ const getPostDate = (data: string | undefined): string => {
 export const processSearchResultsPage = async (job: Job): Promise<void> => {
   const cacheName = buildCacheName(job);
 
-  const details = <CraigslistJobDetails>job.details;
+  const details = job.details as CraigslistJobDetails;
 
   const html = await fsp.readFile(cacheName);
 
@@ -171,9 +163,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
   const matches = rangeStr.match(pageCountRegex);
 
   if (!matches) {
-    logger.error(
-      'the following fetch did not have a match for the page post numbers:',
-    );
+    logger.error('the following fetch did not have a match for the page post numbers:');
     printJob(job);
     return;
   }
@@ -199,9 +189,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
         $galleries.length,
       )}) does not match num posts on this page (${chalk.yellow(
         rangeTo - rangeFrom + 1,
-      )} (pageTo - pageFrom + 1 [${rangeTo} - ${rangeFrom} + 1])), fetch: ${chalk.yellow(
-        job.jid,
-      )}`,
+      )} (pageTo - pageFrom + 1 [${rangeTo} - ${rangeFrom} + 1])), fetch: ${chalk.yellow(job.jid)}`,
     );
     printJob(job);
   }
@@ -235,11 +223,9 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
     const multiImage = $('.cl-gallery .main:not(.singleton, .empty)', $result);
     const logMissingImage = (): void => {
       logger.warn(
-        `${chalk.bold(pid)} missing image from [${chalk.bold(
-          job.source,
-        )}|${chalk.bold(details.region)}|${chalk.bold(
-          job.sid,
-        )}], ${buildCacheName(job)}`,
+        `${chalk.bold(pid)} missing image from [${chalk.bold(job.source)}|${chalk.bold(
+          details.region,
+        )}|${chalk.bold(job.sid)}], ${buildCacheName(job)}`,
       );
       // thumbnailUrl =
       //   'https://user-images.githubusercontent.com/24848110/33519396-7e56363c-d79d-11e7-969b-09782f5ccbab.png';
@@ -265,11 +251,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
         if (emptyImage.length === 1) {
           // No thumbnail, do nothing
         } else {
-          logger.warn(
-            `post ${chalk.yellow(
-              pid,
-            )} does not have a thumbnail, but was expected to`,
-          );
+          logger.warn(`post ${chalk.yellow(pid)} does not have a thumbnail, but was expected to`);
         }
       }
     }
@@ -336,8 +318,8 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
   });
 
   logger.debug(
-    `processed ${results.length} ${job.source} post${
-      $results.length !== 1 ? 's' : ''
-    } for job ${job.jid}`,
+    `processed ${results.length} ${job.source} post${$results.length !== 1 ? 's' : ''} for job ${
+      job.jid
+    }`,
   );
 };

@@ -8,10 +8,7 @@ describe('/api', () => {
   });
 
   it('/api/rubbish responds with an error', (done) => {
-    request(app)
-      .get('/api/rubbish')
-      .expect('Content-Type', /json/)
-      .expect(400, done);
+    request(app).get('/api/rubbish').expect('Content-Type', /json/).expect(400, done);
   });
 });
 

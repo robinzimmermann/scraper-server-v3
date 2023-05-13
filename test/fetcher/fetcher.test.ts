@@ -3,6 +3,7 @@ import * as fetcher from '../../src/fetcher/fetcher';
 import JsonDb from '../../src/api/jsonDb/lowdbDriver';
 import * as dbSearches from '../../src/database/dbSearches';
 import HBrowserInstance from '../../src/api/hbrowser/puppeteerDriver';
+import { logger } from '../../src/utils/logger/logger';
 // import { logger } from '../../src/utils/logger/logger';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
@@ -55,8 +56,8 @@ describe('fetchers test suite', () => {
         facebookSearchDetails: {
           searchTerms: ['demo hammer', 'grinder', 'shovel hammer'],
           regionalDetails: [
-            { region: 'walnut creek', distance: 5 },
-            { region: 'los angeles', distance: 5 },
+            { region: 'walnut creek', distance: '5 miles' },
+            { region: 'los angeles', distance: '5 miles' },
           ],
         },
       },
@@ -87,8 +88,8 @@ describe('fetchers test suite', () => {
         facebookSearchDetails: {
           searchTerms: ['demo hammer', 'grinder', 'shovel hammer'],
           regionalDetails: [
-            { region: 'walnut creek', distance: 5 },
-            { region: 'los angeles', distance: 5 },
+            { region: 'walnut creek', distance: '5 miles' },
+            { region: 'los angeles', distance: '5 miles' },
           ],
         },
       },
@@ -215,8 +216,8 @@ describe('fetchers test suite', () => {
         facebookSearchDetails: {
           searchTerms: ['demo hammer', 'grinder', 'shovel hammer'],
           regionalDetails: [
-            { region: 'walnut creek', distance: 5 },
-            { region: 'los angeles', distance: 5 },
+            { region: 'walnut creek', distance: '5 miles' },
+            { region: 'los angeles', distance: '5 miles' },
           ],
         },
       },
@@ -224,7 +225,9 @@ describe('fetchers test suite', () => {
 
     const jsonDb = JsonDb<Searches>();
     jsonDb.setCacheDir(JSON.stringify(searches));
-    dbSearches.init(jsonDb);
+    const result = dbSearches.init(jsonDb);
+
+    expect(result.isOk()).toBeTrue();
 
     fetcher.buildJobs();
     const jobs = fetcher.getJobs();
@@ -232,6 +235,8 @@ describe('fetchers test suite', () => {
     jobs.forEach((job) => {
       fetcher.printJob(job);
     });
+    logger.verbose(`jobs: ${JSON.stringify(jobs)}`);
+
     const originalJid0 = jobs[0].jid;
     const originalJid1 = jobs[1].jid;
     const originalJid2 = jobs[2].jid;

@@ -10,6 +10,7 @@ export const valid = {
       regions: ['sf bayarea', 'inland empire'],
       subcategories: ['tools', 'motorcycles'],
     },
+    log: ['created', 'moved'],
   },
   '6': {
     sid: '6',

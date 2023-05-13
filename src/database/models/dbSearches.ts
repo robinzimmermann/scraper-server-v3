@@ -52,9 +52,7 @@ export enum CraigslistSubcategory {
   wanted = 'wanted',
 }
 
-export const getCraigslistSubcategoryCode = (
-  subcategory: CraigslistSubcategory,
-): string => {
+export const getCraigslistSubcategoryCode = (subcategory: CraigslistSubcategory): string => {
   switch (subcategory) {
     case CraigslistSubcategory.all:
       return 'sss';
@@ -261,7 +259,7 @@ export type FacebookRadius2 = {
 export enum FacebookRadius {
   dist1 = '1 mile',
   dist2 = '2 miles',
-  dist3 = '5 miles',
+  dist5 = '5 miles',
   dist10 = '10 miles',
   dist20 = '20 miles',
   dist40 = '40 miles',
@@ -295,7 +293,7 @@ export type FacebookSearchDetails = {
 };
 
 export type Search = {
-  sid: string; //search id
+  sid: string; //search id, primary key
   alias: string; // common search term name that applies to all sources
   isEnabled: boolean; // whether this will be included in the next search
   rank: number;
@@ -311,4 +309,4 @@ export type Searches = {
   [sid: string]: Search;
 };
 
-export type Region = CraigslistRegion | FacebookRegion;
+export const ScraperRegion = { ...CraigslistRegion, ...FacebookRegion };

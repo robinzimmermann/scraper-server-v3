@@ -1,4 +1,4 @@
-import { Source, Region, CraigslistSubcategory } from './dbSearches';
+import { Source, CraigslistSubcategory, CraigslistRegion, FacebookRegion } from './dbSearches';
 
 export type CraiglistFields = {
   subcategories: CraigslistSubcategory[];
@@ -8,7 +8,7 @@ export type Post = {
   pid: string;
   sid: string;
   source: Source;
-  regions: Region[];
+  regions: (CraigslistRegion | FacebookRegion)[];
   searchTerms: string[];
   title: string;
   postDate: string; // 2022-12-07

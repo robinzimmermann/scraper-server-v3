@@ -10,7 +10,6 @@ import { CraigslistRegion, Searches, Source } from '../../src/database/models/db
 import { FacebookRegion } from '../../src/database/models/dbSearches';
 import * as postsDbData from './testData/dbPostsTestData';
 import * as dbSearches from '../../src/database/dbSearches';
-import { logger } from '../../src/utils/logger/logger';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
@@ -53,14 +52,14 @@ describe('dbPosts initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('valid craigslist post should work', () => {
+  test('valid craigslist post succeeds', () => {
     const initialFile = {
       '123': {
         pid: '123',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -69,12 +68,15 @@ describe('dbPosts initialization', () => {
         thumbnailUrl: 'https://somewhere.com/imageABC',
         extras: { subcategories: ['tools'] },
       },
-    } as unknown as Posts;
+    };
 
     postsDb.setCacheDir(JSON.stringify(initialFile));
 
     const result = dbPosts.init(postsDb);
 
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(0);
+    }
     expect(result.isOk()).toBeTrue();
 
     expect(writeSpy).toHaveBeenCalledTimes(0);
@@ -84,10 +86,13 @@ describe('dbPosts initialization', () => {
     expect(post.pid).toBe('123');
     expect(post.sid).toBe('1');
     expect(post.source).toBe(Source.craigslist);
-    expect(post.regions).toBeArrayOfSize(1);
-    expect(post.regions).toIncludeSameMembers([CraigslistRegion.modesto]);
-    expect(post.searchTerms).toBeArrayOfSize(1);
-    expect(post.searchTerms).toIncludeSameMembers(['search1']);
+    expect(post.regions).toBeArrayOfSize(2);
+    expect(post.regions).toIncludeSameMembers([
+      CraigslistRegion.modesto,
+      CraigslistRegion.inlandEmpire,
+    ]);
+    expect(post.searchTerms).toBeArrayOfSize(2);
+    expect(post.searchTerms).toIncludeSameMembers(['search1', 'search2']);
     expect(post.title).toBe('An amazing thing');
     expect(post.postDate).toBe('2023-02-17');
     expect(post.price).toBe(20);
@@ -102,8 +107,8 @@ describe('dbPosts initialization', () => {
         pid: '888',
         sid: '1',
         source: 'facebook',
-        regions: ['reno'],
-        searchTerms: ['search1'],
+        regions: ['walnut creek', 'telluride'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -111,17 +116,11 @@ describe('dbPosts initialization', () => {
         hood: 'reno-ish',
         thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
+    };
 
     postsDb.setCacheDir(JSON.stringify(initialFile));
 
     const result = dbPosts.init(postsDb);
-
-    if (result.isErr()) {
-      result.mapErr((messages: string[]) =>
-        messages.forEach((msg) => logger.error(`poop: ${msg}`)),
-      );
-    }
 
     expect(result.isOk()).toBeTrue();
 
@@ -132,10 +131,13 @@ describe('dbPosts initialization', () => {
     expect(post.pid).toBe('888');
     expect(post.sid).toBe('1');
     expect(post.source).toBe(Source.facebook);
-    expect(post.regions).toBeArrayOfSize(1);
-    expect(post.regions).toIncludeSameMembers([FacebookRegion.reno]);
-    expect(post.searchTerms).toBeArrayOfSize(1);
-    expect(post.searchTerms).toIncludeSameMembers(['search1']);
+    expect(post.regions).toBeArrayOfSize(2);
+    expect(post.regions).toIncludeSameMembers([
+      FacebookRegion.walnutCreek,
+      FacebookRegion.telluride,
+    ]);
+    expect(post.searchTerms).toBeArrayOfSize(2);
+    expect(post.searchTerms).toIncludeSameMembers(['search1', 'search2']);
     expect(post.title).toBe('An amazing thing');
     expect(post.postDate).toBe('2023-02-17');
     expect(post.price).toBe(20);
@@ -144,1662 +146,1154 @@ describe('dbPosts initialization', () => {
     expect(post.thumbnailUrl).toBe('https://somewhere.com/imageXYZ');
   });
 
-  test('invalid craigslist post with no pid fails', () => {
+  test('post with pid not matching its key fails', () => {
     const initialFile = {
-      '123': {
-        // pid: '123',
+      '888': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
-      expect(result.error[0]).toIncludeMultiple(['post', 'has no element', 'pid']);
+      expect(result.error[0]).toIncludeMultiple([
+        'post',
+        'with key',
+        '888',
+        'does not match its sid',
+        '444',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('invalid craigslist post with pid wrong type fails', () => {
+  test('post with missing pid fails', () => {
     const initialFile = {
-      '123': {
-        pid: 123,
+      '444': {
+        // pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
-      expect(result.error[0]).toIncludeMultiple(['123', 'pid', 'that is not a', 'string']);
+      expect(result.error[0]).toIncludeMultiple([
+        'post',
+        'missing property',
+        'pid',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('invalid craigslist post with pid with blank string fails', () => {
+  test('post with incorrect type for pid fails', () => {
     const initialFile = {
-      '123': {
+      '444': {
+        pid: -33,
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post',
+        'pid',
+        'incorrect type',
+        'should be',
+        'string',
+      ]);
+    }
+  });
+
+  test('post with empty string pid fails', () => {
+    const initialFile = {
+      '444': {
         pid: '',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('pid');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['post', 'property', 'pid', 'empty string']);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('invalid multiple craigslist posts each return an error', () => {
+  test('post with missing sid fails', () => {
     const initialFile = {
-      '123': {
-        pid: '',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-      },
-      '321': {
-        pid: '',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(2);
-      expect(errors[0]).toContain('pid');
-      expect(errors[1]).toContain('pid');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('valid craigslist post that does not match its key fails', () => {
-    const initialFile = {
-      abc: {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('key');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('post mising sid fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         // sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('sid');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('post invalid type for sid fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: 1,
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('sid');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test("post sid doesn't exist fails", () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '999',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('search');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('post mising source fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        // source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
-      expect(result.error[0]).toIncludeMultiple(['123', 'has no element', 'source']);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'sid',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid source fails', () => {
+  test('post with incorrect type for sid fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'dummy',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+      '444': {
+        pid: '444',
+        sid: -33,
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('source');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'sid',
+        'incorrect type',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no regions element fails', () => {
+  test('post with empty string sid fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
+        sid: '',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['post', 'property', 'sid', 'empty string']);
+    }
+  });
+
+  test('post with missing source fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        // source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'source',
+        'should be',
+        'enum',
+      ]);
+    }
+  });
+
+  test('post with incorrect type for source fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: -33,
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'incorrect type',
+        'source',
+        '-33',
+        'should be',
+        'Source',
+        'enum',
+      ]);
+    }
+  });
+
+  test('post with empty string source fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: '',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'incorrect type',
+        'source',
+        "''",
+        'should be',
+        'Source',
+        'enum',
+      ]);
+    }
+  });
+
+  test('post with missing regions fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        // regions: ['modesto'],
-        searchTerms: ['search1'],
+        // regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('regions');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'regions',
+        'should be',
+        'array',
+        'of',
+        'Region',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of regions fails', () => {
+  test('post with incorrect type for regions fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: 'poop',
-        searchTerms: ['search1'],
+        regions: -33,
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('regions');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'regions',
+        '-33',
+        'incorrect type',
+        'should be',
+        'array',
+        'of',
+        'Region',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty regions element fails', () => {
+  test('post with empty array regions fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
         regions: [],
-        searchTerms: ['search1'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('no elements');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('craigslist post with an invalid regions value fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto', 'mars'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
-      expect(result.error[0]).toIncludeMultiple(['123', 'regions', 'invalid value', 'mars']);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'regions',
+        'empty',
+        'array',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('facebook post with an invalid regions value fails', () => {
+  test('post with invalid array elements for regions fails', () => {
     const initialFile = {
-      '124': {
-        pid: '124',
+      '444': {
+        pid: '444',
         sid: '1',
-        source: 'facebook',
-        regions: ['telluride', 'mars'],
-        searchTerms: ['search1'],
+        source: 'craigslist',
+        regions: ['modesto', -33, true, '', { also: 'wrong' }],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'near dirk',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
-      expect(result.error[0]).toIncludeMultiple(['124', 'regions', 'invalid value', 'mars']);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'regions',
+        'invalid values',
+        'Region',
+        'enum',
+        '-33',
+        'true',
+        "''",
+        'wrong',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no searchTerms element fails', () => {
+  test('post with missing searchTerms fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        // searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        // searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('searchTerms');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'searchTerms',
+        'should be',
+        'array',
+        'of',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of searchTerms fails', () => {
+  test('post with incorrect type for searchTerms fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: 'search1',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: -33,
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('searchTerms');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'searchTerms',
+        'incorrect type',
+        'should be',
+        'array',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty searchTerms element fails', () => {
+  test('post with empty array searchTerms fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
+        regions: ['modesto', 'inland empire'],
         searchTerms: [],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('no elements');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'searchTerms',
+        'empty',
+        'array',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no title element fails', () => {
+  test('post with invalid array elements for searchTerms fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', -33, true, '', { also: 'wrong' }],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'searchTerms',
+        'invalid values',
+        'array',
+        'string',
+        '-33',
+        'true',
+        '',
+        'wrong',
+      ]);
+    }
+  });
+
+  test('post with missing title fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         // title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('title');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'title',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of title fails', () => {
+  test('post with incorrect type for title fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 999,
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: -33,
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('title');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'title',
+        'incorrect type',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty title element fails', () => {
+  test('post with empty string title fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: '',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('title');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['post 444', 'property', 'title', 'empty string']);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no postDate element fails', () => {
+  test('post with missing postDate fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         // postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
-      expect(result.error[0]).toIncludeMultiple(['123', 'has no element', 'postDate']);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'postDate',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of postDate fails', () => {
+  test('post with incorrect type for postDate fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
-        postDate: 999,
+        postDate: -33,
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('postDate');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'postDate',
+        'incorrect type',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty postDate element fails', () => {
+  test('post with empty string postDate fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '',
         price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('postDate');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'postDate',
+        'empty string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('postDate with invalid format fails', () => {
+  test('post with missing price fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '9999-99-99',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('format');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('post with no price element fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         // price: 20,
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('price');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'price',
+        'should be',
+        'number',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of price fails', () => {
+  test('post with incorrect type for price fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
-        price: '20',
+        price: 'wrong',
         priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('price');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'price',
+        'incorrect type',
+        'should be',
+        'number',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with no priceStr element fails', () => {
+  test('post with missing priceStr fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         // priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('priceStr');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'priceStr',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of priceStr fails', () => {
+  test('post with incorrect type for priceStr fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
-        priceStr: 20,
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        priceStr: -33,
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('priceStr');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'priceStr',
+        'incorrect type',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with an empty priceStr element fails', () => {
+  test('post with empty string priceStr fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('priceStr');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'priceStr',
+        'empty string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('priceStr has invalid format fails', () => {
+  test('post with missing hood fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$XX',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('format');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('post with no hood element fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        // hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        // hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('hood');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'hood',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('post with invalid type of hood fails', () => {
+  test('post with incorrect type for hood fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
-        hood: 999,
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        hood: -33,
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('hood');
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'hood',
+        '-33',
+        'incorrect type',
+        'should be',
+        'string',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('craiglist post with an empty hood element should work', () => {
+  test('post with empty string hood fails', () => {
     const initialFile = {
-      '123': {
-        pid: '123',
+      '444': {
+        pid: '444',
         sid: '1',
         source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
         priceStr: '$20',
         hood: '',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
       },
-    } as unknown as Posts;
-
+    };
     postsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['post 444', 'property', 'hood', 'empty string']);
+    }
+  });
+
+  test('post with missing thumbnailUrl fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        // thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'thumbnailUrl',
+        'should be',
+        'string',
+      ]);
+    }
+  });
+
+  test('post with incorrect type for thumbnailUrl fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: -33,
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'thumbnailUrl',
+        '-33',
+        'incorrect type',
+        'should be',
+        'string',
+      ]);
+    }
+  });
+
+  test('post with empty string thumbnailUrl fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: '',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'thumbnailUrl',
+        'empty string',
+      ]);
+    }
+  });
+
+  test('post with incorrect type for extras fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+        extras: -33,
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'extras',
+        '-33',
+        'incorrect type',
+        'should be',
+        'object',
+        'CraiglistFields',
+      ]);
+    }
+  });
+
+  test('post with optional extras succeeds', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+        extras: {
+          subcategories: ['tools'],
+        },
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(0);
+    }
 
     expect(result.isOk()).toBeTrue();
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('post with no thumbnailUrl element fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        // thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('thumbnailUrl');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('post with invalid type of thumbnailUrl fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 999,
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('thumbnailUrl');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('post with an empty thumbnailUrl element fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: '',
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('thumbnailUrl');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('facebook post with extras element fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'facebook',
-        regions: ['telluride'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('extras');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('craigslit post with no extras element fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        // extras: { subcategories: ['tools'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('extras');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('craigslit post with no extras.subcategories element fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: {},
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('subcategories');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('craigslit post with extras.subcategories of wrong type fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: 999 },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('subcategories');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('craigslit post with extras.subcategories that is empty fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: [] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('subcategories');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('craigslit post with extras.subcategories with invalid type fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: [999] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('subcategories');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('craigslit post with extras.subcategories with invalid value fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['no-such-subcategory'] },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      const errors = <string[]>[];
-      result.mapErr((resultErrors) => {
-        resultErrors.forEach((msg) => {
-          errors.push(msg);
-        });
-      });
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('subcategories');
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test("craigslit post with element in extras that doesn't exist fails", () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'], dummy: true },
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      expect(result.error).toHaveLength(1);
-      expect(result.error[0]).toIncludeMultiple(['123', 'extras', 'extra keys', 'dummy']);
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('post with fake element fails', () => {
-    const initialFile = {
-      '123': {
-        pid: '123',
-        sid: '1',
-        source: 'craigslist',
-        regions: ['modesto'],
-        searchTerms: ['search1'],
-        title: 'An amazing thing',
-        postDate: '2023-02-17',
-        price: 20,
-        priceStr: '$20',
-        hood: 'modesto',
-        thumbnailUrl: 'https://somewhere.com/imageABC',
-        extras: { subcategories: ['tools'] },
-        dummy: true,
-      },
-    } as unknown as Posts;
-
-    postsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbPosts.init(postsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      expect(result.error).toHaveLength(1);
-      expect(result.error[0]).toIncludeMultiple(['123', 'has unknown keys', 'dummy']);
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 });

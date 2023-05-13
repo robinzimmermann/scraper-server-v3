@@ -20,7 +20,13 @@
 
 # TODO
 
+- In test/database/dbPosts-init.test.ts, add tests to ensure the search that is being referenced actually exists.
+-
 - Don't poll isAlive every second. Wait until it is discovered it's not alive and then poll until back?
+
+- When checking JSON files upon starting up (for which there are tests), check that formats for date are correct.
+- When checking JSON files upon starting up (for which there are tests), check that formats for currency are correct.
+- - When checking JSON files upon starting up (for which there are tests), check that formats for numeric strings are correcty.
 
 "main": "src/index.ts",
 

@@ -1,9 +1,10 @@
 import { Result, ok, err } from 'neverthrow';
 
 import { JsonDb } from '../api/jsonDb/JsonDb';
-import { DbLogger, ElementType } from './utils';
-import { SearchPrefs, UserPrefs } from './models/dbUserPrefs';
-import { appendErrors, propIsCorrectType1, propIsPresent } from './utils';
+import { DbLogger, PropertyPresence, PropertyType, appendError, checkProp } from './utils';
+import { SearchPref, UserPrefs } from './models/dbUserPrefs';
+import { appendErrors } from './utils';
+import chalk from 'chalk';
 
 export type Database = UserPrefs;
 
@@ -14,19 +15,86 @@ let dbData: Database;
 const dbLoggerPrefix = '[dbUserPrefs]';
 const dbLogger = DbLogger(dbLoggerPrefix);
 
-const isSearchPrefsValid = (searchPrefs: SearchPrefs): Result<boolean, string[]> => {
+const isSearchPrefValid = (key: string, searchPref: SearchPref): Result<boolean, string[]> => {
   const errors: string[] = [];
 
-  Object.keys(searchPrefs).forEach((searchPrefSid) => {
-    const searchPref = searchPrefs[searchPrefSid];
+  const errorPrefix = chalk.bold(`userPrefs.searchPrefs['${key}']`);
 
-    const propIsPresentResult = propIsPresent(
+  appendError(
+    errors,
+    checkProp(searchPref, 'sid', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  );
+
+  appendError(
+    errors,
+    checkProp(
       searchPref,
-      `userPrefs.searchPrefs.${searchPrefSid}`,
-      'sid',
+      'showInHeader',
+      PropertyType.boolean,
+      PropertyPresence.mandatory,
+      errorPrefix,
+    ),
+  );
+
+  appendError(
+    errors,
+    checkProp(
+      searchPref,
+      'isSelected',
+      PropertyType.boolean,
+      PropertyPresence.mandatory,
+      errorPrefix,
+    ),
+  );
+
+  if (errors.length > 0) {
+    return err(errors);
+  } else {
+    return ok(true);
+  }
+};
+
+/**
+ Assumes searchPrefs exists.
+ */
+const isSearchPrefsValid = (): Result<boolean, string[]> => {
+  const errors: string[] = [];
+
+  const searchPrefs = dbData.searchPrefs;
+
+  const errorPrefix = chalk.bold(`userPrefs.searchPrefs`);
+
+  Object.keys(searchPrefs).forEach((key) => {
+    // TODO searchPref is an actual object
+    // TODO searchPref.sid = its parent key
+    // TODO searchPref is a valid SearchPref
+    const searchPref = searchPrefs[key];
+    const dummy = checkProp(
+      searchPrefs,
+      key,
+      PropertyType.object,
+      PropertyPresence.mandatory,
+      errorPrefix,
     );
-    if (propIsPresentResult.isErr()) {
-      appendErrors(errors, propIsPresentResult);
+
+    if (dummy.isOk()) {
+      if (key === searchPref.sid) {
+        appendErrors(errors, isSearchPrefValid(key, searchPref));
+      } else {
+        let sidError = searchPref.sid;
+        if (searchPref.sid === '') {
+          sidError = "''";
+        } else if (!searchPref.sid) {
+          sidError = '<blank>';
+        }
+        errors.push(
+          `${chalk.bold(errorPrefix)} with key [${chalk.bold(
+            key,
+          )}] does not match its sid: [${chalk.bold(sidError)}]`,
+        );
+      }
+    } else {
+      appendError(errors, dummy);
     }
   });
 
@@ -40,52 +108,46 @@ const isSearchPrefsValid = (searchPrefs: SearchPrefs): Result<boolean, string[]>
 const isDbValid = (): Result<boolean, string[]> => {
   const errors: string[] = [];
 
-  let propName = 'isUndoing';
-  let expectedType = ElementType.boolean;
-  let propIsPresentResult = propIsPresent(dbData, 'userPrefs', propName);
-  if (propIsPresentResult.isOk()) {
-    const userPrefsErrors1 = propIsCorrectType1(dbData, 'userPrefs', propName, expectedType);
-    if (userPrefsErrors1.isOk()) {
-      // All is good, do nothing
-    } else {
-      userPrefsErrors1.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
-    }
-  } else {
-    propIsPresentResult.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
-  }
+  const userPrefs = dbData;
 
-  propName = 'displayMinimalPostcards';
-  expectedType = ElementType.boolean;
-  propIsPresentResult = propIsPresent(dbData, 'userPrefs', propName);
-  if (propIsPresentResult.isOk()) {
-    const userPrefsErrors1 = propIsCorrectType1(dbData, 'userPrefs', propName, expectedType);
+  const errorPrefix = chalk.bold(`userPrefs`);
 
-    if (userPrefsErrors1.isOk()) {
-      // All is good, do nothing
-    } else {
-      userPrefsErrors1.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
-    }
-  } else {
-    propIsPresentResult.mapErr((messages: string[]) => messages.forEach((msg) => errors.push(msg)));
-  }
+  appendError(
+    errors,
+    checkProp(
+      userPrefs,
+      'isUndoing',
+      PropertyType.boolean,
+      PropertyPresence.mandatory,
+      errorPrefix,
+    ),
+  );
 
-  propName = 'searchPrefs';
-  expectedType = ElementType.object;
-  propIsPresentResult = propIsPresent(dbData, 'userPrefs', propName);
-  if (propIsPresentResult.isOk()) {
-    const userPrefsErrors = propIsCorrectType1(dbData, 'userPrefs', propName, expectedType);
-    if (userPrefsErrors.isOk()) {
-      const searchPrefsErrors = isSearchPrefsValid(dbData.searchPrefs);
-      if (searchPrefsErrors.isOk()) {
-        // All is good, do nothing
-      } else {
-        appendErrors(errors, searchPrefsErrors);
-      }
-    } else {
-      appendErrors(errors, userPrefsErrors);
-    }
+  appendError(
+    errors,
+    checkProp(
+      userPrefs,
+      'displayMinimalPostcards',
+      PropertyType.boolean,
+      PropertyPresence.mandatory,
+      errorPrefix,
+    ),
+  );
+
+  const prefsProp = checkProp(
+    userPrefs,
+    'searchPrefs',
+    PropertyType.object,
+    PropertyPresence.mandatory,
+    errorPrefix,
+    {
+      expectedObjectName: 'SearchPrefs',
+    },
+  );
+  if (prefsProp.isOk()) {
+    appendErrors(errors, isSearchPrefsValid());
   } else {
-    appendErrors(errors, propIsPresentResult);
+    appendError(errors, prefsProp);
   }
 
   if (errors.length > 0) {

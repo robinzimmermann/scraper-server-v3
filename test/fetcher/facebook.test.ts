@@ -1,10 +1,6 @@
 import { FacebookJobDetails } from '../../src/fetcher/fetcher';
 import * as Facebook from '../../src/fetcher/facebook';
-import {
-  FacebookRegion,
-  FacebookRadius,
-  Search,
-} from '../../src/database/models/dbSearches';
+import { FacebookRegion, FacebookRadius, Search } from '../../src/database/models/dbSearches';
 
 describe('fetchers test suite', () => {
   test('simple mix works', () => {
@@ -19,7 +15,7 @@ describe('fetchers test suite', () => {
         regionalDetails: [
           {
             region: FacebookRegion.walnutCreek,
-            distance: FacebookRadius.dist3,
+            distance: FacebookRadius.dist5,
           },
         ],
       },
@@ -66,12 +62,8 @@ describe('fetchers test suite', () => {
     expect(true).toBe(true);
     expect(callbackArr).toHaveLength(6);
 
-    expect(
-      callbackArr.filter((entry) => entry.searchTerm === 'search1').length,
-    ).toBe(3);
-    expect(
-      callbackArr.filter((entry) => entry.searchTerm === 'search2').length,
-    ).toBe(3);
+    expect(callbackArr.filter((entry) => entry.searchTerm === 'search1').length).toBe(3);
+    expect(callbackArr.filter((entry) => entry.searchTerm === 'search2').length).toBe(3);
   });
 });
 

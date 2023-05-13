@@ -7,7 +7,6 @@ import { CraiglistFields, Post, Posts } from '../../src/database/models/dbPosts'
 import * as dbPosts from '../../src/database/dbPosts';
 import * as dbSearches from '../../src/database/dbSearches';
 import { CraigslistRegion, Searches, Source } from '../../src/database/models/dbSearches';
-import * as postsDbData from './testData/dbPostsTestData';
 import { FacebookRegion } from '../../src/database/models/dbSearches';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
@@ -16,7 +15,20 @@ let postsDb = JsonDb<Posts>();
 let writeSpy: SpiedFunction<() => void>;
 
 const searchesDb = JsonDb<Searches>();
-const searchesDbData = postsDbData.initialSearches;
+const searchesDbData = {
+  '1': {
+    sid: '1',
+    alias: 'KTM dirt bikes',
+    isEnabled: true,
+    rank: 85,
+    sources: ['craigslist'],
+    craigslistSearchDetails: {
+      searchTerms: ['search1', 'search2'],
+      regions: ['sf bayarea', 'inland empire'],
+      subcategories: ['tools', 'motorcycles'],
+    },
+  },
+};
 
 const initializeJest = (): void => {
   jest.clearAllMocks();
@@ -108,7 +120,12 @@ describe('dbPosts test suite', () => {
     // Javascript guard is needed to the contents of result
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
-      expect(result.error[0]).toIncludeMultiple(['123', 'postDate', 'with no value']);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 123',
+        'property',
+        'postDate',
+        'empty string',
+      ]);
     }
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
@@ -121,7 +138,7 @@ describe('dbPosts test suite', () => {
       regions: [FacebookRegion.reno],
       searchTerms: ['search1'],
       title: 'An amazing thing',
-      postDate: '',
+      postDate: '2023-02-17',
       price: 20,
       priceStr: '$20',
       hood: 'reno-ish',

@@ -3,11 +3,11 @@ import * as utils from '../../src/utils/utils';
 
 describe('utils', () => {
   it('isNumeric is valid', () => {
-    expect(utils.isNumeric('123')).toBeTrue();
+    expect(utils.isNumericStr('123')).toBeTrue();
   });
 
   it('isNumeric is invalid', () => {
-    expect(utils.isNumeric('abc')).toBeFalse();
+    expect(utils.isNumericStr('abc')).toBeFalse();
   });
 
   it('compareArrays is valid', () => {

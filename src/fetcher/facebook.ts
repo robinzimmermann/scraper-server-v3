@@ -36,11 +36,8 @@ const figureOutFilesForJobs = async (search: Search): Promise<void> => {
     const htmlPath = buildCacheName(job);
     const mhtmlPath = htmlPath.replace('.html', '.mht');
     //    const htmlStats = fs.existsSync(htmlPath) ? await fsp.stat(htmlPath) : null;
-    logger.verbose('111a');
     const htmlStats = (await utils.fileExists(htmlPath)) ? await fsp.stat(htmlPath) : null;
-    logger.verbose('111b');
     const mhtmlStats = (await utils.fileExists(mhtmlPath)) ? await fsp.stat(mhtmlPath) : null;
-    logger.verbose('111c');
     let useMhtmlfile = false;
     if (htmlStats) {
       if (mhtmlStats) {
@@ -216,10 +213,8 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
   // logger.debug(fileContents);
 
   if ((job.details as FacebookJobDetails).fileType === FacebookCacheFileType.HTML) {
-    logger.verbose('111222 aaa');
     html = fileContents;
   } else {
-    logger.verbose('111222 bbb');
     const result = mhtmlParser
       .parse(fileContents) // parse file contents
       .rewrite() // rewrite all links

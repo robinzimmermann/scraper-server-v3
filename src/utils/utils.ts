@@ -9,6 +9,10 @@ export const isValueInEnum = <T extends { [name: string]: unknown }>(
   return Object.values(theEnum).includes(value);
 };
 
+export const enumToValues = <T extends { [name: string]: unknown }>(theEnum: T): string[] => {
+  return Object.values(theEnum).map((e) => String(e));
+};
+
 export const getDateTimestamp = (): string => {
   const timestampOptions = {
     year: 'numeric',
@@ -128,7 +132,7 @@ export const mergeArrays = <T>(array1: T[], array2: T[]): T[] => {
 /**
  * from https://stackoverflow.com/a/58550111/1360592
  */
-export const isNumeric = (num: unknown): boolean =>
+export const isNumericStr = (num: unknown): boolean =>
   (typeof num === 'number' || (typeof num === 'string' && num.trim() !== '')) &&
   !isNaN(num as number);
 /**

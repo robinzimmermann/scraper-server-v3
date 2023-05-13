@@ -6,22 +6,20 @@ import { JsonDb } from '../api/jsonDb/JsonDb';
 // import jsonDb from '../api/jsonDb/JsonDb';
 import {
   DbLogger,
-  ElementType,
-  arrayHasElements,
-  arrayHasValidEnumElements,
-  propHasChars,
+  PropertyPresence,
+  PropertyType,
+  appendError,
+  appendErrors,
+  checkProp,
 } from './utils';
 import {
   Source,
-  Region,
   CraigslistSubcategory,
   CraigslistRegion,
   FacebookRegion,
+  ScraperRegion,
 } from './models/dbSearches';
-import * as dbSearches from './dbSearches';
 import * as utils from '../utils/utils';
-import { isNumeric } from '../utils/utils';
-import { appendErrors, propIsCorrectType1 as propIsCorrectType, propIsPresent } from './utils';
 
 export type Database = Posts;
 
@@ -31,6 +29,8 @@ let dbData: Database;
 
 const dbLoggerPrefix = '[dbPosts]';
 const dbLogger = DbLogger(dbLoggerPrefix);
+
+// TODO Add tests which test date format and currency format
 
 // To check a string matches YYYY-MM-DD, where year is higher than 2023.
 const dateChecker = /^202[3-9]-[01][0-9]-[0123][0-9]$/;
@@ -47,12 +47,18 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 /**
  * Assume extras field exists
  */
+/*
 const isExtrasValid = (extras: CraiglistFields, errPrefix: string): Result<boolean, string[]> => {
   const errors: string[] = [];
 
   const propName = 'subcategories';
 
-  const subcategoriesTypeErrors = propIsCorrectType(extras, errPrefix, propName, ElementType.array);
+  const subcategoriesTypeErrors = propIsCorrectType(
+    extras,
+    errPrefix,
+    propName,
+    PropertyType.array,
+  );
   if (subcategoriesTypeErrors.isOk()) {
     const propHasStringLength = propHasChars(extras, errPrefix, propName);
     if (propHasStringLength.isOk()) {
@@ -90,308 +96,155 @@ const isExtrasValid = (extras: CraiglistFields, errPrefix: string): Result<boole
     return ok(true);
   }
 };
+*/
 
-const isPostValid = (post: Post): Result<boolean, string[]> => {
+/**
+ * At this point the extras field exists, but we know nothing about it.
+ */
+const isExtrasValid = (post: Post, parentErrorPrefix: string): Result<boolean, string[]> => {
   const errors: string[] = [];
 
-  // Check that some important elements are there first, before continuing with the standard error checks.
-  let propName = 'pid';
-  let expectedType = ElementType.string;
-  let propIsPresentResult = propIsPresent(post, 'post', propName);
-  let propIsCorrectTypeResult: Result<boolean, string[]>;
-  if (propIsPresentResult.isOk()) {
-    propIsCorrectTypeResult = propIsCorrectType(post, `post ${post.pid}`, propName, expectedType);
-    if (propIsCorrectTypeResult.isOk()) {
-      if (!isNumeric(post.pid)) {
-        errors.push(`a post has a ${chalk.bold('pid')} element that is not numeric string`);
-        // return err(errors);
-      }
-    } else {
-      appendErrors(errors, propIsCorrectTypeResult);
-    }
-  } else {
-    appendErrors(errors, propIsPresentResult);
-    // return err(errors);
-  }
+  const errorPrefix = chalk.bold(`${parentErrorPrefix} extras`);
 
-  // Don't continue if there are errors
-  if (errors.length > 0) {
-    return err(errors);
-  }
+  const parent = post.extras;
 
-  const errPrefix = chalk.bold(`post ${post.pid}`);
-
-  const error = (msg: string): void => {
-    errors.push(`${errPrefix} ${msg}`);
-  };
-
-  propName = 'sid';
-  expectedType = ElementType.string;
-  propIsPresentResult = propIsPresent(post, errPrefix, propName);
-  if (propIsPresentResult.isOk()) {
-    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
-    if (propIsCorrectTypeResult.isOk()) {
-      if (!dbSearches.getSearchBySid(post.sid)) {
-        error(
-          `references a search ${chalk.bold('sid')} that doesn't exist: ${chalk.bold(post.sid)}`,
-        );
-      }
-    } else {
-      appendErrors(errors, propIsCorrectTypeResult);
-    }
-  } else {
-    appendErrors(errors, propIsPresentResult);
-  }
-
-  propName = 'source';
-  propIsPresentResult = propIsPresent(post, errPrefix, propName);
-  if (propIsPresentResult.isOk()) {
-    if (!utils.isValueInEnum(post.source, Source)) {
-      error(`has invalid value for ${chalk.bold('source')}: ${chalk.bold(post.source)}`);
-    }
-  } else {
-    appendErrors(errors, propIsPresentResult);
-    // return err(errors);
-  }
-
-  // Don't continue if there are errors
-  if (errors.length > 0) {
-    return err(errors);
-  }
-
-  propName = 'regions';
-  expectedType = ElementType.array;
-  propIsPresentResult = propIsPresent(post, 'post', propName);
-  if (propIsPresentResult.isOk()) {
-    const postTypeErrors = propIsCorrectType(post, errPrefix, propName, expectedType);
-    if (postTypeErrors.isOk()) {
-      const postArrayLengthErrors = arrayHasElements(post, errPrefix, propName);
-      if (postArrayLengthErrors.isOk()) {
-        const theEnum = post.source === Source.craigslist ? CraigslistRegion : FacebookRegion;
-        const postArrayEnumElementsErrors = arrayHasValidEnumElements(
-          post,
-          errPrefix,
-          propName,
-          theEnum,
-        );
-        if (postArrayEnumElementsErrors.isOk()) {
-          // All is good, do nothing
-        } else {
-          appendErrors(errors, postArrayEnumElementsErrors);
-        }
-      } else {
-        appendErrors(errors, postArrayLengthErrors);
-      }
-    } else {
-      appendErrors(errors, postTypeErrors);
-    }
-  } else {
-    appendErrors(errors, propIsPresentResult);
-  }
-
-  propName = 'searchTerms';
-  expectedType = ElementType.array;
-  propIsPresentResult = propIsPresent(post, 'post', propName);
-  if (propIsPresentResult.isOk()) {
-    const postTypeErrors = propIsCorrectType(post, errPrefix, propName, expectedType);
-    if (postTypeErrors.isOk()) {
-      const postArrayLengthErrors = arrayHasElements(post, errPrefix, propName);
-      if (postArrayLengthErrors.isOk()) {
-        // All is good, do nothing
-      } else {
-        appendErrors(errors, postArrayLengthErrors);
-      }
-    } else {
-      appendErrors(errors, postTypeErrors);
-    }
-  } else {
-    appendErrors(errors, propIsPresentResult);
-  }
-
-  propName = 'title';
-  expectedType = ElementType.string;
-  propIsPresentResult = propIsPresent(post, errPrefix, propName);
-  if (propIsPresentResult.isOk()) {
-    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
-    if (propIsCorrectTypeResult.isOk()) {
-      const propHasStringLength = propHasChars(post, errPrefix, propName);
-      if (propHasStringLength.isOk()) {
-        // All is good, do nothing
-      } else {
-        appendErrors(errors, propHasStringLength);
-      }
-    } else {
-      appendErrors(errors, propIsCorrectTypeResult);
-    }
-  } else {
-    appendErrors(errors, propIsPresentResult);
-  }
-
-  propName = 'postDate';
-  expectedType = ElementType.string;
-  propIsPresentResult = propIsPresent(post, errPrefix, propName);
-  if (propIsPresentResult.isOk()) {
-    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
-    if (propIsCorrectTypeResult.isOk()) {
-      const propHasStringLength = propHasChars(post, errPrefix, propName);
-      if (propHasStringLength.isOk()) {
-        if (dateChecker.test(post.postDate)) {
-          // All is good, do nothing
-        } else {
-          error(
-            `invalid format of ${chalk.bold(propName)}: ${chalk.bold(
-              post.postDate,
-            )} (should be 'YYYY-MM-DD')`,
-          );
-        }
-      } else {
-        // Facebook Marketplace doesn't include post dates on its search results page,
-        // so they may be blank.
-        // The future postDate tests only apply if the post is not Facebook, or it is Facebook,
-        // but the postDate is supplied
-        if (post.source !== Source.facebook) {
-          appendErrors(errors, propHasStringLength);
-        }
-      }
-    } else {
-      appendErrors(errors, propIsCorrectTypeResult);
-    }
-  } else {
-    appendErrors(errors, propIsPresentResult);
-  }
-
-  propName = 'price';
-  expectedType = ElementType.number;
-  propIsPresentResult = propIsPresent(post, errPrefix, propName);
-  if (propIsPresentResult.isOk()) {
-    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
-    if (propIsCorrectTypeResult.isOk()) {
-      // All is good, do nothing
-    } else {
-      appendErrors(errors, propIsCorrectTypeResult);
-    }
-  } else {
-    appendErrors(errors, propIsPresentResult);
-  }
-
-  propName = 'priceStr';
-  expectedType = ElementType.string;
-  propIsPresentResult = propIsPresent(post, errPrefix, propName);
-  if (propIsPresentResult.isOk()) {
-    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
-    if (propIsCorrectTypeResult.isOk()) {
-      const propHasStringLength = propHasChars(post, errPrefix, propName);
-      if (propHasStringLength.isOk()) {
-        if (currencyChecker.test(post.priceStr)) {
-          // All is good, do nothing
-        } else {
-          error(`invalid format of ${chalk.bold(propName)}: ${chalk.bold(post.postDate)}`);
-        }
-      } else {
-        // Facebook Marketplace doesn't include post dates on its search results page,
-        // so they may be blank.
-        // The future postDate tests only apply if the post is not Facebook, or it is Facebook,
-        // but the postDate is supplied
-        if (post.source !== Source.facebook) {
-          appendErrors(errors, propHasStringLength);
-        }
-      }
-    } else {
-      appendErrors(errors, propIsCorrectTypeResult);
-    }
-  } else {
-    appendErrors(errors, propIsPresentResult);
-  }
-
-  propName = 'hood';
-  expectedType = ElementType.string;
-  propIsPresentResult = propIsPresent(post, errPrefix, propName);
-  if (propIsPresentResult.isOk()) {
-    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
-    if (propIsCorrectTypeResult.isOk()) {
-      const propHasStringLength = propHasChars(post, errPrefix, propName);
-      if (propHasStringLength.isOk()) {
-        // All is good, do nothing
-      } else {
-        // Craiglist posts sometimes have no hood, so a blank hood can
-        // be ignored for Craigslist.
-        if (post.source !== Source.craigslist) {
-          appendErrors(errors, propHasStringLength);
-        }
-      }
-    } else {
-      appendErrors(errors, propIsCorrectTypeResult);
-    }
-  } else {
-    appendErrors(errors, propIsPresentResult);
-  }
-
-  propName = 'thumbnailUrl';
-  expectedType = ElementType.string;
-  propIsPresentResult = propIsPresent(post, errPrefix, propName);
-  if (propIsPresentResult.isOk()) {
-    propIsCorrectTypeResult = propIsCorrectType(post, errPrefix, propName, expectedType);
-    if (propIsCorrectTypeResult.isOk()) {
-      const propHasStringLength = propHasChars(post, errPrefix, propName);
-      if (propHasStringLength.isOk()) {
-        // All is good, do nothing
-      } else {
-        appendErrors(errors, propHasStringLength);
-      }
-    } else {
-      appendErrors(errors, propIsCorrectTypeResult);
-    }
-  } else {
-    appendErrors(errors, propIsPresentResult);
-  }
-
-  propName = 'extras';
-  expectedType = ElementType.object;
-  propIsPresentResult = propIsPresent(post, errPrefix, propName);
-  if (propIsPresentResult.isOk()) {
-    // Only Craigslist posts should have this field.
-    if (post.source !== Source.craigslist) {
-      error(`has ${chalk.bold('extras')} element when the source is ${chalk.bold(post.source)}`);
-    }
-    const extrasTypeErrors = propIsCorrectType(post, errPrefix, propName, expectedType);
-    if (extrasTypeErrors.isOk() && post.extras) {
-      const extrasErrors = isExtrasValid(post.extras, errPrefix);
-      if (extrasErrors.isOk()) {
-        // All is good, do nothing
-      } else {
-        appendErrors(errors, extrasErrors);
-      }
-    } else {
-      appendErrors(errors, extrasTypeErrors);
-    }
-  } else {
-    // This is a mandatory field for Craigslist posts.
-    if (post.source === Source.craigslist) {
-      appendErrors(errors, propIsPresentResult);
-    }
-  }
-
-  // Make sure there are no additional elements which shouldn't be there.
-  const actualElementKeys = post ? Object.keys(post) : <string[]>[];
-  const arr = utils.differenceArrays(
-    [
-      'pid',
-      'sid',
-      'source',
-      'regions',
-      'searchTerms',
-      'title',
-      'postDate',
-      'price',
-      'priceStr',
-      'hood',
-      'thumbnailUrl',
-      'extras',
-    ],
-    actualElementKeys,
+  appendError(
+    errors,
+    checkProp(
+      parent,
+      'subcategories',
+      PropertyType.array,
+      PropertyPresence.mandatory,
+      errorPrefix,
+      {
+        arrayElementsExpectedType: PropertyType.enum,
+        arrayElementsExpectedEnum: CraigslistSubcategory,
+        arrayElementsExpectedEnumName: 'CraigslistSubcategory',
+      },
+    ),
   );
-  if (arr.length !== 0) {
-    error(`has unknown keys: ${chalk.bold(arr.join(', '))}`);
+
+  if (errors.length > 0) {
+    return err(errors);
+  } else {
+    return ok(true);
+  }
+};
+
+const isPostValid = (key: string, post: Post): Result<boolean, string[]> => {
+  const errors: string[] = [];
+
+  // First make sure the parent key and primary key are valid so future errors can be referenced correctly
+
+  if (!key) {
+    errors.push(`there is a post with an invalid key`);
+  } else {
+    const propPresent = checkProp(
+      post,
+      'pid',
+      PropertyType.string,
+      PropertyPresence.mandatory,
+      chalk.bold('post'),
+    );
+    if (propPresent.isOk()) {
+      if (post.pid !== key) {
+        errors.push(
+          `${chalk.bold('post')} with key [${chalk.bold(
+            key,
+          )}] does not match its sid: [${chalk.bold(post.pid)}]`,
+        );
+      }
+    } else {
+      appendError(errors, propPresent);
+    }
+  }
+  // Only continue if there is a valid primary key
+  if (errors.length > 0) {
+    return err(errors);
+  }
+
+  const errorPrefix = chalk.bold(`post ${post.pid}`);
+
+  appendError(
+    errors,
+    checkProp(post, 'pid', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'sid', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'source', PropertyType.enum, PropertyPresence.mandatory, errorPrefix, {
+      expectedEnum: Source,
+      expectedEnumName: 'Source',
+    }),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'regions', PropertyType.array, PropertyPresence.mandatory, errorPrefix, {
+      arrayElementsExpectedType: PropertyType.enum,
+      arrayElementsExpectedEnum: ScraperRegion,
+      arrayElementsExpectedEnumName: 'Region',
+    }),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'searchTerms', PropertyType.array, PropertyPresence.mandatory, errorPrefix, {
+      arrayElementsExpectedType: PropertyType.string,
+    }),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'title', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'postDate', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'price', PropertyType.number, PropertyPresence.mandatory, errorPrefix),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'priceStr', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'hood', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'thumbnailUrl', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  );
+
+  if (post.extras !== undefined) {
+    const propExtras = checkProp(
+      post,
+      'extras',
+      PropertyType.object,
+      PropertyPresence.optional,
+      errorPrefix,
+      {
+        expectedObjectName: 'CraiglistFields',
+      },
+    );
+    if (propExtras.isOk()) {
+      appendErrors(errors, isExtrasValid(post, errorPrefix));
+    } else {
+      appendError(errors, propExtras);
+    }
   }
 
   if (errors.length > 0) {
@@ -407,7 +260,7 @@ const isDbValid = (): Result<boolean, string[]> => {
   Object.keys(dbData).forEach((pid) => {
     const post = dbData[pid];
 
-    const result = isPostValid(post);
+    const result = isPostValid(pid, post);
     if (result.isErr()) {
       result.mapErr((resultErrors) => {
         resultErrors.forEach((msg) => {
@@ -416,7 +269,7 @@ const isDbValid = (): Result<boolean, string[]> => {
       });
     } else {
       if (post.pid !== pid) {
-        errors.push(`post ${chalk.bold(post.pid)} does not match its key: ${chalk.bold(pid)}`);
+        errors.push(`post ${chalk.bold(post.pid)} does not match its key: ${chalk.bold(pid)} AAA`);
       }
     }
   });
@@ -487,7 +340,7 @@ export const upsertPost = (
   pid: string,
   sid: string,
   source: Source,
-  region: Region,
+  region: CraigslistRegion | FacebookRegion,
   searchTerm: string,
   title: string,
   postDate: string,
@@ -527,7 +380,7 @@ export const upsertPost = (
 
   const dbPost = dbData[pid];
 
-  const mergeRegions = (): Region[] => {
+  const mergeRegions = (): (CraigslistRegion | FacebookRegion)[] => {
     return postExists ? utils.mergeArrays(dbPost.regions, newPost.regions).sort() : newPost.regions;
   };
 
@@ -579,7 +432,7 @@ export const upsertPost = (
       source === Source.craigslist ? { subcategories: mergeCraigslistSubcategories() } : undefined,
   };
 
-  const result = isPostValid(dbData[pid]);
+  const result = isPostValid(pid, dbData[pid]);
   if (result.isOk()) {
     postsDb.write();
     return ok(dbData[pid]);

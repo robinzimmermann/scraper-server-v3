@@ -9,6 +9,8 @@ import * as dbUserPrefsTestData from './testData/dbPostsTestData';
 import * as dbSearches from '../../src/database/dbSearches';
 import { UserPrefs } from '../../src/database/models/dbUserPrefs';
 
+// TODO Add a test the fails if you reference a missing search
+
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
 let userPrefsDb = JsonDb<UserPrefs>();
@@ -50,7 +52,7 @@ describe('dbUserPrefs initialization', () => {
     expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('valid userPref post should work', () => {
+  test('valid userPref post should succeed', () => {
     const initialFile = {
       isUndoing: false,
       displayMinimalPostcards: false,
@@ -61,7 +63,7 @@ describe('dbUserPrefs initialization', () => {
           isSelected: true,
         },
       },
-    } as unknown as UserPrefs;
+    };
 
     userPrefsDb.setCacheDir(JSON.stringify(initialFile));
 
@@ -95,6 +97,7 @@ describe('dbUserPrefs initialization', () => {
 
   test('userPrefs with missing isUndoing fails', () => {
     const initialFile = {
+      // isUndoing: false,
       displayMinimalPostcards: false,
       searchPrefs: {
         '1': {
@@ -103,55 +106,54 @@ describe('dbUserPrefs initialization', () => {
           isSelected: true,
         },
       },
-    } as unknown as UserPrefs;
-
+    };
     userPrefsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbUserPrefs.init(userPrefsDb);
-
-    expect(result.isErr()).toBeTrue();
-    if (result.isErr()) {
-      expect(result.error).toHaveLength(1);
-      expect(result.error[0]).toIncludeMultiple(['userPrefs', 'has no element', 'isUndoing']);
-    }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('userPrefs with incorrect type for isUndoing fails', () => {
-    const initialFile = {
-      isUndoing: 'wrong',
-      displayMinimalPostcards: false,
-      searchPrefs: {
-        '1': {
-          sid: '1',
-          showInHeader: true,
-          isSelected: true,
-        },
-      },
-    } as unknown as UserPrefs;
-
-    userPrefsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbUserPrefs.init(userPrefsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
       expect(result.error[0]).toIncludeMultiple([
         'userPrefs',
-        'element that is not',
+        'missing property',
         'isUndoing',
+        'should be',
         'boolean',
       ]);
     }
+  });
 
-    expect(writeSpy).toHaveBeenCalledTimes(0);
+  test('userPrefs with incorrect type for isUndoing fails', () => {
+    const initialFile = {
+      isUndoing: -33,
+      displayMinimalPostcards: false,
+      searchPrefs: {
+        '1': {
+          sid: '1',
+          showInHeader: true,
+          isSelected: true,
+        },
+      },
+    };
+    userPrefsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbUserPrefs.init(userPrefsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'userPrefs',
+        'property',
+        'isUndoing',
+        'incorrect type',
+        'should be',
+        'boolean',
+      ]);
+    }
   });
 
   test('userPrefs with missing displayMinimalPostcards fails', () => {
     const initialFile = {
       isUndoing: false,
+      // displayMinimalPostcards: false,
       searchPrefs: {
         '1': {
           sid: '1',
@@ -159,29 +161,26 @@ describe('dbUserPrefs initialization', () => {
           isSelected: true,
         },
       },
-    } as unknown as UserPrefs;
-
+    };
     userPrefsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbUserPrefs.init(userPrefsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
       expect(result.error[0]).toIncludeMultiple([
         'userPrefs',
-        'has no element',
+        'missing property',
         'displayMinimalPostcards',
+        'should be',
+        'boolean',
       ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
   test('userPrefs with incorrect type for displayMinimalPostcards fails', () => {
     const initialFile = {
       isUndoing: false,
-      displayMinimalPostcards: 'bad',
+      displayMinimalPostcards: -33,
       searchPrefs: {
         '1': {
           sid: '1',
@@ -189,93 +188,104 @@ describe('dbUserPrefs initialization', () => {
           isSelected: true,
         },
       },
-    } as unknown as UserPrefs;
-
+    };
     userPrefsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbUserPrefs.init(userPrefsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
       expect(result.error[0]).toIncludeMultiple([
         'userPrefs',
-        'element that is not',
+        'property',
         'displayMinimalPostcards',
+        '-33',
+        'incorrect type',
+        'should be',
         'boolean',
       ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('userPrefs with empty searchPrefs works', () => {
-    const initialFile = {
-      isUndoing: false,
-      displayMinimalPostcards: false,
-      searchPrefs: {},
-    } as unknown as UserPrefs;
-
-    userPrefsDb.setCacheDir(JSON.stringify(initialFile));
-
-    const result = dbUserPrefs.init(userPrefsDb);
-
-    expect(result.isOk()).toBeTrue();
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
-
-    const userPrefs = dbUserPrefs.getUserPrefs();
-
-    const searchPrefs = userPrefs['searchPrefs'];
-
-    expect(searchPrefs).toBeEmptyObject();
   });
 
   test('userPrefs with missing searchPrefs fails', () => {
     const initialFile = {
       isUndoing: false,
       displayMinimalPostcards: false,
-    } as unknown as UserPrefs;
-
+      // searchPrefs: {
+      //   '1': {
+      //     sid: '1',
+      //     showInHeader: true,
+      //     isSelected: true,
+      //   },
+      // },
+    };
     userPrefsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbUserPrefs.init(userPrefsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
-      expect(result.error[0]).toIncludeMultiple(['userPrefs', 'has no element', 'searchPrefs']);
+      expect(result.error[0]).toIncludeMultiple([
+        'userPrefs',
+        'missing property',
+        'searchPrefs',
+        'should be',
+        'object',
+        'SearchPref',
+      ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
   test('userPrefs with incorrect type for searchPrefs fails', () => {
     const initialFile = {
       isUndoing: false,
       displayMinimalPostcards: false,
-      searchPrefs: 'dummy',
-    } as unknown as UserPrefs;
-
+      searchPrefs: -33,
+    };
     userPrefsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbUserPrefs.init(userPrefsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
       expect(result.error[0]).toIncludeMultiple([
         'userPrefs',
-        'element that is not',
+        'property',
         'searchPrefs',
+        '-33',
+        'incorrect type',
+        'should be',
         'object',
+        'SearchPref',
       ]);
     }
-
-    expect(writeSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('userPrefs with missing searchPrefs.sid fails', () => {
+  test('userPrefs searchPrefs with sid not matching its key fails', () => {
+    const initialFile = {
+      isUndoing: false,
+      displayMinimalPostcards: false,
+      searchPrefs: {
+        '888': {
+          sid: '444',
+          showInHeader: true,
+          isSelected: true,
+        },
+      },
+    };
+    userPrefsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbUserPrefs.init(userPrefsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'userPrefs.searchPrefs',
+        'with key',
+        '888',
+        'does not match its sid',
+        '444',
+      ]);
+    }
+  });
+
+  test('userPrefs with missing sid fails', () => {
     const initialFile = {
       isUndoing: false,
       displayMinimalPostcards: false,
@@ -286,22 +296,183 @@ describe('dbUserPrefs initialization', () => {
           isSelected: true,
         },
       },
-    } as unknown as UserPrefs;
-
+    };
     userPrefsDb.setCacheDir(JSON.stringify(initialFile));
-
     const result = dbUserPrefs.init(userPrefsDb);
-
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
       expect(result.error[0]).toIncludeMultiple([
-        'userPrefs.searchPrefs.1',
-        'has no element',
-        'sid',
+        'userPrefs.searchPrefs',
+        'with key',
+        '1',
+        'not match',
+        'blank',
       ]);
     }
+  });
 
-    expect(writeSpy).toHaveBeenCalledTimes(0);
+  test('userPrefs with incorrect type for sid fails', () => {
+    const initialFile = {
+      isUndoing: false,
+      displayMinimalPostcards: false,
+      searchPrefs: {
+        '1': {
+          sid: -33,
+          showInHeader: true,
+          isSelected: true,
+        },
+      },
+    };
+    userPrefsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbUserPrefs.init(userPrefsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'userPrefs.searchPrefs',
+        'with key',
+        '1',
+        'not match',
+        '-33',
+      ]);
+    }
+  });
+
+  test('userPrefs with empty string sid fails', () => {
+    const initialFile = {
+      isUndoing: false,
+      displayMinimalPostcards: false,
+      searchPrefs: {
+        '1': {
+          sid: '',
+          showInHeader: true,
+          isSelected: true,
+        },
+      },
+    };
+    userPrefsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbUserPrefs.init(userPrefsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'userPrefs.searchPrefs',
+        'with key',
+        '1',
+        'not match',
+        "''",
+      ]);
+    }
+  });
+
+  test('searchPrefs with missing showInHeader fails', () => {
+    const initialFile = {
+      isUndoing: false,
+      displayMinimalPostcards: false,
+      searchPrefs: {
+        '1': {
+          sid: '1',
+          // showInHeader: true,
+          isSelected: true,
+        },
+      },
+    };
+    userPrefsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbUserPrefs.init(userPrefsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        "userPrefs.searchPrefs['1']",
+        'missing property',
+        'showInHeader',
+        'should be',
+        'boolean',
+      ]);
+    }
+  });
+
+  test('searchPrefs with incorrect type for showInHeader fails', () => {
+    const initialFile = {
+      isUndoing: false,
+      displayMinimalPostcards: false,
+      searchPrefs: {
+        '1': {
+          sid: '1',
+          showInHeader: -33,
+          isSelected: true,
+        },
+      },
+    };
+    userPrefsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbUserPrefs.init(userPrefsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        "userPrefs.searchPrefs['1']",
+        'property',
+        'showInHeader',
+        'incorrect type',
+        'should be',
+        'boolean',
+      ]);
+    }
+  });
+
+  test('searchPrefs with missing isSelected fails', () => {
+    const initialFile = {
+      isUndoing: false,
+      displayMinimalPostcards: false,
+      searchPrefs: {
+        '1': {
+          sid: '1',
+          showInHeader: true,
+          // isSelected: true,
+        },
+      },
+    };
+    userPrefsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbUserPrefs.init(userPrefsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        "userPrefs.searchPrefs['1']",
+        'missing property',
+        'isSelected',
+        'should be',
+        'boolean',
+      ]);
+    }
+  });
+
+  test('searchPrefs with incorrect type for isSelected fails', () => {
+    const initialFile = {
+      isUndoing: false,
+      displayMinimalPostcards: false,
+      searchPrefs: {
+        '1': {
+          sid: '1',
+          showInHeader: true,
+          isSelected: -33,
+        },
+      },
+    };
+    userPrefsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbUserPrefs.init(userPrefsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        "userPrefs.searchPrefs['1']",
+        'property',
+        'isSelected',
+        'incorrect type',
+        'should be',
+        'boolean',
+      ]);
+    }
   });
 });
