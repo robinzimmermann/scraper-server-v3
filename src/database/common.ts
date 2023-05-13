@@ -19,9 +19,7 @@ export type ErrorWarnings = {
 
 export const initAllDbs = (): Result<boolean, string[]> => {
   if (!fs.existsSync(dbDir)) {
-    logger.warn(
-      `database directory doesn't exist, creating it: ${chalk.bold(dbDir)}`,
-    );
+    logger.warn(`database directory doesn't exist, creating it: ${chalk.bold(dbDir)}`);
     fs.mkdirSync(dbDir, { recursive: true });
   }
   const errors = [] as string[];
@@ -30,33 +28,36 @@ export const initAllDbs = (): Result<boolean, string[]> => {
   searchesDb.setCacheDir(`${dbDir}/dbSearches.json`);
   const searchesResult = dbSearches.init(searchesDb);
 
+  if (searchesResult.isErr()) {
+    logger.error(`one or more errors in ${dbDir}/dbSearches.json`);
+    searchesResult.mapErr((messages: string[]) =>
+      messages.forEach((msg) => logger.error(chalk.red(msg))),
+    );
+  }
+
   const postsDb = JsonDb<Posts>();
   postsDb.setCacheDir(`${dbDir}/dbPosts.json`);
   const postsResult = dbPosts.init(postsDb);
+
+  if (postsResult.isErr()) {
+    logger.error(`one or more errors in ${dbDir}/dbPosts.json`);
+    postsResult.mapErr((messages: string[]) =>
+      messages.forEach((msg) => logger.error(chalk.red(msg))),
+    );
+  }
 
   const userPrefsDb = JsonDb<UserPrefs>();
   userPrefsDb.setCacheDir(`${dbDir}/dbUserPrefs.json`);
   const userPrefsResult = dbUserPrefs.init(userPrefsDb);
 
-  if (searchesResult.isErr()) {
-    searchesResult.mapErr((messages: string[]) =>
-      messages.forEach((msg) => errors.push(msg)),
-    );
-  }
-
-  if (postsResult.isErr()) {
-    postsResult.mapErr((messages: string[]) =>
-      messages.forEach((msg) => errors.push(msg)),
-    );
-  }
-
   if (userPrefsResult.isErr()) {
+    logger.error(`one or more errors in ${dbDir}/dbUserPrefs.json`);
     userPrefsResult.mapErr((messages: string[]) =>
-      messages.forEach((msg) => errors.push(msg)),
+      messages.forEach((msg) => logger.error(chalk.red(msg))),
     );
   }
 
-  if (errors.length > 0) {
+  if (searchesResult.isErr() || postsResult.isErr() || userPrefsResult.isErr()) {
     return err(errors);
   } else {
     return ok(true);

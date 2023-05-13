@@ -204,10 +204,26 @@ const isPostValid = (key: string, post: Post): Result<boolean, string[]> => {
     checkProp(post, 'title', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
   );
 
-  appendError(
-    errors,
-    checkProp(post, 'postDate', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  const postDateResult = checkProp(
+    post,
+    'postDate',
+    PropertyType.string,
+    PropertyPresence.mandatory,
+    errorPrefix,
   );
+  if (postDateResult.isOk()) {
+    // postDate is good, nothing to do
+  } else {
+    // Facebook posts can have a blank postDate because their results page doesn't show post dates
+    if (post.source === Source.facebook) {
+      // Ignore it, it's a Facebook post, it's allowed to have empty postDate fields.
+    } else {
+      appendError(
+        errors,
+        checkProp(post, 'postDate', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+      );
+    }
+  }
 
   appendError(
     errors,

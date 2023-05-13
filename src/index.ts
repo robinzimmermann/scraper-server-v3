@@ -39,9 +39,6 @@ const startServer = async (): Promise<void> => {
       // }
 
       if (dbResult.isErr()) {
-        dbResult.mapErr((messages: string[]) =>
-          messages.forEach((msg) => logger.error(chalk.red(msg))),
-        );
         logger.error('initializing went pear-shaped, shutting down');
         return;
       }
