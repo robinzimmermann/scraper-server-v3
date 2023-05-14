@@ -1873,4 +1873,35 @@ describe('dbSearches initialization', () => {
       ]);
     }
   });
+
+  test('search with non-numeric sid fails', () => {
+    const initialFile = {
+      '5a': {
+        sid: '5a',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+        log: ['created', 'moved'],
+      },
+    };
+    searchesDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbSearches.init(searchesDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'search',
+        'property',
+        'sid',
+        'not a numeric string',
+        '5a',
+      ]);
+    }
+  });
 });

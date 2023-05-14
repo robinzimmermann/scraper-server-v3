@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { Result, ok, err } from 'neverthrow';
 
 import { logger } from '../utils/logger/logger';
-import { enumToValues, getAorAn, isValueInEnum } from '../utils/utils';
+import { enumToValues, getAorAn, isNumericStr, isValueInEnum } from '../utils/utils';
 import { Search } from './models/dbSearches';
 
 /**
@@ -33,6 +33,7 @@ interface CheckPropOptions<E extends { [name: string]: unknown }> {
   expectedObjectName?: string;
   propFormat?: RegExp;
   propFormatStr?: string;
+  propIsNumeric?: boolean;
 }
 
 export const dbInfoColor = chalk.grey;
@@ -245,9 +246,20 @@ export const checkProp = <T, E extends { [name: string]: unknown }>(
           errorPrefix,
         );
         if (propFormatResult.isOk()) {
-          // The string has the correct format (if required). Nothing to do
+          // The string has the correct format (if required). Do nothing
         } else {
           return err(propFormatResult.error);
+        }
+      }
+      if (options.propIsNumeric) {
+        if (isNumericStr(prop)) {
+          // All good, nothing to do
+        } else {
+          return err(
+            `${errorPrefix} has property ${chalk.bold(
+              propName,
+            )} that is not a numeric string: '${chalk.bold(prop)}'`,
+          );
         }
       }
     } else {

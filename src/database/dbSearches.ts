@@ -214,6 +214,7 @@ const isSearchValid = (key: string, search: Search): Result<boolean, string[]> =
       PropertyType.string,
       PropertyPresence.mandatory,
       chalk.bold('search'),
+      { propIsNumeric: true },
     );
     if (propPresent.isOk()) {
       if (search.sid !== key) {
