@@ -89,16 +89,11 @@ export const generateCacheFilename = (searchTermNum: number, pageNum: number): s
  * @returns true if there is a next page
  */
 export const fetchSearchResults = async (browser: HBrowserInstance, job: Job): Promise<boolean> => {
-  logger.silly(
-    `craigslist.fetchSearchResults() job ${job.jid} about to contact the craigslist server`,
-  );
   const results = await browser.getHtmlPageCraigslist(job.url);
   // logger.verbose(`got back from craigslist search: ${JSON.stringify(results)}`);
 
   if (results.html) {
-    logger.verbose('looks like this craigslist page has a result to save');
     const cacheLocation = buildCacheName(job);
-    logger.verbose(`saving to filename=${chalk.bold(cacheLocation)}`);
     await fsp.mkdir(job.searchResultsHomeDir, { recursive: true });
     await fsp.writeFile(cacheLocation, results.html);
   } else {

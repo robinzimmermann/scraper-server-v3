@@ -132,22 +132,16 @@ export const printJob2 = (job: Job): string => {
       details = <FacebookJobDetails>job.details;
       detailsStr = `searchTerm=${chalk.dim(details.searchTerm)} (${chalk.dim(
         details.searchTermNum,
-      )}),region=${chalk.dim(details.region)},fileType=${chalk.dim(
-        details.fileType,
-      )}`;
+      )}),region=${chalk.dim(details.region)},fileType=${chalk.dim(details.fileType)}`;
       break;
   }
-  return `{job=${chalk.dim(job.jid)},search=${chalk.dim(
-    job.sid,
-  )},source=${chalk.dim(job.source)},${chalk.bold(
-    'details={',
-  )}${detailsStr}},randomWaitTime=${chalk.dim(
+  return `{job=${chalk.dim(job.jid)},search=${chalk.dim(job.sid)},source=${chalk.dim(
+    job.source,
+  )},${chalk.bold('details={')}${detailsStr}},randomWaitTime=${chalk.dim(
     job.randomWaitTime,
-  )},searchResultsHomeDir=${chalk.dim(
-    job.searchResultsHomeDir,
-  )},filename=${chalk.dim(job.searchResultsFilename)},url=${chalk.dim(
-    job.url,
-  )}${chalk.bold('}')},pageNum=${chalk.dim(job.pageNum)}`;
+  )},searchResultsHomeDir=${chalk.dim(job.searchResultsHomeDir)},filename=${chalk.dim(
+    job.searchResultsFilename,
+  )},url=${chalk.dim(job.url)}${chalk.bold('}')},pageNum=${chalk.dim(job.pageNum)}`;
 };
 
 export const printJob = (job: Job, write = logger.debug): void => {
@@ -168,21 +162,19 @@ export const printJob = (job: Job, write = logger.debug): void => {
   switch (job.source) {
     case Source.craigslist:
       details = <CraigslistJobDetails>job.details;
-      detailsStr = `${name('craigslistSearchDetails')}={${name(
-        'searchTerm',
-      )}=${val(details.searchTerm)} (${val(details.searchTermNum)}), ${name(
-        'region',
-      )}=${val(details.region)}, ${name('subcategory')}=${val(
-        details.craigslistSubcategory,
-      )}}`;
+      detailsStr = `${name('craigslistSearchDetails')}={${name('searchTerm')}=${val(
+        details.searchTerm,
+      )} (${val(details.searchTermNum)}), ${name('region')}=${val(details.region)}, ${name(
+        'subcategory',
+      )}=${val(details.craigslistSubcategory)}}`;
       break;
     case Source.facebook:
       details = <FacebookJobDetails>job.details;
-      detailsStr = `${name('facebookSearchDetails')}={${name(
-        'searchTerm',
-      )}=${val(details.searchTerm)} (${val(details.searchTermNum)}), ${name(
-        'region',
-      )}=${val(details.region)}, ${name('fileType')}=${val(details.fileType)}}`;
+      detailsStr = `${name('facebookSearchDetails')}={${name('searchTerm')}=${val(
+        details.searchTerm,
+      )} (${val(details.searchTermNum)}), ${name('region')}=${val(details.region)}, ${name(
+        'fileType',
+      )}=${val(details.fileType)}}`;
       break;
   }
 
@@ -190,22 +182,16 @@ export const printJob = (job: Job, write = logger.debug): void => {
 
   write(`${intro('┌')}${intro('─'.repeat(125))}`);
   write(
-    `${intro('│')} ${name('jid')}=${val(job.jid)}, ${name('sid')}=${val(
-      job.sid,
-    )} ${val(`(${search?.alias})`)}, ${name('source')}=${val(
-      job.source,
-    )},${name('randomWaitTime')}=${val(job.randomWaitTime)}, ${name(
-      'pageNum',
-    )}=${val(job.pageNum)}, ${name('filename')}=${val(
+    `${intro('│')} ${name('jid')}=${val(job.jid)}, ${name('sid')}=${val(job.sid)} ${val(
+      `(${search?.alias})`,
+    )}, ${name('source')}=${val(job.source)},${name('randomWaitTime')}=${val(
+      job.randomWaitTime,
+    )}, ${name('pageNum')}=${val(job.pageNum)}, ${name('filename')}=${val(
       job.searchResultsFilename,
     )}`,
   );
   write(`${intro('│')} ${name('url')}=${val(job.url)}`);
-  write(
-    `${intro('│')} ${name('searchResultsHomeDir')}=${val(
-      job.searchResultsHomeDir,
-    )}`,
-  );
+  write(`${intro('│')} ${name('searchResultsHomeDir')}=${val(job.searchResultsHomeDir)}`);
   write(`${intro('└')} ${detailsStr}`);
 };
 
@@ -228,10 +214,7 @@ export const addJob = (
   let randomWaitTime = 0;
   // For vendors that need random wait time, set it.
   const useShortWaitTime =
-    options.debugUseShortRandomWaitTime ||
-    options.debugFetchSearchResultsFromFiles
-      ? true
-      : false;
+    options.debugUseShortRandomWaitTime || options.debugFetchSearchResultsFromFiles ? true : false;
   if (source === Source.craigslist) {
     randomWaitTime = getRandWaitTime(
       options.craigslistFetchOptions.minWaitTimeBetweenRequests,
@@ -265,10 +248,7 @@ export const addJob = (
       );
       break;
     case Source.facebook:
-      url = facebookFetcher.composeUrl(
-        facebookJobDetails.region,
-        facebookJobDetails.searchTerm,
-      );
+      url = facebookFetcher.composeUrl(facebookJobDetails.region, facebookJobDetails.searchTerm);
       searchResultsHomeDir = facebookFetcher.generateCacheDir(
         cacheDir,
         search.alias,
@@ -304,9 +284,7 @@ export const addAnotherPageToJob = (job: Job): void => {
   logger.verbose(`adding a new job after job ${job.jid}`);
   const pos = jobs.findIndex((j) => j.jid === job.jid);
   if (pos === -1) {
-    logger.warn(
-      `tried to add a next page for job ${job.jid} but it was not in my jobs list`,
-    );
+    logger.warn(`tried to add a next page for job ${job.jid} but it was not in my jobs list`);
     return;
   }
   const search = dbSearches.getSearchBySid(job.sid);
@@ -354,35 +332,29 @@ const getVendorJobs = async (source: Source, search: Search): Promise<void> => {
   // Within facebook sources, there are individual jobs for search terms, and regions
   switch (source) {
     case Source.craigslist:
-      craigslistFetcher.getJobs(
-        search,
-        (craigslistJobDetails: CraigslistJobDetails) => {
-          addJob(search, source, {
-            searchTerm: craigslistJobDetails.searchTerm,
-            searchTermNum: craigslistJobDetails.searchTermNum,
-            region: craigslistJobDetails.region,
-            craigslistSubcategory: craigslistJobDetails.craigslistSubcategory,
-          });
-        },
-      );
+      craigslistFetcher.getJobs(search, (craigslistJobDetails: CraigslistJobDetails) => {
+        addJob(search, source, {
+          searchTerm: craigslistJobDetails.searchTerm,
+          searchTermNum: craigslistJobDetails.searchTermNum,
+          region: craigslistJobDetails.region,
+          craigslistSubcategory: craigslistJobDetails.craigslistSubcategory,
+        });
+      });
       break;
     case Source.facebook:
-      await facebookFetcher.getJobs(
-        search,
-        (facebookJobDetails: FacebookJobDetails) => {
-          addJob(search, source, {
-            searchTerm: facebookJobDetails.searchTerm,
-            searchTermNum: facebookJobDetails.searchTermNum,
-            region: facebookJobDetails.region,
-            fileType: FacebookCacheFileType.HTML,
-          });
-          // In the case of Facebook, the cache files may have been downloaded by node using Puppeteer.
-          // Or they may have been downloaded by hand by a human, since Facebook is good at noticing the
-          // automation of Puppeteer and blocking it.
-          // In the case of manually saving the files, they are in MTHTML format, rather than Puppeteer's HTML
-          // format.
-        },
-      );
+      await facebookFetcher.getJobs(search, (facebookJobDetails: FacebookJobDetails) => {
+        addJob(search, source, {
+          searchTerm: facebookJobDetails.searchTerm,
+          searchTermNum: facebookJobDetails.searchTermNum,
+          region: facebookJobDetails.region,
+          fileType: FacebookCacheFileType.HTML,
+        });
+        // In the case of Facebook, the cache files may have been downloaded by node using Puppeteer.
+        // Or they may have been downloaded by hand by a human, since Facebook is good at noticing the
+        // automation of Puppeteer and blocking it.
+        // In the case of manually saving the files, they are in MTHTML format, rather than Puppeteer's HTML
+        // format.
+      });
       break;
     default:
     // Should never get here.
@@ -432,10 +404,7 @@ const fetchFilesFromServer = async (): Promise<void> => {
 
     const doTheFetch = doJobSearch(job);
 
-    const waitProgress = (
-      _millisThisTick: number,
-      _totalMillisSoFar: number,
-    ): void => {
+    const waitProgress = (_millisThisTick: number, _totalMillisSoFar: number): void => {
       // TODO Do progress update here
       // if (totalMillisSoFar >= job.randomWaitTime) {
       //   logger.silly(`job ${job.jid} finished waiting ${totalMillisSoFar} ms`);
@@ -443,9 +412,8 @@ const fetchFilesFromServer = async (): Promise<void> => {
     };
     const doTheWait = waitWithProgress(job.randomWaitTime, waitProgress);
 
-    const response = await Promise.all([doTheFetch, doTheWait]);
+    await Promise.all([doTheFetch, doTheWait]);
     // Don't care about the responses, just continue when all promises are done.
-    logger.silly(`job ${job.jid} finished. response=${response.join(', ')}`);
 
     jobPointer++;
   }
@@ -510,10 +478,7 @@ export const doSearch = async (): Promise<void> => {
 /**
  * Perform one-time initialization when the server starts.
  */
-export const init = (
-  headlessBrowserDriver: HBrowserInstance,
-  opts?: FetchOptions,
-): void => {
+export const init = (headlessBrowserDriver: HBrowserInstance, opts?: FetchOptions): void => {
   // Clear the list
   jobs.length = 0;
 
@@ -522,11 +487,7 @@ export const init = (
   options = { ...defaultOptions, ...(opts || {}) };
 
   if (options.debugFetchSearchResultsFromFiles) {
-    logger.warn(
-      warningColor(
-        `${logPrefix}DEBUG: ignoring the servers, fetching from files!`,
-      ),
-    );
+    logger.warn(warningColor(`${logPrefix}DEBUG: ignoring the servers, fetching from files!`));
   }
   if (options.debugUseShortRandomWaitTime) {
     logger.warn(warningColor(`${logPrefix}DEBUG: using short wait time!`));

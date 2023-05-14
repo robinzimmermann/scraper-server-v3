@@ -47,60 +47,6 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 });
 
 /**
- * Assume extras field exists
- */
-/*
-const isExtrasValid = (extras: CraiglistFields, errPrefix: string): Result<boolean, string[]> => {
-  const errors: string[] = [];
-
-  const propName = 'subcategories';
-
-  const subcategoriesTypeErrors = propIsCorrectType(
-    extras,
-    errPrefix,
-    propName,
-    PropertyType.array,
-  );
-  if (subcategoriesTypeErrors.isOk()) {
-    const propHasStringLength = propHasChars(extras, errPrefix, propName);
-    if (propHasStringLength.isOk()) {
-      const enumElementsErrors = arrayHasValidEnumElements(
-        extras,
-        errPrefix,
-        propName,
-        CraigslistSubcategory,
-      );
-      if (enumElementsErrors.isOk()) {
-        const actualElementKeys = Object.keys(extras);
-        if (utils.differenceArrays([propName], actualElementKeys).length === 0) {
-          // All good, do nothing
-        } else {
-          const arr = utils.differenceArrays([propName], actualElementKeys);
-          errors.push(
-            `${errPrefix} has ${chalk.bold('extras')} element with extra keys: ${chalk.bold(
-              arr.join(', '),
-            )}`,
-          );
-        }
-      } else {
-        appendErrors(errors, enumElementsErrors);
-      }
-    } else {
-      appendErrors(errors, propHasStringLength);
-    }
-  } else {
-    appendErrors(errors, subcategoriesTypeErrors);
-  }
-
-  if (errors.length > 0) {
-    return err(errors);
-  } else {
-    return ok(true);
-  }
-};
-*/
-
-/**
  * At this point the extras field exists, but we know nothing about it.
  */
 const isExtrasValid = (post: Post, parentErrorPrefix: string): Result<boolean, string[]> => {
@@ -147,6 +93,9 @@ const isPostValid = (key: string, post: Post): Result<boolean, string[]> => {
       PropertyType.string,
       PropertyPresence.mandatory,
       chalk.bold('post'),
+      {
+        propIsNumeric: true,
+      },
     );
     if (propPresent.isOk()) {
       if (post.pid !== key) {

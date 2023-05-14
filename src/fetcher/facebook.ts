@@ -178,9 +178,7 @@ export const generateCacheFilename = (searchTermNum: number): string => {
 };
 
 export const fetchSearchResults = async (browser: HBrowserInstance, job: Job): Promise<void> => {
-  logger.silly(`facebook.fetchSearchResults() job ${job.jid} about to contact the facebook server`);
-  const results = await browser.getHtmlPageFacebook(job.url, job.details.searchTerm);
-  logger.verbose(`got back from faceboook search: ${JSON.stringify(results)}`);
+  await browser.getHtmlPageFacebook(job.url, job.details.searchTerm);
   // logger.silly(
   //   `facebook.fetchSearchResults() job ${job.jid} about to contact the server`,
   // );

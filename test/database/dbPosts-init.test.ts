@@ -1391,4 +1391,35 @@ describe('dbPosts initialization', () => {
       ]);
     }
   });
+
+  test('post with non-numeric pid fails', () => {
+    const initialFile = {
+      '444abc': {
+        pid: '444abc',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post',
+        'property',
+        'pid',
+        'not a numeric string',
+        '444abc',
+      ]);
+    }
+  });
 });
