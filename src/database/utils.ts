@@ -30,6 +30,8 @@ interface CheckPropOptions<E extends { [name: string]: unknown }> {
   expectedEnum?: E;
   expectedEnumName?: string;
   expectedObjectName?: string;
+  propFormat?: RegExp;
+  propFormatStr?: string;
 }
 
 export const dbInfoColor = chalk.grey;
@@ -232,6 +234,21 @@ export const checkProp = <T, E extends { [name: string]: unknown }>(
   if (expectedType === PropertyType.string) {
     if ((prop as string).length > 0) {
       // The prop has characters, nothing to do.
+      // Except, perhaps, check its format...
+      if (options.propFormat && options.propFormatStr) {
+        const propFormatResult = checkPropFormat(
+          propName,
+          prop as string,
+          options.propFormat,
+          options.propFormatStr,
+          errorPrefix,
+        );
+        if (propFormatResult.isOk()) {
+          // The string has the correct format (if required). Nothing to do
+        } else {
+          return err(propFormatResult.error);
+        }
+      }
     } else {
       return err(pushZeroLengthStringError());
     }
@@ -329,3 +346,32 @@ export const checkForExtraProps = (
     return err(errors);
   }
 };
+
+export const checkPropFormat = (
+  propName: string,
+  propValue: string,
+  propFormat: RegExp,
+  propFormatStr: string,
+  errPrefix: string,
+): Result<boolean, string> => {
+  if (propFormat.test(propValue)) {
+    return ok(true);
+  } else {
+    return err(
+      `${errPrefix} has property ${chalk.bold(propName)} with an invalid format: ${chalk.bold(
+        propValue,
+      )} (should be ${chalk.bold(propFormatStr)})`,
+    );
+  }
+};
+
+/*
+export const checkProp = <T, E extends { [name: string]: unknown }>(
+  parent: T,
+  propName: string,
+  expectedType: PropertyType,
+  presence: PropertyPresence,
+  errorPrefix: string,
+  opts?: CheckPropOptions<E>,
+): Result<boolean, string> => {
+*/

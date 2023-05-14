@@ -10,6 +10,7 @@ import { CraigslistRegion, Searches, Source } from '../../src/database/models/db
 import { FacebookRegion } from '../../src/database/models/dbSearches';
 import * as postsDbData from './testData/dbPostsTestData';
 import * as dbSearches from '../../src/database/dbSearches';
+import { logger } from '../../src/utils/logger/logger';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
@@ -892,6 +893,70 @@ describe('dbPosts initialization', () => {
         'property',
         'postDate',
         'empty string',
+      ]);
+    }
+  });
+
+  test('post with bad format for postDate fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '23-17-01',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'postDate',
+        'invalid format',
+        '23-17-01',
+        'MM-DD-YYYY',
+      ]);
+    }
+  });
+
+  test('post with bad format for priceStr fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        title: 'An amazing thing',
+        postDate: '2023-10-01',
+        price: 20,
+        priceStr: '20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'property',
+        'priceStr',
+        'invalid format',
+        '20',
+        '$0,000',
       ]);
     }
   });

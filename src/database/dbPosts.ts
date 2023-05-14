@@ -36,7 +36,7 @@ const dbLogger = DbLogger(dbLoggerPrefix);
 const dateChecker = /^202[3-9]-[01][0-9]-[0123][0-9]$/;
 
 // To check a string matches currency
-const currencyChecker = /([$*\s]*(?:\d{1,3}(?:[\s,]\d{3})+|\d+)(?:.\d{2})?([\s]*[a-z-A-Z]{0,3}))/;
+const currencyChecker = /^\$(?!0\.00)\d{1,3}(,\d{3})*(\.\d\d)?$/;
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -210,18 +210,20 @@ const isPostValid = (key: string, post: Post): Result<boolean, string[]> => {
     PropertyType.string,
     PropertyPresence.mandatory,
     errorPrefix,
+    {
+      propFormat: dateChecker,
+      propFormatStr: 'MM-DD-YYYY',
+    },
   );
   if (postDateResult.isOk()) {
-    // postDate is good, nothing to do
+    // check the format
+    // appendError(errors, checkFormat(post.postDate, dateChecker, errorPrefix));
   } else {
     // Facebook posts can have a blank postDate because their results page doesn't show post dates
     if (post.source === Source.facebook) {
       // Ignore it, it's a Facebook post, it's allowed to have empty postDate fields.
     } else {
-      appendError(
-        errors,
-        checkProp(post, 'postDate', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
-      );
+      appendError(errors, postDateResult);
     }
   }
 
@@ -232,7 +234,10 @@ const isPostValid = (key: string, post: Post): Result<boolean, string[]> => {
 
   appendError(
     errors,
-    checkProp(post, 'priceStr', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+    checkProp(post, 'priceStr', PropertyType.string, PropertyPresence.mandatory, errorPrefix, {
+      propFormat: currencyChecker,
+      propFormatStr: '$0,000',
+    }),
   );
 
   appendError(
