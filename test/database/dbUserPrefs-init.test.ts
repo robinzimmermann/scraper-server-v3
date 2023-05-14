@@ -5,7 +5,6 @@ import { SpiedFunction } from 'jest-mock';
 import JsonDb from '../../src/api/jsonDb/lowdbDriver';
 import { Searches } from '../../src/database/models/dbSearches';
 import * as dbUserPrefs from '../../src/database/dbUserPrefs';
-import * as dbUserPrefsTestData from './testData/dbPostsTestData';
 import * as dbSearches from '../../src/database/dbSearches';
 import { UserPrefs } from '../../src/database/models/dbUserPrefs';
 
@@ -17,7 +16,20 @@ let userPrefsDb = JsonDb<UserPrefs>();
 let writeSpy: SpiedFunction<() => void>;
 
 const searchesDb = JsonDb<Searches>();
-const searchesDbData = dbUserPrefsTestData.initialSearches;
+const searchesDbData = {
+  '1': {
+    sid: '1',
+    alias: 'KTM dirt bikes',
+    isEnabled: true,
+    rank: 85,
+    sources: ['craigslist'],
+    craigslistSearchDetails: {
+      searchTerms: ['search1', 'search2'],
+      regions: ['sf bayarea', 'inland empire'],
+      subcategories: ['tools', 'motorcycles'],
+    },
+  },
+};
 
 const initializeJest = (): void => {
   jest.clearAllMocks();
@@ -472,6 +484,33 @@ describe('dbUserPrefs initialization', () => {
         'incorrect type',
         'should be',
         'boolean',
+      ]);
+    }
+  });
+
+  test("searchPrefs referencing search which doesn't exist fails", () => {
+    const initialFile = {
+      isUndoing: false,
+      displayMinimalPostcards: false,
+      searchPrefs: {
+        '55': {
+          sid: '55',
+          showInHeader: true,
+          isSelected: true,
+        },
+      },
+    };
+    userPrefsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbUserPrefs.init(userPrefsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        "userPrefs.searchPrefs['55']",
+        'references',
+        'search sid',
+        "doesn't exist",
+        '55',
       ]);
     }
   });

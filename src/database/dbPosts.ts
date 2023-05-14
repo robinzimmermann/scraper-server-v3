@@ -11,7 +11,9 @@ import {
   appendError,
   appendErrors,
   checkProp,
+  checkSidReference,
 } from './utils';
+import * as dbSearches from '../database/dbSearches';
 import {
   Source,
   CraigslistSubcategory,
@@ -170,10 +172,21 @@ const isPostValid = (key: string, post: Post): Result<boolean, string[]> => {
     checkProp(post, 'pid', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
   );
 
-  appendError(
-    errors,
-    checkProp(post, 'sid', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  const sidResult = checkProp(
+    post,
+    'sid',
+    PropertyType.string,
+    PropertyPresence.mandatory,
+    errorPrefix,
   );
+  if (sidResult.isOk()) {
+    // sid is good, now make sure it exists
+    appendError(
+      errors,
+      checkSidReference(post.sid, dbSearches.getSearchBySid(post.sid), errorPrefix),
+    );
+  }
+  appendError(errors, sidResult);
 
   appendError(
     errors,

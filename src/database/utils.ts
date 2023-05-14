@@ -3,6 +3,7 @@ import { Result, ok, err } from 'neverthrow';
 
 import { logger } from '../utils/logger/logger';
 import { enumToValues, getAorAn, isValueInEnum } from '../utils/utils';
+import { Search } from './models/dbSearches';
 
 /**
  * The nearly match, but don't quite, Javascript types.
@@ -365,13 +366,17 @@ export const checkPropFormat = (
   }
 };
 
-/*
-export const checkProp = <T, E extends { [name: string]: unknown }>(
-  parent: T,
-  propName: string,
-  expectedType: PropertyType,
-  presence: PropertyPresence,
+/**
+ * Checks that a sid which has been referred to exists
+ */
+export const checkSidReference = (
+  sid: string,
+  searchResult: Search | undefined,
   errorPrefix: string,
-  opts?: CheckPropOptions<E>,
 ): Result<boolean, string> => {
-*/
+  if (searchResult) {
+    return ok(true);
+  } else {
+    return err(`${errorPrefix} references a search sid which doesn't exist: ${chalk.bold(sid)}`);
+  }
+};

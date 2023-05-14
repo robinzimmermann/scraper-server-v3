@@ -1,10 +1,18 @@
 import { Result, ok, err } from 'neverthrow';
 
 import { JsonDb } from '../api/jsonDb/JsonDb';
-import { DbLogger, PropertyPresence, PropertyType, appendError, checkProp } from './utils';
+import {
+  DbLogger,
+  PropertyPresence,
+  PropertyType,
+  appendError,
+  checkProp,
+  checkSidReference,
+} from './utils';
 import { SearchPref, UserPrefs } from './models/dbUserPrefs';
 import { appendErrors } from './utils';
 import chalk from 'chalk';
+import * as dbSearches from '../database/dbSearches';
 
 export type Database = UserPrefs;
 
@@ -20,10 +28,21 @@ const isSearchPrefValid = (key: string, searchPref: SearchPref): Result<boolean,
 
   const errorPrefix = chalk.bold(`userPrefs.searchPrefs['${key}']`);
 
-  appendError(
-    errors,
-    checkProp(searchPref, 'sid', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  const sidResult = checkProp(
+    searchPref,
+    'sid',
+    PropertyType.string,
+    PropertyPresence.mandatory,
+    errorPrefix,
   );
+  if (sidResult.isOk()) {
+    appendError(
+      errors,
+      checkSidReference(searchPref.sid, dbSearches.getSearchBySid(searchPref.sid), errorPrefix),
+    );
+  } else {
+    appendError(errors, sidResult);
+  }
 
   appendError(
     errors,
@@ -79,7 +98,12 @@ const isSearchPrefsValid = (): Result<boolean, string[]> => {
 
     if (dummy.isOk()) {
       if (key === searchPref.sid) {
-        appendErrors(errors, isSearchPrefValid(key, searchPref));
+        const searchPrefResult = isSearchPrefValid(key, searchPref);
+        if (searchPrefResult.isOk()) {
+          // Everything is going well
+        } else {
+          appendErrors(errors, searchPrefResult);
+        }
       } else {
         let sidError = searchPref.sid;
         if (searchPref.sid === '') {
