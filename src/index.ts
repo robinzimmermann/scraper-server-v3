@@ -7,11 +7,88 @@ import { port, cacheDir } from './globals';
 import { initAllDbs } from './database/common';
 import * as fetcher from './fetcher/fetcher';
 import HBrowserInstance from './api/hbrowser/puppeteerDriver';
+import listEndpoints from 'express-list-endpoints';
+import { restColorGet, restColorPut, restColorPost, restColorDelete } from './globals';
 
 const startBrowser = fetcher.defaultOptions.debugFetchSearchResultsFromFiles ? false : true;
 
 const hbrowser = HBrowserInstance();
 
+let maxLength = 0;
+
+const endpointComparator = (e1: listEndpoints.Endpoint, e2: listEndpoints.Endpoint): number => {
+  const pathCompare = e1.path.localeCompare(e2.path);
+  if (pathCompare !== 0) {
+    return pathCompare;
+  }
+  const methodToSortScore = (method: string): number => {
+    switch (method) {
+      case 'GET':
+        return 1;
+      case 'POST':
+        return 2;
+      case 'PUT':
+        return 3;
+      case 'DELETE':
+        return 4;
+      default:
+        return 0;
+    }
+  };
+  const e1Method = methodToSortScore(e1.methods[0]);
+  const e2Method = methodToSortScore(e2.methods[0]);
+
+  return e1Method - e2Method;
+};
+
+const getEndpoint = (method: string, path: string): string => {
+  let methodFgColor = chalk.gray;
+  switch (method) {
+    case 'GET':
+      methodFgColor = chalk.hex(restColorGet);
+      break;
+    case 'POST':
+      methodFgColor = chalk.hex(restColorPost);
+      break;
+    case 'PUT':
+      methodFgColor = chalk.hex(restColorPut);
+      break;
+    case 'DELETE':
+      methodFgColor = chalk.hex(restColorDelete);
+      break;
+  }
+  const first = methodFgColor(method.padEnd(maxLength));
+  // The following regex looks for :token in the path. There may be 0, 1, or many
+  return `${first} ${path
+    .replace('/api/v3', chalk.dim('/api/v3'))
+    .replace(/(:(.*?))((?:\/|$))/g, `${methodFgColor('$1')}$3`)}`;
+};
+
+const printEndpoints = (): void => {
+  const endpoints: listEndpoints.Endpoint[] = [];
+  listEndpoints(app)
+    .filter(
+      (appEndPoint) =>
+        !appEndPoint.path.startsWith('/api/v1') && !appEndPoint.path.startsWith('/api/v2'),
+    )
+    .forEach((appEndpoint) => {
+      appEndpoint.methods.forEach((method) => {
+        endpoints.push({
+          path: appEndpoint.path,
+          methods: [method],
+          middlewares: appEndpoint.middlewares,
+        });
+      });
+    });
+  // logger.silly(JSON.stringify(endpoints, null, 2));
+  maxLength = endpoints
+    .map((ep) => ep.methods[0])
+    .reduce((acc, item) => Math.max(acc, item.length), 0);
+
+  endpoints.sort(endpointComparator).forEach((ep) => {
+    logger.silly(getEndpoint(ep.methods[0], ep.path));
+  });
+};
 const startServer = async (): Promise<void> => {
   return new Promise((resolve) => {
     app.listen(port, async () => {
@@ -45,6 +122,7 @@ const startServer = async (): Promise<void> => {
 
       resolve();
     });
+    logger.verbose('just finishing calling the listen guy');
   });
 };
 
@@ -75,88 +153,4 @@ fetcher.init(hbrowser);
 
 logger.info(chalk.green.bold('server ready'));
 
-// await fetcher.doSearch(); // TODO This is temporary, browser user should start searches
-
-/*
-const $ = cheerio.load(
-  `<div class="meta1">4/5<span class="separator">·</span>Reno</div>
-  <div class="meta2">4/5<span class="separator">·</span></div>
-  <div class="meta3">6hr ago<span class="separator">·</span>Reno</div>
-  <div class="meta4">6hr ago<span class="separator">·</span></div>`,
-);
-
-// const contents = $('div').contents();
-// logger.debug(`contents length: ${contents.length}`);
-
-const metaDiv1 = $('.meta1');
-logger.verbose(`metaDiv=${metaDiv1}`);
-const metaChildren1 = metaDiv1.contents().filter((_node) => true);
-for (const node of metaChildren1) {
-  if (node.type === 'text') {
-    logger.verbose(`=> ${node.type}, ${$(node)}`);
-  }
-}
-metaChildren1.each((i: number, el: cheerio.Element) => {
-  if (el.type === 'text') {
-    if (i === 0) {
-      logger.verbose(`TIME: ${el.data} ${getPostDate(el.data)}`);
-    } else {
-      logger.verbose(`HOOD: ${el.data}`);
-    }
-  }
-});
-
-const metaDiv2 = $('.meta2');
-logger.verbose(`metaDiv=${metaDiv2}`);
-const metaChildren2 = metaDiv2.contents().filter((_node) => true);
-for (const node of metaChildren2) {
-  if (node.type === 'text') {
-    logger.verbose(`=> ${node.type}, ${$(node)}`);
-  }
-}
-metaChildren2.each((i: number, el: cheerio.Element) => {
-  if (el.type === 'text') {
-    if (i === 0) {
-      logger.verbose(`TIME: ${el.data} ${getPostDate(el.data)}`);
-    } else {
-      logger.verbose(`HOOD: ${el.data}`);
-    }
-  }
-});
-
-const metaDiv3 = $('.meta3');
-logger.verbose(`metaDiv=${metaDiv3}`);
-const metaChildren3 = metaDiv3.contents().filter((_node) => true);
-for (const node of metaChildren3) {
-  if (node.type === 'text') {
-    logger.verbose(`=> ${node.type}`);
-  }
-}
-metaChildren3.each((i: number, el: cheerio.Element) => {
-  if (el.type === 'text') {
-    if (i === 0) {
-      logger.verbose(`TIME: ${el.data} ${getPostDate(el.data)}`);
-    } else {
-      logger.verbose(`HOOD: ${el.data}`);
-    }
-  }
-});
-
-const metaDiv4 = $('.meta4');
-logger.verbose(`metaDiv=${metaDiv4}`);
-const metaChildren4 = metaDiv4.contents().filter((_node) => true);
-for (const node of metaChildren4) {
-  if (node.type === 'text') {
-    logger.verbose(`=> ${node.type}, ${$(node)}`);
-  }
-}
-metaChildren4.each((i: number, el: cheerio.Element) => {
-  if (el.type === 'text') {
-    if (i === 0) {
-      logger.verbose(`TIME: ${el.data} ${getPostDate(el.data)}`);
-    } else {
-      logger.verbose(`HOOD: ${el.data}`);
-    }
-  }
-});
-*/
+printEndpoints();

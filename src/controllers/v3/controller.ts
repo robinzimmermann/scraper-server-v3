@@ -17,10 +17,7 @@ export const isAliveHandler = (_req: Request, res: Response): void => {
   res.status(200).json(result);
 };
 
-export const startScanHandler = async (
-  _req: Request,
-  res: Response,
-): Promise<void> => {
+export const startScanHandler = async (_req: Request, res: Response): Promise<void> => {
   await fetcher.doSearch();
   const result: RES_SUCCESS = { success: true };
   res.status(200).json(result);
