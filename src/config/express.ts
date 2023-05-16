@@ -41,9 +41,7 @@ morgan.token('timestamp', (_req: Request, _res: Response, _args) => {
 
 morgan.token('statusColor', (_req: Request, res: Response, _args) => {
   // get the status code if response written
-  const status = (
-    typeof res.headersSent !== 'boolean' ? Boolean(res.header) : res.headersSent
-  )
+  const status = (typeof res.headersSent !== 'boolean' ? Boolean(res.header) : res.headersSent)
     ? res.statusCode
     : undefined;
 
@@ -75,12 +73,10 @@ morgan.token('methodImmediate', (req: Request, _res: Response, _args) => {
       color = tinycolor(globals.restColorPost).darken(darkenAmount).toString();
       break;
     case 'PUT':
-      color = tinycolor(globals.restColoroPut).darken(darkenAmount).toString();
+      color = tinycolor(globals.restColorPut).darken(darkenAmount).toString();
       break;
     case 'DELETE':
-      color = tinycolor(globals.restColorDelete)
-        .darken(darkenAmount)
-        .toString();
+      color = tinycolor(globals.restColorDelete).darken(darkenAmount).toString();
       break;
     default:
       color = tinycolor('#FFFF00').darken(darkenAmount).toString();
@@ -98,7 +94,7 @@ morgan.token('method', (req: Request, _res: Response, _args) => {
       color = globals.restColorPost;
       break;
     case 'PUT':
-      color = globals.restColoroPut;
+      color = globals.restColorPut;
       break;
     case 'DELETE':
       color = globals.restColorDelete;
@@ -121,15 +117,10 @@ const configureExpressApp = (app: Express): void => {
 
   // app.use(morgan('combined'));
   app.use(
-    morgan(
-      `:timestamp [\x1b[34mdebug  \x1b[0m] :methodImmediate ${chalk.dim(
-        ':url',
-      )}`,
-      {
-        skip: ignoreRequestsForLogging,
-        immediate: true,
-      },
-    ),
+    morgan(`:timestamp [\x1b[34mdebug  \x1b[0m] :methodImmediate ${chalk.dim(':url')}`, {
+      skip: ignoreRequestsForLogging,
+      immediate: true,
+    }),
   );
 
   app.use(
