@@ -19,5 +19,5 @@ export const facebookCacheDir = 'facebook-results';
 
 export const restColorGet = '#61affe';
 export const restColorPost = '#49cc90';
-export const restColoroPut = '#fca130';
+export const restColorPut = '#fca130';
 export const restColorDelete = '#f93e3e';
