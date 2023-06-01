@@ -187,6 +187,10 @@ export const init = (db: JsonDb<Database>): Result<boolean, string[]> => {
   userPrefsDb = db;
   dbData = userPrefsDb.read();
 
+  // If user prefs doesn't exist, create the minimal data
+  if (Object.keys(dbData).length === 0) {
+    dbData = <UserPrefs>{ isUndoing: false, displayMinimalPostcards: false, searchPrefs: {} };
+  }
   const result = isDbValid();
 
   return result;

@@ -1,4 +1,5 @@
-import { LowSync, JSONFileSync } from 'lowdb';
+import { LowSync } from 'lowdb';
+import { JSONFileSync } from 'lowdb/node';
 import fs from 'fs';
 import chalk from 'chalk';
 
@@ -14,16 +15,14 @@ export default <T>(): JsonDb<T> => {
   const setCacheDir = (cacheDir: string): void => {
     file = cacheDir;
     if (!fs.existsSync(file)) {
-      logger.warn(
-        `database file doesn't exist, creating it: ${chalk.bold(file)}`,
-      );
+      logger.warn(`database file doesn't exist, creating it: ${chalk.bold(file)}`);
       fs.writeFileSync(file, '{}\n');
     }
   };
 
   const read = (): T => {
     const adapter = new JSONFileSync<T>(file);
-    database = new LowSync<T>(adapter);
+    database = new LowSync<T>(adapter, <T>{});
     let doWrite = false;
 
     try {
@@ -32,9 +31,7 @@ export default <T>(): JsonDb<T> => {
       if (err instanceof Error) {
         const e = err;
         if (e instanceof SyntaxError) {
-          logger.warn(
-            `syntax error in db file, initializing data to {}: ${file}`,
-          );
+          logger.warn(`syntax error in db file, initializing data to {}: ${file}`);
         } else {
           logger.error(e);
         }
