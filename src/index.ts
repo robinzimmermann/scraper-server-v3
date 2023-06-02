@@ -1,5 +1,9 @@
 import fs from 'fs';
 import chalk from 'chalk';
+import { WebSocketServer } from 'ws';
+import { IncomingMessage } from 'http';
+import { Duplex } from 'stream';
+import listEndpoints from 'express-list-endpoints';
 
 import app from './app';
 import { logger } from './utils/logger/logger';
@@ -7,7 +11,6 @@ import { port, cacheDir } from './globals';
 import { initAllDbs } from './database/common';
 import * as fetcher from './fetcher/fetcher';
 import HBrowserInstance from './api/hbrowser/puppeteerDriver';
-import listEndpoints from 'express-list-endpoints';
 import { restColorGet, restColorPut, restColorPost, restColorDelete } from './globals';
 
 const startBrowser = fetcher.defaultOptions.debugFetchSearchResultsFromFiles ? false : true;
@@ -91,7 +94,7 @@ const printEndpoints = (): void => {
 };
 const startServer = async (): Promise<void> => {
   return new Promise((resolve) => {
-    app.listen(port, async () => {
+    const server = app.listen(port, '0.0.0.0', async () => {
       logger.info(
         `server is starting at ${chalk.bold(`http://localhost:${port}`)} in ${chalk.bold(
           app.get('env'),
@@ -103,17 +106,7 @@ const startServer = async (): Promise<void> => {
         fs.mkdirSync(cacheDir);
       }
 
-      // const craigslistCache = cache(cacheDir, craigslistCacheDir);
-      // craigslistCache.createIfNotExists();
-
-      // const facebookCache = cache(cacheDir, facebookCacheDir);
-      // facebookCache.createIfNotExists();
-
       const dbResult = initAllDbs();
-
-      // if (dbResult.isOk()) {
-      //   dbResult.value.forEach((msg) => logger.warn(chalk.yellow(msg)));
-      // }
 
       if (dbResult.isErr()) {
         logger.error('initializing went pear-shaped, shutting down');
@@ -122,7 +115,27 @@ const startServer = async (): Promise<void> => {
 
       resolve();
     });
-    logger.verbose('just finishing calling the listen guy');
+
+    // Configure the websocket server
+    const wsServer = new WebSocketServer({ noServer: true });
+
+    server.on('upgrade', (request: IncomingMessage, socket: Duplex, head: Buffer) => {
+      wsServer.handleUpgrade(request, socket, head, (socket) => {
+        wsServer.emit('connection', socket, request);
+      });
+    });
+
+    wsServer.on('connection', function connection(websocketConnection, connectionRequest) {
+      logger.info(
+        `got a websocket connection from ${connectionRequest.socket.remoteAddress} (${connectionRequest.socket.remoteFamily})`,
+      );
+      websocketConnection.send('welcome!');
+      // The path the client connected to is connectionRequest.url
+      websocketConnection.on('message', (message) => {
+        logger.verbose(`message: ${message} (path: ${connectionRequest.url})`);
+        websocketConnection.send(`And I say to you: ${message}`);
+      });
+    });
   });
 };
 

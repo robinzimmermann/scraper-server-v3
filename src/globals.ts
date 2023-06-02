@@ -6,7 +6,7 @@ if (!dotenvExists('.env')) {
   process.exit(1);
 }
 
-export const port = process.env.PORT;
+export const port = parseInt(process.env.PORT ? process.env.PORT : '3036');
 export const static_home = process.env.STATIC_HOME;
 export const publicDir = `${static_home}/public`;
 

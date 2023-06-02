@@ -39,6 +39,7 @@
     "@types/ramda": "^0.29.2",
     "@types/supertest": "^2.0.12",
     "@types/tinycolor2": "^1.4.3",
+    "@types/ws": "^8.5.4",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "chalk": "^5.2.0",
     "cheerio": "^1.0.0-rc.12",
@@ -69,6 +70,7 @@
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4",
-    "winston": "^3.9.0"
+    "winston": "^3.9.0",
+    "ws": "^8.13.0"
   }
 }
