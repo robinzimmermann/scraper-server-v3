@@ -7,7 +7,7 @@ if (!dotenvExists('.env')) {
 }
 
 export const port = parseInt(process.env.PORT ? process.env.PORT : '3036');
-export const static_home = process.env.STATIC_HOME;
+export const static_home = process.env.STATIC_HOME || '.';
 export const publicDir = `${static_home}/public`;
 
 export const dbDir = `${process.cwd()}/.db`;

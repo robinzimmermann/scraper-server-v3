@@ -5,7 +5,7 @@ import { publicDir } from '../globals';
 
 const rootDeadHandler = (_req: Request, res: Response): void => {
   // res.status(400).json({ stuff: 'root dead request (' + _req.method + ')' });
-  res.sendFile(`${publicDir}/rest.html`);
+  res.sendFile(`rest.html`, { root: publicDir });
 };
 
 export { rootDeadHandler };
