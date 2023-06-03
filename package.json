@@ -41,7 +41,7 @@
     "@types/tinycolor2": "^1.4.3",
     "@types/ws": "^8.5.4",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
-    "chalk": "^5.2.0",
+    "chalk": "^4.1.2",
     "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
     "dotenv": "^16.1.3",
