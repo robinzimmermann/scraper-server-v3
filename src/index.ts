@@ -129,7 +129,6 @@ const startServer = async (): Promise<void> => {
       logger.info(
         `got a websocket connection from ${connectionRequest.socket.remoteAddress} (${connectionRequest.socket.remoteFamily})`,
       );
-      websocketConnection.send('welcome!');
       // The path the client connected to is connectionRequest.url
       websocketConnection.on('message', (message) => {
         logger.verbose(`message: ${message} (path: ${connectionRequest.url})`);
@@ -164,6 +163,6 @@ if (startBrowser) {
 
 fetcher.init(hbrowser);
 
-logger.info(chalk.green.bold('server ready'));
-
 printEndpoints();
+
+logger.info(chalk.green.bold('server ready'));
