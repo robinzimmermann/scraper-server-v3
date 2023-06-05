@@ -319,7 +319,7 @@ export const updateTitle = (pid: string, newTitle: string): void => {
   }
 };
 
-export const upsertPost = (
+export const upsert = (
   pid: string,
   sid: string,
   source: Source,
@@ -421,10 +421,5 @@ export const upsertPost = (
     return ok(dbData[pid]);
   } else {
     return err(result.error);
-    // result.mapErr((resultErrors) => {
-    //   resultErrors.forEach((msg) => {
-    //     logger.error(msg);
-    //   });
-    // });
   }
 };

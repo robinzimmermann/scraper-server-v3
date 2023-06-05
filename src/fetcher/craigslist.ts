@@ -23,7 +23,7 @@ import {
   printJob,
   addAnotherPageToJob,
 } from './fetcher';
-import { upsertPost } from '../database/dbPosts';
+import { upsert } from '../database/dbPosts';
 import { CraiglistFields } from '../database/models/dbPosts';
 
 // For Craiglist, there is a job for each searchTerm by each region buy each subCategory.
@@ -297,7 +297,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
     // Remove duplicate spaces
     const title = $('.titlestring', $result).text().trim().replace(/\s+/g, ' ');
 
-    upsertPost(
+    upsert(
       pid,
       job.sid,
       job.source,

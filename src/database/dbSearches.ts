@@ -11,7 +11,6 @@ import {
   FacebookRadius,
 } from './models/dbSearches';
 import { JsonDb } from '../api/jsonDb/JsonDb';
-// import jsonDb from '../api/jsonDb/lowdbDriver';
 import {
   DbLogger,
   appendErrors,
@@ -470,3 +469,46 @@ export const getSearchBySid = (sid: string): Search | undefined => {
 // export const addSearch = (search: Search): Result<boolean, string[]> => {
 //   return isSearchValid(search.sid);
 // };
+
+const getNextId = (): string => {
+  const searchKeys = Object.keys(dbData);
+  if (searchKeys.length === 0) {
+    return '1';
+  }
+  const sidsAsNumbers = searchKeys.map((id) => parseInt(id));
+  const currentHighest = Math.max(...sidsAsNumbers);
+  return (currentHighest + 1).toString();
+};
+
+const getNextRank = (): number => {
+  const ranksAsNumbers = Object.values(dbData).map((search) => search.rank);
+  const currentHighest = Math.max(...ranksAsNumbers);
+  if (!currentHighest || currentHighest < 0) {
+    return 10;
+  }
+  return currentHighest + 10;
+};
+
+export const upsert = (search: Search): Result<Search, string> => {
+  const id = search.sid;
+  dbData[id] = { ...search };
+  if (!dbData[id].rank) {
+    dbData[id].rank = getNextRank();
+  }
+  searchesDb.write();
+  return ok(search);
+};
+
+export const add = (search: Search): Result<Search, string> => {
+  const id = getNextId();
+  if (dbData[id]) {
+    const msg = `The search id "${chalk.bold(id)}" already exists`;
+    dbLogger.error(msg);
+    return err(msg);
+  }
+  if (search.sid) {
+    return err('search contains a sid');
+  }
+  search.sid = id;
+  return upsert(search);
+};

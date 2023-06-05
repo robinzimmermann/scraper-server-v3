@@ -9,7 +9,7 @@ import {
   checkProp,
   checkSidReference,
 } from './utils';
-import { SearchPref, UserPrefs } from './models/dbUserPrefs';
+import { SearchPref, SearchPrefs, UserPrefs } from './models/dbUserPrefs';
 import { appendErrors } from './utils';
 import chalk from 'chalk';
 import * as dbSearches from '../database/dbSearches';
@@ -189,7 +189,10 @@ export const init = (db: JsonDb<Database>): Result<boolean, string[]> => {
 
   // If user prefs doesn't exist, create the minimal data
   if (Object.keys(dbData).length === 0) {
-    dbData = <UserPrefs>{ isUndoing: false, displayMinimalPostcards: false, searchPrefs: {} };
+    dbData.isUndoing = false;
+    dbData.displayMinimalPostcards = false;
+    dbData.searchPrefs = <SearchPrefs>{};
+    userPrefsDb.write();
   }
   const result = isDbValid();
 
@@ -198,4 +201,18 @@ export const init = (db: JsonDb<Database>): Result<boolean, string[]> => {
 
 export const getUserPrefs = (): UserPrefs => {
   return dbData;
+};
+
+export const upsert = (prefs: UserPrefs): Result<boolean, string[]> => {
+  dbData.isUndoing = prefs.isUndoing;
+  dbData.displayMinimalPostcards = prefs.displayMinimalPostcards;
+  dbData.searchPrefs = JSON.parse(JSON.stringify(prefs.searchPrefs));
+
+  const result = isDbValid();
+  if (result.isOk()) {
+    userPrefsDb.write();
+    return ok(true);
+  } else {
+    return err(result.error);
+  }
 };

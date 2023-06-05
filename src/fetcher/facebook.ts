@@ -17,7 +17,7 @@ import {
 import { logger } from '../utils/logger/logger';
 import { FacebookCacheFileType, FacebookJobDetails, Job, buildCacheName } from './fetcher';
 import * as fetcher from './fetcher';
-import { upsertPost } from '../database/dbPosts';
+import { upsert } from '../database/dbPosts';
 import * as utils from '../utils/utils';
 
 const mhtmlParser = new Parser();
@@ -282,7 +282,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
       .text()
       .replace(/\s+/g, ' ');
 
-    upsertPost(
+    upsert(
       pid,
       job.sid,
       job.source,
