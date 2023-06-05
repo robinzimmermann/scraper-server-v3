@@ -64,7 +64,7 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    const result = dbPosts.upsertPost(
+    const result = dbPosts.upsert(
       post.pid,
       post.sid,
       post.source,
@@ -80,6 +80,7 @@ describe('dbPosts test suite', () => {
 
     expect(result.isOk()).toBeTrue();
     expect(dbPosts.getPosts()).toContainAllKeys(['123']);
+    expect(dbPosts.hasPost('123')).toBeTrue();
     expect(writeSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -102,7 +103,7 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    const result = dbPosts.upsertPost(
+    const result = dbPosts.upsert(
       post.pid,
       post.sid,
       post.source,
@@ -148,7 +149,7 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    const result = dbPosts.upsertPost(
+    const result = dbPosts.upsert(
       post.pid,
       post.sid,
       post.source,
@@ -183,7 +184,7 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    const result = dbPosts.upsertPost(
+    const result = dbPosts.upsert(
       post.pid,
       post.sid,
       post.source,
@@ -219,7 +220,7 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    const result = dbPosts.upsertPost(
+    const result = dbPosts.upsert(
       post.pid,
       post.sid,
       post.source,
@@ -255,7 +256,7 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    dbPosts.upsertPost(
+    dbPosts.upsert(
       post.pid,
       post.sid,
       post.source,
@@ -291,7 +292,7 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    dbPosts.upsertPost(
+    dbPosts.upsert(
       post.pid,
       post.sid,
       post.source,
@@ -307,7 +308,7 @@ describe('dbPosts test suite', () => {
       },
     );
 
-    dbPosts.upsertPost(
+    dbPosts.upsert(
       post.pid,
       post.sid,
       post.source,
@@ -363,7 +364,7 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    dbPosts.upsertPost(
+    dbPosts.upsert(
       post.pid,
       post.sid,
       post.source,
@@ -376,7 +377,7 @@ describe('dbPosts test suite', () => {
       post.thumbnailUrl,
     );
 
-    dbPosts.upsertPost(
+    dbPosts.upsert(
       post.pid,
       post.sid,
       post.source,
@@ -438,7 +439,7 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    dbPosts.upsertPost(
+    dbPosts.upsert(
       post1.pid,
       post1.sid,
       post1.source,
@@ -452,7 +453,7 @@ describe('dbPosts test suite', () => {
       post1.extras,
     );
 
-    dbPosts.upsertPost(
+    dbPosts.upsert(
       post2.pid,
       post2.sid,
       post2.source,

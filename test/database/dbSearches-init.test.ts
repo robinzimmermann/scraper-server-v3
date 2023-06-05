@@ -1877,7 +1877,7 @@ describe('dbSearches initialization', () => {
   test('search with non-numeric sid fails', () => {
     const initialFile = {
       '5a': {
-        sid: '5a',
+        sid: '5a ',
         alias: 'KTM dirt bikes',
         isEnabled: true,
         rank: 85,

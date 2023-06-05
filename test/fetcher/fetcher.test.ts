@@ -1,10 +1,11 @@
+import { jest } from '@jest/globals';
+
 import { Searches } from '../../src/database/models/dbSearches';
 import * as fetcher from '../../src/fetcher/fetcher';
 import JsonDb from '../../src/api/jsonDb/lowdbDriver';
 import * as dbSearches from '../../src/database/dbSearches';
 import HBrowserInstance from '../../src/api/hbrowser/puppeteerDriver';
 import { logger } from '../../src/utils/logger/logger';
-// import { logger } from '../../src/utils/logger/logger';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 jest.mock('../../src/api/hbrowser/puppeteerDriver');

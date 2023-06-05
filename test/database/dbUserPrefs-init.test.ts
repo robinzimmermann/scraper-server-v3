@@ -52,16 +52,24 @@ describe('dbUserPrefs initialization', () => {
     userPrefsDb.setCacheDir('');
     dbUserPrefs.init(userPrefsDb);
 
-    expect(dbUserPrefs.getUserPrefs()).toBeEmpty();
-    expect(writeSpy).toHaveBeenCalledTimes(0);
+    expect(dbUserPrefs.getUserPrefs()).toContainAllEntries([
+      ['displayMinimalPostcards', false],
+      ['isUndoing', false],
+      ['searchPrefs', {}],
+    ]);
+    expect(writeSpy).toHaveBeenCalledTimes(1);
   });
 
   test('initializes database when file has no objects', () => {
     userPrefsDb.setCacheDir('{}');
     dbUserPrefs.init(userPrefsDb);
 
-    expect(dbUserPrefs.getUserPrefs()).toBeEmpty();
-    expect(writeSpy).toHaveBeenCalledTimes(0);
+    expect(dbUserPrefs.getUserPrefs()).toContainAllEntries([
+      ['displayMinimalPostcards', false],
+      ['isUndoing', false],
+      ['searchPrefs', {}],
+    ]);
+    expect(writeSpy).toHaveBeenCalledTimes(1);
   });
 
   test('valid userPref post should succeed', () => {
