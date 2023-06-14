@@ -40,11 +40,7 @@ describe('fetchers test suite', () => {
       sources: ['craigslist'],
       craigslistSearchDetails: {
         searchTerms: ['search1', 'search2'],
-        regions: [
-          CraigslistRegion.losAngeles,
-          CraigslistRegion.modesto,
-          CraigslistRegion.reno,
-        ],
+        regions: [CraigslistRegion.losAngeles, CraigslistRegion.modesto, CraigslistRegion.reno],
         subcategories: [
           CraigslistSubcategory.tools,
           CraigslistSubcategory.antiques,
@@ -62,42 +58,26 @@ describe('fetchers test suite', () => {
     expect(true).toBe(true);
     expect(callbackArr).toHaveLength(18);
 
-    expect(
-      callbackArr.filter((entry) => entry.searchTerm === 'search1').length,
-    ).toBe(9);
-    expect(
-      callbackArr.filter((entry) => entry.searchTerm === 'search2').length,
-    ).toBe(9);
+    expect(callbackArr.filter((entry) => entry.searchTerm === 'search1').length).toBe(9);
+    expect(callbackArr.filter((entry) => entry.searchTerm === 'search2').length).toBe(9);
+
+    expect(callbackArr.filter((entry) => entry.region === CraigslistRegion.losAngeles).length).toBe(
+      6,
+    );
+    expect(callbackArr.filter((entry) => entry.region === CraigslistRegion.modesto).length).toBe(6);
+    expect(callbackArr.filter((entry) => entry.region === CraigslistRegion.reno).length).toBe(6);
 
     expect(
-      callbackArr.filter(
-        (entry) => entry.region === CraigslistRegion.losAngeles,
-      ).length,
-    ).toBe(6);
-    expect(
-      callbackArr.filter((entry) => entry.region === CraigslistRegion.modesto)
+      callbackArr.filter((entry) => entry.craigslistSubcategory === CraigslistSubcategory.tools)
         .length,
     ).toBe(6);
     expect(
-      callbackArr.filter((entry) => entry.region === CraigslistRegion.reno)
+      callbackArr.filter((entry) => entry.craigslistSubcategory === CraigslistSubcategory.antiques)
         .length,
     ).toBe(6);
-
     expect(
       callbackArr.filter(
-        (entry) => entry.craigslistSubcategory === CraigslistSubcategory.tools,
-      ).length,
-    ).toBe(6);
-    expect(
-      callbackArr.filter(
-        (entry) =>
-          entry.craigslistSubcategory === CraigslistSubcategory.antiques,
-      ).length,
-    ).toBe(6);
-    expect(
-      callbackArr.filter(
-        (entry) =>
-          entry.craigslistSubcategory === CraigslistSubcategory.carsAndTrucks,
+        (entry) => entry.craigslistSubcategory === CraigslistSubcategory.carsAndTrucks,
       ).length,
     ).toBe(6);
   });
