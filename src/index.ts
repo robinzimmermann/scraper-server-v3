@@ -166,3 +166,5 @@ fetcher.init(hbrowser);
 printEndpoints();
 
 logger.info(chalk.green.bold('server ready'));
+
+// fetcher.doSearch();
