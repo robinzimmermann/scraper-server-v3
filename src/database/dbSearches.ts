@@ -439,6 +439,10 @@ export const getValidEnabledSearches = (): Search[] => {
   return goodSearches;
 };
 
+export const getSearches = (): Searches => {
+  return dbData;
+};
+
 export const getSearchBySid = (sid: string): Search | undefined => {
   if (!dbData[sid]) {
     return undefined;
