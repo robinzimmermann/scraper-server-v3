@@ -4,8 +4,12 @@
     "statusBar.foreground": "#000000",
     "statusBarItem.hoverBackground": "#eaa6e7",
     "tab.activeBorderTop": "#ff42e9",
-    "tab.activeBackground": "#1f161e"
+    "tab.activeBackground": "#4f1348"
     // "tab.activeBorder": "#0A84FF"
     // "tab.activeForeground": "#0A84FF"
-  }
+  },
+  "workbench.editor.highlightModifiedTabs": false,
+  // "terminal.integrated.tabs.defaultColor": null,
+  "terminal.integrated.tabs.showActiveTerminal": "singleTerminalOrNarrow"
+  // "workbench.editor.showTabs": true
 }
