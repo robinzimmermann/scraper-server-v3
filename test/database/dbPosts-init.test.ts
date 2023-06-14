@@ -8,7 +8,6 @@ import { Posts } from '../../src/database/models/dbPosts';
 import * as dbPosts from '../../src/database/dbPosts';
 import { CraigslistRegion, Searches, Source } from '../../src/database/models/dbSearches';
 import { FacebookRegion } from '../../src/database/models/dbSearches';
-import * as postsDbData from './testData/dbPostsTestData';
 import * as dbSearches from '../../src/database/dbSearches';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
@@ -17,7 +16,20 @@ let postsDb = JsonDb<Posts>();
 let writeSpy: SpiedFunction<() => void>;
 
 const searchesDb = JsonDb<Searches>();
-const searchesDbData = postsDbData.initialSearches;
+const searchesDbData = {
+  '1': {
+    sid: '1',
+    alias: 'KTM dirt bikes',
+    isEnabled: true,
+    rank: 85,
+    sources: ['craigslist'],
+    craigslistSearchDetails: {
+      searchTerms: ['search1', 'search2'],
+      regions: ['sf bayarea', 'inland empire'],
+      subcategories: ['tools', 'motorcycles'],
+    },
+  },
+};
 
 const initializeJest = (): void => {
   jest.clearAllMocks();
