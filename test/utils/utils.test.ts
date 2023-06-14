@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import * as utils from '../../src/utils/utils';
+import { CraigslistSubcategory } from '../../src/database/models/dbSearches';
 
 describe('utils', () => {
   it('isNumeric is valid', () => {
@@ -81,5 +82,9 @@ describe('utils', () => {
 
   it('remove ANSI codes should work when there is chalk in the string', () => {
     expect(utils.removeAnsiCodes(chalk.bold.yellow('hello'))).toBe('hello');
+  });
+
+  it('enum checker should work', () => {
+    expect(utils.isValueInEnum('tools', CraigslistSubcategory)).toBeTrue();
   });
 });
