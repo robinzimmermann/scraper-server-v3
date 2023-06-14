@@ -137,7 +137,7 @@ export const printJob2 = (job: Job): string => {
   }
   return `{job=${chalk.dim(job.jid)},search=${chalk.dim(job.sid)},source=${chalk.dim(
     job.source,
-  )},${chalk.bold('details={')}${detailsStr}},randomWaitTime=${chalk.dim(
+  )},${chalk.bold('details={')}${detailsStr}}, randomWaitTime=${chalk.dim(
     job.randomWaitTime,
   )},searchResultsHomeDir=${chalk.dim(job.searchResultsHomeDir)},filename=${chalk.dim(
     job.searchResultsFilename,
@@ -184,7 +184,7 @@ export const printJob = (job: Job, write = logger.debug): void => {
   write(
     `${intro('│')} ${name('jid')}=${val(job.jid)}, ${name('sid')}=${val(job.sid)} ${val(
       `(${search?.alias})`,
-    )}, ${name('source')}=${val(job.source)},${name('randomWaitTime')}=${val(
+    )}, ${name('source')}=${val(job.source)}, ${name('randomWaitTime')}=${val(
       job.randomWaitTime,
     )}, ${name('pageNum')}=${val(job.pageNum)}, ${name('filename')}=${val(
       job.searchResultsFilename,
@@ -469,7 +469,7 @@ export const doSearch = async (): Promise<void> => {
   logger.verbose('final jobs:');
   jobs.forEach((job) => {
     logger.debug(`job ${job.jid}, woot`);
-    // printJob(job);
+    printJob(job);
   });
 
   logger.info('searching complete');
