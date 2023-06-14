@@ -13,6 +13,7 @@ import {
 import * as dbSearches from '../../src/database/dbSearches';
 // import * as dbSearchesTestData from './testData/dbSearchesTestData';
 import { SpiedFunction } from 'jest-mock';
+import { logger } from '../../src/utils/logger/logger';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
@@ -30,7 +31,32 @@ const initializeEmptyJest = (): void => {
 const initializeJest = (): void => {
   jest.clearAllMocks();
   searchesDb = JsonDb<Searches>();
-  searchesDb.setCacheDir('');
+
+  const baseSearches = <Searches>{
+    '401': {
+      sid: '401',
+      alias: 'demo hammer',
+      isEnabled: true,
+      rank: 50,
+      sources: ['craigslist', 'facebook'],
+      craigslistSearchDetails: {
+        searchTerms: ['demo hammer', 'jackhammer'],
+        regions: ['sf bayarea', 'reno'],
+        subcategories: ['tools'],
+      },
+      facebookSearchDetails: {
+        searchTerms: ['demo hammer'],
+        regionalDetails: [
+          {
+            region: 'walnut creek',
+            distance: '20 miles',
+          },
+        ],
+      },
+    },
+  };
+
+  searchesDb.setCacheDir(JSON.stringify(baseSearches));
   dbSearches.init(searchesDb);
   writeSpy = jest.spyOn(searchesDb, 'write');
 };
@@ -239,7 +265,7 @@ describe('dbSearches regular stuff, with empty db', () => {
   });
 });
 
-describe('dbSearches regular stuff, with empty db', () => {
+describe('dbSearches regular stuff, with populated db', () => {
   beforeEach(() => {
     initializeJest();
   });
@@ -294,6 +320,25 @@ describe('dbSearches regular stuff, with empty db', () => {
           expect.objectContaining({ sid: '2' }),
         ]),
       );
+    }
+  });
+
+  test('upserting with an invalid search fails', () => {
+    const search = dbSearches.getSearchBySid('401');
+    if (search && search.craigslistSearchDetails) {
+      logger.silly(`got search ${JSON.stringify(search)}`);
+      search.craigslistSearchDetails.searchTerms.push('');
+      logger.silly('------------------------ here we go ------------------------');
+      const result = dbSearches.upsert(search);
+      if (result.isErr()) {
+        logger.silly('isOk');
+        expect(result.isErr()).toBeTrue();
+      } else {
+        expect(result.isErr()).toBeTrue();
+      }
+      logger.silly('======================== we done ========================');
+    } else {
+      expect(search).toContainKey('401');
     }
   });
 

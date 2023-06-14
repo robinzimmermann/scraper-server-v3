@@ -28,6 +28,7 @@ interface CheckPropOptions<E extends { [name: string]: unknown }> {
   arrayElementsExpectedType?: PropertyType;
   arrayElementsExpectedEnum?: E;
   arrayElementsExpectedEnumName?: string;
+  arrayElementsCanBeEmpty?: boolean;
   expectedEnum?: E;
   expectedEnumName?: string;
   expectedObjectName?: string;
@@ -284,7 +285,7 @@ export const checkProp = <T, E extends { [name: string]: unknown }>(
     }
 
     const errors = [] as string[];
-    (prop as []).forEach((el) => {
+    (prop as []).forEach((el, i) => {
       switch (options.arrayElementsExpectedType) {
         case PropertyType.enum:
           if (options.arrayElementsExpectedEnum) {
@@ -294,6 +295,25 @@ export const checkProp = <T, E extends { [name: string]: unknown }>(
             } else {
               errors.push(chalk.bold(el ? JSON.stringify(el).replaceAll('"', "'") : "''"));
             }
+          }
+          break;
+        case PropertyType.string:
+          logger.silly(`checking element [${el}]`);
+          if (
+            typeof el === 'string' &&
+            opts &&
+            'arrayElementsCanBeEmpty' in opts &&
+            !opts?.arrayElementsCanBeEmpty
+          ) {
+            logger.silly("can't be empty");
+            if ((el as string).trim().length === 0) {
+              logger.silly("  but it is! (That's a problem)");
+              errors.push(`empty string in position ${i + 1}`);
+            } else {
+              logger.silly("  and it's not, whew");
+            }
+          } else {
+            logger.silly('  check not needed');
           }
           break;
         // case PropertyType.object:

@@ -8,6 +8,7 @@ import * as dbSearches from '../../src/database/dbSearches';
 import { FacebookRegion, Source } from '../../src/database/models/dbSearches';
 // import * as dbSearchesTestData from './testData/dbSearchesTestData';
 import { SpiedFunction } from 'jest-mock';
+import { logger } from '../../src/utils/logger/logger';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
@@ -1159,7 +1160,7 @@ describe('dbSearches initialization', () => {
       ]);
     }
   });
-  test('search with invalid array elements for log fails', () => {
+  test('search with empty string in log fails', () => {
     const initialFile = {
       '5': {
         sid: '5',
@@ -1177,6 +1178,45 @@ describe('dbSearches initialization', () => {
     };
     searchesDb.setCacheDir(JSON.stringify(initialFile));
     const result = dbSearches.init(searchesDb);
+    if (result.isErr()) {
+      logger.silly(`got a shitty error: ${result.error}`);
+    }
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'search 5',
+        'property',
+        'log',
+        'invalid values',
+        'array',
+        'string',
+        'empty string',
+      ]);
+    }
+  });
+
+  test('search with invalid array elements for log fails', () => {
+    const initialFile = {
+      '5': {
+        sid: '5',
+        alias: 'KTM dirt bikes',
+        isEnabled: true,
+        rank: 85,
+        sources: ['craigslist'],
+        craigslistSearchDetails: {
+          searchTerms: ['search1', 'search2'],
+          regions: ['sf bayarea', 'inland empire'],
+          subcategories: ['tools', 'motorcycles'],
+        },
+        log: ['created', 'moved', -33, true, { also: 'wrong' }],
+      },
+    };
+    searchesDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbSearches.init(searchesDb);
+    if (result.isErr()) {
+      logger.silly(`got a shitty error: ${result.error}`);
+    }
     expect(result.isErr()).toBeTrue();
     if (result.isErr()) {
       expect(result.error).toHaveLength(1);
@@ -1189,7 +1229,6 @@ describe('dbSearches initialization', () => {
         'string',
         '-33',
         'true',
-        '',
         'wrong',
       ]);
     }

@@ -56,6 +56,7 @@ const isCraigslistSearchDetailsValid = (search: Search): Result<boolean, string[
     errors,
     checkProp(parent, 'searchTerms', PropertyType.array, PropertyPresence.mandatory, errorPrefix, {
       arrayElementsExpectedType: PropertyType.string,
+      arrayElementsCanBeEmpty: false,
     }),
   );
 
@@ -350,6 +351,7 @@ const isSearchValid = (key: string, search: Search): Result<boolean, string[]> =
     errors,
     checkProp(search, 'log', PropertyType.array, PropertyPresence.optional, errorPrefix, {
       arrayElementsExpectedType: PropertyType.string,
+      arrayElementsCanBeEmpty: false,
     }),
   );
 
@@ -494,13 +496,18 @@ const getNextRank = (): number => {
 };
 
 export const upsert = (search: Search): Result<Search, string> => {
-  const id = search.sid;
-  dbData[id] = { ...search };
-  if (!dbData[id].rank) {
-    dbData[id].rank = getNextRank();
+  const result = isCraigslistSearchDetailsValid(search);
+  if (result.isOk()) {
+    const sid = search.sid;
+    dbData[sid] = { ...search };
+    if (!dbData[sid].rank) {
+      dbData[sid].rank = getNextRank();
+    }
+    searchesDb.write();
+    return ok(search);
+  } else {
+    return err(result.error.join('|'));
   }
-  searchesDb.write();
-  return ok(search);
 };
 
 export const add = (search: Search): Result<Search, string> => {
