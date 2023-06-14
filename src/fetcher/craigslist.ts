@@ -214,7 +214,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
     // }
 
     let thumbnailUrl =
-      'https://user-images.githubusercontent.com/24848110/33519396-7e56363c-d79d-11e7-969b-09782f5ccbab.png';
+      'https://user-images.githubusercontent.com/24848110/33519396-7e56363c-d79d-11e7-969b-09782f5ccbab.png'; // Not found image
     const multiImage = $('.cl-gallery .main:not(.singleton, .empty)', $result);
     const logMissingImage = (): void => {
       logger.warn(
@@ -263,7 +263,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
       return;
     }
     let postDate = '';
-    let hood = '';
+    let hood = '-';
     const metaChildren = metaDiv.contents().filter((_node) => true);
     metaChildren.each((i: number, el: cheerio.Element) => {
       if (el.type === 'text') {
