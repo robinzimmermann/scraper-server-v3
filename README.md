@@ -26,7 +26,9 @@
 
 - When checking JSON files upon starting up (for which there are tests), check that formats for date are correct.
 - When checking JSON files upon starting up (for which there are tests), check that formats for currency are correct.
-- - When checking JSON files upon starting up (for which there are tests), check that formats for numeric strings are correcty.
+- When checking JSON files upon starting up (for which there are tests), check that formats for numeric strings are correcty.
+
+- When viewing sources, show them in alphabetical order
 
 "main": "src/index.ts",
 
