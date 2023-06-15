@@ -298,22 +298,19 @@ export const checkProp = <T, E extends { [name: string]: unknown }>(
           }
           break;
         case PropertyType.string:
-          logger.silly(`checking element [${el}]`);
           if (
             typeof el === 'string' &&
             opts &&
             'arrayElementsCanBeEmpty' in opts &&
             !opts?.arrayElementsCanBeEmpty
           ) {
-            logger.silly("can't be empty");
             if ((el as string).trim().length === 0) {
-              logger.silly("  but it is! (That's a problem)");
               errors.push(`empty string in position ${i + 1}`);
-            } else {
-              logger.silly("  and it's not, whew");
             }
           } else {
-            logger.silly('  check not needed');
+            if (typeof el !== options.arrayElementsExpectedType) {
+              errors.push(JSON.stringify(el).replaceAll('"', "'"));
+            }
           }
           break;
         // case PropertyType.object:
@@ -326,6 +323,11 @@ export const checkProp = <T, E extends { [name: string]: unknown }>(
             errors.push(JSON.stringify(el).replaceAll('"', "'"));
           }
       }
+      // Check that we're the right type
+      // if (typeof el !== options.arrayElementsExpectedType) {
+      //   logger.verbose(`typeof el=${typeof el}, options.arrayElementsExpectedType=${options.arrayElementsExpectedType}`);
+      //   errors.push(JSON.stringify(el).replaceAll('"', "'"));
+      // }
     });
     if (errors.length > 0) {
       // This if is done to satisfy typescript

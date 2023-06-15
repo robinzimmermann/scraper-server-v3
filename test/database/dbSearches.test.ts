@@ -328,7 +328,6 @@ describe('dbSearches regular stuff, with populated db', () => {
     if (search && search.craigslistSearchDetails) {
       logger.silly(`got search ${JSON.stringify(search)}`);
       search.craigslistSearchDetails.searchTerms.push('');
-      logger.silly('------------------------ here we go ------------------------');
       const result = dbSearches.upsert(search);
       if (result.isErr()) {
         logger.silly('isOk');
@@ -336,7 +335,6 @@ describe('dbSearches regular stuff, with populated db', () => {
       } else {
         expect(result.isErr()).toBeTrue();
       }
-      logger.silly('======================== we done ========================');
     } else {
       expect(search).toContainKey('401');
     }
