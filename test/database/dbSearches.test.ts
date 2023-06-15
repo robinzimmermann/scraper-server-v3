@@ -326,11 +326,9 @@ describe('dbSearches regular stuff, with populated db', () => {
   test('upserting with an invalid search fails', () => {
     const search = dbSearches.getSearchBySid('401');
     if (search && search.craigslistSearchDetails) {
-      logger.silly(`got search ${JSON.stringify(search)}`);
       search.craigslistSearchDetails.searchTerms.push('');
       const result = dbSearches.upsert(search);
       if (result.isErr()) {
-        logger.silly('isOk');
         expect(result.isErr()).toBeTrue();
       } else {
         expect(result.isErr()).toBeTrue();
