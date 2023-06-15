@@ -79,7 +79,8 @@ morgan.token('methodImmediate', (req: Request, _res: Response, _args) => {
       color = tinycolor(globals.restColorDelete).darken(darkenAmount).toString();
       break;
     default:
-      color = tinycolor('#FFFF00').darken(darkenAmount).toString();
+      // color = tinycolor('#FFFF00').darken(darkenAmount).toString();
+      color = tinycolor('#6f6f6f').darken(20).toString();
   }
   return chalk.bold.hex(color)(`${req.method}`);
 });
@@ -99,6 +100,8 @@ morgan.token('method', (req: Request, _res: Response, _args) => {
     case 'DELETE':
       color = globals.restColorDelete;
       break;
+    default:
+      color = '#6f6f6f';
   }
   return chalk.bold.hex(color)(`${req.method}`);
 });
