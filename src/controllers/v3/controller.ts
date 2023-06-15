@@ -5,7 +5,7 @@ import { RES_SEARCH, RES_SEARCHES, RES_SUCCESS, RES_USER_PREFS } from './models'
 import * as dbSearches from '../../database/dbSearches';
 import * as dbUserPrefs from '../../database/dbUserPrefs';
 import * as fetcher from '../../fetcher/fetcher';
-import { Search } from '../../database/models/dbSearches';
+import { removeAnsiCodes } from '../../utils/utils';
 
 export const rootHandler = (_req: Request, res: Response): void => {
   // res.status(200).send('v3 root');xxsxzz
@@ -27,22 +27,23 @@ export const getSearchesHandler = (_req: Request, res: Response): void => {
 
 export const upsertSearchHandler = (req: Request, res: Response): void => {
   const result = dbSearches.upsert(req.body);
-  const response: RES_SEARCH = { success: true, search: <Search>{} }; // Initialize with minimal dummy values
   if (result.isOk()) {
-    response.success = true;
-    response.search = result.value;
+    const response = <RES_SEARCH>{ success: true, search: result.value };
+    // response.search.alias = response.search.alias + 'X';
     res.status(200).json(response);
   } else {
-    response.success = false;
-    response.search = req.body;
-    response.reason = result.error;
+    const response = <RES_SEARCH>{
+      success: false,
+      search: req.body,
+      reason: removeAnsiCodes(result.error),
+    };
     res.status(400).json(response);
   }
 };
 
 export const getUserPrefsHandler = (_req: Request, res: Response): void => {
-  const reponse: RES_USER_PREFS = { userPrefs: dbUserPrefs.getUserPrefs() };
-  res.status(200).json(reponse);
+  const response: RES_USER_PREFS = { userPrefs: dbUserPrefs.getUserPrefs() };
+  res.status(200).json(response);
 };
 
 export const startScanHandler = async (_req: Request, res: Response): Promise<void> => {
