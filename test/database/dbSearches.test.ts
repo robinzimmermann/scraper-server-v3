@@ -13,7 +13,6 @@ import {
 import * as dbSearches from '../../src/database/dbSearches';
 // import * as dbSearchesTestData from './testData/dbSearchesTestData';
 import { SpiedFunction } from 'jest-mock';
-import { logger } from '../../src/utils/logger/logger';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
