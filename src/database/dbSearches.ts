@@ -496,7 +496,7 @@ const getNextRank = (): number => {
 };
 
 export const upsert = (search: Search): Result<Search, string> => {
-  const result = isCraigslistSearchDetailsValid(search);
+  const result = isSearchValid(search.sid, search);
   if (result.isOk()) {
     const sid = search.sid;
     dbData[sid] = { ...search };
