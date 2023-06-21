@@ -56,7 +56,7 @@ const isCraigslistSearchDetailsValid = (search: Search): Result<boolean, string[
     errors,
     checkProp(parent, 'searchTerms', PropertyType.array, PropertyPresence.mandatory, errorPrefix, {
       arrayElementsExpectedType: PropertyType.string,
-      arrayElementsCanBeEmpty: false,
+      arrayElementsCanBeEmpty: true,
     }),
   );
 
