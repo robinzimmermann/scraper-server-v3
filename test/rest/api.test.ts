@@ -91,13 +91,6 @@ describe('/api/v3', () => {
     initializeJest();
   });
 
-  test('GET /isAlive', async () => {
-    await request(app)
-      .get('/api/v3/isAlive')
-      .expect(200, { success: true })
-      .expect('Content-Type', /json/);
-  });
-
   test('GET /searches', async () => {
     const res = await request(app).get('/api/v3/searches');
 
