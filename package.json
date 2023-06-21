@@ -11,12 +11,13 @@
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
-    "lint": "eslint --fix src test",
+    "lint": "eslint src test",
+    "lint-fix": "eslint --fix src test",
+    "prettier": "prettier --config .prettierrc.json --ignore-path .prettierignore-cli --check .",
+    "prettier-fix": "prettier --config .prettierrc.json --write .",
     "test": "NODE_OPTIONS='--experimental-vm-modules' NODE_NO_WARNINGS=1 jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "prettier": "prettier --config .prettierrc.json --check .",
-    "prettier-fix": "prettier --config .prettierrc.json --write ."
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "CJ R. <cj@null.computer> (https://w3cj.now.sh)",
