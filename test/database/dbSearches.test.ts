@@ -262,6 +262,29 @@ describe('dbSearches regular stuff, with empty db', () => {
       ]);
     }
   });
+
+  test("upserting a search with a blank searchTerm X's", () => {
+    const search = <Search>{
+      sid: '17',
+      alias: 'search-1',
+      isEnabled: true,
+      rank: 50,
+      sources: [Source.craigslist],
+      craigslistSearchDetails: {
+        searchTerms: [''],
+        regions: [CraigslistRegion.merced],
+        subcategories: [CraigslistSubcategory.tools],
+      },
+      log: ['first'],
+    };
+    const result = dbSearches.upsert(search);
+
+    if (result.isOk()) {
+      expect(result.isOk()).toBeTrue();
+    } else {
+      expect(result.isOk()).toBeTrue();
+    }
+  });
 });
 
 describe('dbSearches regular stuff, with populated db', () => {
@@ -322,15 +345,15 @@ describe('dbSearches regular stuff, with populated db', () => {
     }
   });
 
-  test('upserting with an invalid search fails', () => {
+  test('upserting a search with a blank searchTerms is allowed', () => {
     const search = dbSearches.getSearchBySid('401');
     if (search && search.craigslistSearchDetails) {
       search.craigslistSearchDetails.searchTerms.push('');
       const result = dbSearches.upsert(search);
-      if (result.isErr()) {
-        expect(result.isErr()).toBeTrue();
+      if (result.isOk()) {
+        expect(result.isOk()).toBeTrue();
       } else {
-        expect(result.isErr()).toBeTrue();
+        expect(result.isOk()).toBeTrue();
       }
     } else {
       expect(search).toContainKey('401');
