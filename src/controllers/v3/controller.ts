@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
 
 import { publicDir } from '../../globals';
-import { RES_SEARCH, RES_SEARCHES, RES_USER_PREFS, RES } from './models';
+import { RES_SEARCH, RES_SEARCHES, RES_USER_PREFS } from './models';
 import * as dbSearches from '../../database/dbSearches';
 import * as dbUserPrefs from '../../database/dbUserPrefs';
 import { removeAnsiCodes } from '../../utils/utils';
-import { logger } from '../../utils/logger/logger';
 
 export const rootHandler = (_req: Request, res: Response): void => {
   res.sendFile(`${publicDir}/v3.html`);
