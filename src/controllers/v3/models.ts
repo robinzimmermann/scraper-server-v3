@@ -5,10 +5,15 @@ export type RES_SUCCESS = {
   success: boolean;
 };
 
-// export type RES_FAILURE = {
-//   success: boolean;
-//   reason: string;
-// };
+export type RES = {
+  success: boolean;
+  message?: string;
+};
+
+export type RES_FAILURE = {
+  success: boolean;
+  reason: string;
+};
 
 export type RES_SEARCHES = {
   searches: Searches;
