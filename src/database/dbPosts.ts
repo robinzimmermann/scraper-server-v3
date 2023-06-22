@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { Result, ok, err } from 'neverthrow';
 
-import { CraiglistFields, Post, Posts } from './models/dbPosts';
+import { Post, Posts } from './models/dbPosts';
 import { JsonDb } from '../api/jsonDb/JsonDb';
 // import jsonDb from '../api/jsonDb/JsonDb';
 import {
@@ -22,6 +22,7 @@ import {
   ScraperRegion,
 } from './models/dbSearches';
 import * as utils from '../utils/utils';
+import * as globals from '../globals';
 
 export type Database = Posts;
 
@@ -319,20 +320,24 @@ export const updateTitle = (pid: string, newTitle: string): void => {
   }
 };
 
-export const upsert = (
-  pid: string,
-  sid: string,
-  source: Source,
-  region: CraigslistRegion | FacebookRegion,
-  searchTerm: string,
-  title: string,
-  postDate: string,
-  price: number,
-  hood: string,
-  thumbnailUrl: string,
-  extras?: CraiglistFields,
-): Result<Post, string[]> => {
+export const upsertPost = (post: Post): Result<Post, string[]> => {
   const errors = <string[]>[];
+
+  const {
+    pid,
+    sid,
+    source,
+    regions,
+    searchTerms,
+    title,
+    postDate,
+    price,
+    hood,
+    thumbnailUrl,
+    rank,
+    extras,
+  } = post;
+
   if (source === Source.craigslist) {
     if (!extras) {
       errors.push('upsertPost() Craiglists posts must have an "extras" element');
@@ -345,14 +350,15 @@ export const upsert = (
     pid,
     sid,
     source,
-    regions: [region],
-    searchTerms: [searchTerm],
+    regions,
+    searchTerms,
     title,
     postDate,
     price,
     priceStr: currencyFormatter.format(price),
     hood: hood ? hood : '',
     thumbnailUrl,
+    rank: rank ? rank : globals.highestRank,
     extras: source === Source.craigslist ? extras : undefined,
   };
 

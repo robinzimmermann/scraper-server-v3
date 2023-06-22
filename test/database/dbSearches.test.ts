@@ -230,7 +230,7 @@ describe('dbSearches regular stuff, with empty db', () => {
     search.isEnabled = false;
     search.rank = 51;
     search.log = ['first', 'second'];
-    dbSearches.upsert(search);
+    dbSearches.upsertSearch(search);
 
     expect(result.isOk()).toBeTrue();
     expect(writeSpy).toHaveBeenCalledTimes(2);
@@ -277,7 +277,7 @@ describe('dbSearches regular stuff, with empty db', () => {
       },
       log: ['first'],
     };
-    const result = dbSearches.upsert(search);
+    const result = dbSearches.upsertSearch(search);
 
     if (result.isOk()) {
       expect(result.isOk()).toBeTrue();
@@ -349,7 +349,7 @@ describe('dbSearches regular stuff, with populated db', () => {
     const search = dbSearches.getSearchBySid('401');
     if (search && search.craigslistSearchDetails) {
       search.craigslistSearchDetails.searchTerms.push('');
-      const result = dbSearches.upsert(search);
+      const result = dbSearches.upsertSearch(search);
       if (result.isOk()) {
         expect(result.isOk()).toBeTrue();
       } else {

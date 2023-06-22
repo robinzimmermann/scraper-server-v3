@@ -17,8 +17,9 @@ import {
 import { logger } from '../utils/logger/logger';
 import { FacebookCacheFileType, FacebookJobDetails, Job, buildCacheName } from './fetcher';
 import * as fetcher from './fetcher';
-import { upsert } from '../database/dbPosts';
+import { upsertPost } from '../database/dbPosts';
 import * as utils from '../utils/utils';
+import { Post } from '../database/models/dbPosts';
 
 const mhtmlParser = new Parser();
 
@@ -282,18 +283,20 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
       .text()
       .replace(/\s+/g, ' ');
 
-    upsert(
+    const post = <Post>{
       pid,
-      job.sid,
-      job.source,
-      details.region,
-      details.searchTerm,
+      sid: job.sid,
+      source: job.source,
+      regions: [details.region],
+      searchTerms: [details.searchTerm],
       title,
-      '', // Facebook doesn't include post dates on it's results page
+      postDate: '', // Facebook doesn't include post dates on it's results page
       price,
       hood,
       thumbnailUrl,
-    );
+    };
+
+    upsertPost(post);
   });
   // After printing the progress, move the next line
   process.stdout.write('\r');

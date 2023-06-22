@@ -16,6 +16,7 @@ export type Post = {
   priceStr: string;
   hood: string;
   thumbnailUrl: string;
+  rank: number;
   extras?: CraiglistFields;
 };
 

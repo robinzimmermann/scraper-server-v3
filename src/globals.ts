@@ -21,3 +21,5 @@ export const restColorGet = '#61affe';
 export const restColorPost = '#49cc90';
 export const restColorPut = '#fca130';
 export const restColorDelete = '#f93e3e';
+
+export const highestRank = 999999999;

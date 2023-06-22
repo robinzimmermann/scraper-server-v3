@@ -8,6 +8,7 @@ import * as dbPosts from '../../src/database/dbPosts';
 import * as dbSearches from '../../src/database/dbSearches';
 import { CraigslistRegion, Searches, Source } from '../../src/database/models/dbSearches';
 import { FacebookRegion } from '../../src/database/models/dbSearches';
+import * as globals from '../../src/globals';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
@@ -64,19 +65,20 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    const result = dbPosts.upsert(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-      post.extras,
-    );
+    const result = dbPosts.upsertPost(<Post>{
+      pid: post.pid,
+      sid: post.sid,
+      source: post.source,
+      regions: post.regions,
+      searchTerms: post.searchTerms,
+      title: post.title,
+      postDate: post.postDate,
+      price: post.price,
+      hood: post.hood,
+      thumbnailUrl: post.thumbnailUrl,
+      rank: globals.highestRank,
+      extras: post.extras,
+    });
 
     expect(result.isOk()).toBeTrue();
     expect(dbPosts.getPosts()).toContainAllKeys(['123']);
@@ -103,19 +105,20 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    const result = dbPosts.upsert(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-      post.extras,
-    );
+    const result = dbPosts.upsertPost(<Post>{
+      pid: post.pid,
+      sid: post.sid,
+      source: post.source,
+      regions: post.regions,
+      searchTerms: post.searchTerms,
+      title: post.title,
+      postDate: post.postDate,
+      price: post.price,
+      hood: post.hood,
+      thumbnailUrl: post.thumbnailUrl,
+      rank: globals.highestRank,
+      extras: post.extras,
+    });
 
     expect(result.isErr()).toBeTrue();
     // Javascript guard is needed to the contents of result
@@ -149,18 +152,20 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    const result = dbPosts.upsert(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-    );
+    const result = dbPosts.upsertPost(<Post>{
+      pid: post.pid,
+      sid: post.sid,
+      source: post.source,
+      regions: post.regions,
+      searchTerms: post.searchTerms,
+      title: post.title,
+      postDate: post.postDate,
+      price: post.price,
+      hood: post.hood,
+      thumbnailUrl: post.thumbnailUrl,
+      rank: globals.highestRank,
+      extras: post.extras,
+    });
 
     expect(result.isOk()).toBeTrue();
     expect(writeSpy).toHaveBeenCalledTimes(1);
@@ -184,18 +189,20 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    const result = dbPosts.upsert(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-    );
+    const result = dbPosts.upsertPost(<Post>{
+      pid: post.pid,
+      sid: post.sid,
+      source: post.source,
+      regions: post.regions,
+      searchTerms: post.searchTerms,
+      title: post.title,
+      postDate: post.postDate,
+      price: post.price,
+      hood: post.hood,
+      thumbnailUrl: post.thumbnailUrl,
+      rank: globals.highestRank,
+      extras: post.extras,
+    });
 
     expect(result.isErr()).toBeTrue();
     expect(writeSpy).toHaveBeenCalledTimes(0);
@@ -220,19 +227,20 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    const result = dbPosts.upsert(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-      post.extras,
-    );
+    const result = dbPosts.upsertPost(<Post>{
+      pid: post.pid,
+      sid: post.sid,
+      source: post.source,
+      regions: post.regions,
+      searchTerms: post.searchTerms,
+      title: post.title,
+      postDate: post.postDate,
+      price: post.price,
+      hood: post.hood,
+      thumbnailUrl: post.thumbnailUrl,
+      rank: globals.highestRank,
+      extras: post.extras,
+    });
 
     expect(result.isErr()).toBeTrue();
     expect(writeSpy).toHaveBeenCalledTimes(0);
@@ -256,18 +264,20 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    dbPosts.upsert(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-    );
+    dbPosts.upsertPost(<Post>{
+      pid: post.pid,
+      sid: post.sid,
+      source: post.source,
+      regions: post.regions,
+      searchTerms: post.searchTerms,
+      title: post.title,
+      postDate: post.postDate,
+      price: post.price,
+      hood: post.hood,
+      thumbnailUrl: post.thumbnailUrl,
+      rank: globals.highestRank,
+      extras: post.extras,
+    });
 
     expect(dbPosts.getPosts()).toContainAllKeys(['888']);
     expect(writeSpy).toHaveBeenCalledTimes(1);
@@ -292,37 +302,39 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    dbPosts.upsert(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-      <CraiglistFields>{
+    dbPosts.upsertPost(<Post>{
+      pid: post.pid,
+      sid: post.sid,
+      source: post.source,
+      regions: post.regions,
+      searchTerms: post.searchTerms,
+      title: post.title,
+      postDate: post.postDate,
+      price: post.price,
+      hood: post.hood,
+      thumbnailUrl: post.thumbnailUrl,
+      rank: globals.highestRank,
+      extras: <CraiglistFields>{
         subcategories: [post.extras?.subcategories[0]],
       },
-    );
+    });
 
-    dbPosts.upsert(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[1],
-      post.searchTerms[1],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-      <CraiglistFields>{
+    dbPosts.upsertPost(<Post>{
+      pid: post.pid,
+      sid: post.sid,
+      source: post.source,
+      regions: post.regions,
+      searchTerms: post.searchTerms,
+      title: post.title,
+      postDate: post.postDate,
+      price: post.price,
+      hood: post.hood,
+      thumbnailUrl: post.thumbnailUrl,
+      rank: globals.highestRank,
+      extras: <CraiglistFields>{
         subcategories: [post.extras?.subcategories[1]],
       },
-    );
+    });
 
     expect(writeSpy).toHaveBeenCalledTimes(2);
 
@@ -364,31 +376,33 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    dbPosts.upsert(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[0],
-      post.searchTerms[0],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-    );
+    dbPosts.upsertPost(<Post>{
+      pid: post.pid,
+      sid: post.sid,
+      source: post.source,
+      regions: post.regions,
+      searchTerms: post.searchTerms,
+      title: post.title,
+      postDate: post.postDate,
+      price: post.price,
+      hood: post.hood,
+      thumbnailUrl: post.thumbnailUrl,
+      rank: globals.highestRank,
+    });
 
-    dbPosts.upsert(
-      post.pid,
-      post.sid,
-      post.source,
-      post.regions[1],
-      post.searchTerms[1],
-      post.title,
-      post.postDate,
-      post.price,
-      post.hood,
-      post.thumbnailUrl,
-    );
+    dbPosts.upsertPost(<Post>{
+      pid: post.pid,
+      sid: post.sid,
+      source: post.source,
+      regions: post.regions,
+      searchTerms: post.searchTerms,
+      title: post.title,
+      postDate: post.postDate,
+      price: post.price,
+      hood: post.hood,
+      thumbnailUrl: post.thumbnailUrl,
+      rank: globals.highestRank,
+    });
 
     expect(writeSpy).toHaveBeenCalledTimes(2);
 
@@ -439,33 +453,35 @@ describe('dbPosts test suite', () => {
     postsDb.setCacheDir('');
     dbPosts.init(postsDb);
 
-    dbPosts.upsert(
-      post1.pid,
-      post1.sid,
-      post1.source,
-      post1.regions[0],
-      post1.searchTerms[0],
-      post1.title,
-      post1.postDate,
-      post1.price,
-      post1.hood,
-      post1.thumbnailUrl,
-      post1.extras,
-    );
+    dbPosts.upsertPost(<Post>{
+      pid: post1.pid,
+      sid: post1.sid,
+      source: post1.source,
+      regions: post1.regions,
+      searchTerms: post1.searchTerms,
+      title: post1.title,
+      postDate: post1.postDate,
+      price: post1.price,
+      hood: post1.hood,
+      thumbnailUrl: post1.thumbnailUrl,
+      rank: globals.highestRank,
+      extras: post1.extras,
+    });
 
-    dbPosts.upsert(
-      post2.pid,
-      post2.sid,
-      post2.source,
-      post2.regions[0],
-      post2.searchTerms[0],
-      post2.title,
-      post2.postDate,
-      post2.price,
-      post2.hood,
-      post2.thumbnailUrl,
-      post2.extras,
-    );
+    dbPosts.upsertPost(<Post>{
+      pid: post2.pid,
+      sid: post2.sid,
+      source: post2.source,
+      regions: post2.regions,
+      searchTerms: post2.searchTerms,
+      title: post2.title,
+      postDate: post2.postDate,
+      price: post2.price,
+      hood: post2.hood,
+      thumbnailUrl: post2.thumbnailUrl,
+      rank: globals.highestRank,
+      extras: post2.extras,
+    });
 
     expect(dbPosts.getPosts()).toContainAllKeys(['123', '124']);
     expect(writeSpy).toHaveBeenCalledTimes(2);

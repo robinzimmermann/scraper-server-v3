@@ -495,7 +495,7 @@ const getNextRank = (): number => {
   return currentHighest + 10;
 };
 
-export const upsert = (search: Search): Result<Search, string> => {
+export const upsertSearch = (search: Search): Result<Search, string> => {
   const result = isSearchValid(search.sid, search);
   if (result.isOk()) {
     const sid = search.sid;
@@ -521,5 +521,18 @@ export const add = (search: Search): Result<Search, string> => {
     return err('search contains a sid');
   }
   search.sid = id;
-  return upsert(search);
+  return upsertSearch(search);
+};
+
+export const deleteSearch = (sid: string): Result<null, string> => {
+  if (!dbData[sid]) {
+    const msg = `The search [${sid}] does not exist`;
+    dbLogger.error(msg);
+    return err(msg);
+  }
+
+  // TODO This should probably be restored
+  // delete dbData[sid];
+  // searchesDb.write();
+  return ok(null);
 };

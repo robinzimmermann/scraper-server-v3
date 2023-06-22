@@ -105,7 +105,7 @@ describe('/api/v3', () => {
     expect(res.body).toMatchObject(desiredResponse);
   });
 
-  test('put /searches/upsert/:sid (insert)', async () => {
+  test('put /searches/:sid (insert)', async () => {
     const reqPayload = {
       sid: '802',
       alias: 'demo hammer',
@@ -128,7 +128,7 @@ describe('/api/v3', () => {
       },
     };
 
-    const res = await request(app).put('/api/v3/searches/upsert/802').send(reqPayload);
+    const res = await request(app).put('/api/v3/searches/802').send(reqPayload);
 
     const desiredResponse = {
       success: true,
@@ -145,7 +145,7 @@ describe('/api/v3', () => {
     expect(dbSearches.getSearches()).toContainAllKeys(['401', '802']);
   });
 
-  test('put /searches/upsert/:sid (update)', async () => {
+  test('put /searches/:sid (update)', async () => {
     const reqPayload = {
       sid: '401',
       alias: 'demo hammer',
@@ -168,7 +168,7 @@ describe('/api/v3', () => {
       },
     };
 
-    const res = await request(app).put('/api/v3/searches/upsert/401').send(reqPayload);
+    const res = await request(app).put('/api/v3/searches/401').send(reqPayload);
 
     const desiredResponse = {
       success: true,
@@ -185,7 +185,7 @@ describe('/api/v3', () => {
     expect(dbSearches.getSearches()).toContainAllKeys(['401']);
   });
 
-  test('put /searches/upsert/:sid (invalid)', async () => {
+  test('put /searches/:sid (invalid)', async () => {
     const reqPayload = {
       sid: '401',
       alias: 'demo hammer',
@@ -208,7 +208,7 @@ describe('/api/v3', () => {
       },
     };
 
-    const res = await request(app).put('/api/v3/searches/upsert/401').send(reqPayload);
+    const res = await request(app).put('/api/v3/searches/401').send(reqPayload);
 
     const desiredResponse = {
       success: false,

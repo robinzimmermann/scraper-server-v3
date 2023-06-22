@@ -8,9 +8,11 @@ router.get('/', v3Controllers.rootHandler);
 
 router.get('/searches', v3Controllers.getSearchesHandler);
 
-router.put('/searches/upsert/:sid', v3Controllers.upsertSearchHandler);
+router.put('/searches/:sid', v3Controllers.upsertSearchHandler);
 
-// router.delete('/searches/searchTerm/:sid/:source/:index', v3Controllers.deleteSearchHandler);
+router.delete('/searches/:sid', v3Controllers.deleteSearchHandler);
+
+router.get('/posts', v3Controllers.getPostsHandler);
 
 router.get('/userPrefs', v3Controllers.getUserPrefsHandler);
 
