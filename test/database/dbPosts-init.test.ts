@@ -4,7 +4,7 @@ import { SpiedFunction } from 'jest-mock';
 
 import JsonDb from '../../src/api/jsonDb/lowdbDriver';
 // import { Posts } from '../../src/database/models/dbPosts';
-import { Posts } from '../../src/database/models/dbPosts';
+import { PostStatus, Posts } from '../../src/database/models/dbPosts';
 import * as dbPosts from '../../src/database/dbPosts';
 import { CraigslistRegion, Searches, Source } from '../../src/database/models/dbSearches';
 import { FacebookRegion } from '../../src/database/models/dbSearches';
@@ -72,6 +72,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/123',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -105,6 +107,8 @@ describe('dbPosts initialization', () => {
     ]);
     expect(post.searchTerms).toBeArrayOfSize(2);
     expect(post.searchTerms).toIncludeSameMembers(['search1', 'search2']);
+    expect(post.url).toEqual('http://somewhere.com/123');
+    expect(post.status).toEqual(PostStatus.new);
     expect(post.title).toBe('An amazing thing');
     expect(post.postDate).toBe('2023-02-17');
     expect(post.price).toBe(20);
@@ -121,6 +125,8 @@ describe('dbPosts initialization', () => {
         source: 'facebook',
         regions: ['walnut creek', 'telluride'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/888',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -150,6 +156,7 @@ describe('dbPosts initialization', () => {
     ]);
     expect(post.searchTerms).toBeArrayOfSize(2);
     expect(post.searchTerms).toIncludeSameMembers(['search1', 'search2']);
+    expect(post.url).toEqual('http://somewhere.com/888');
     expect(post.title).toBe('An amazing thing');
     expect(post.postDate).toBe('2023-02-17');
     expect(post.price).toBe(20);
@@ -166,6 +173,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/888',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -197,6 +206,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -228,6 +239,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -259,6 +272,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -284,6 +299,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -315,6 +332,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -346,6 +365,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -371,6 +392,8 @@ describe('dbPosts initialization', () => {
         // source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -402,6 +425,8 @@ describe('dbPosts initialization', () => {
         source: -33,
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -435,6 +460,8 @@ describe('dbPosts initialization', () => {
         source: '',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -468,6 +495,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         // regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -501,6 +530,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: -33,
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -536,6 +567,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: [],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -567,6 +600,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', -33, true, '', { also: 'wrong' }],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -603,6 +638,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         // searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -636,6 +673,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: -33,
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -668,6 +707,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: [],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -701,6 +742,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', -33, true, '', { also: 'wrong' }],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -729,6 +772,202 @@ describe('dbPosts initialization', () => {
     }
   });
 
+  test('post with missing url fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        // url: 'http://somewhere.com/444',
+        status: 'new',
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'url',
+        'should be',
+        'string',
+      ]);
+    }
+  });
+
+  test('post with incorrect type for url fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        url: -33,
+        status: 'new',
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'url',
+        'incorrect type',
+        'should be',
+        'string',
+      ]);
+    }
+  });
+
+  test('post with empty string url fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        url: '',
+        status: 'new',
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple(['post 444', 'property', 'url', 'empty string']);
+    }
+  });
+
+  test('post with missing status fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        // status: 'new',
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'missing property',
+        'status',
+        'should be',
+        'enum',
+      ]);
+    }
+  });
+
+  test('post with incorrect type for status fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: -33,
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'incorrect type',
+        'status',
+        '-33',
+        'should be',
+        'PostStatus',
+        'enum',
+      ]);
+    }
+  });
+
+  test('post with empty string status fails', () => {
+    const initialFile = {
+      '444': {
+        pid: '444',
+        sid: '1',
+        source: 'craigslist',
+        regions: ['modesto', 'inland empire'],
+        searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: '',
+        title: 'An amazing thing',
+        postDate: '2023-02-17',
+        price: 20,
+        priceStr: '$20',
+        hood: 'reno-ish',
+        thumbnailUrl: 'https://somewhere.com/imageXYZ',
+      },
+    };
+    postsDb.setCacheDir(JSON.stringify(initialFile));
+    const result = dbPosts.init(postsDb);
+    expect(result.isErr()).toBeTrue();
+    if (result.isErr()) {
+      expect(result.error).toHaveLength(1);
+      expect(result.error[0]).toIncludeMultiple([
+        'post 444',
+        'incorrect type',
+        'status',
+        "''",
+        'should be',
+        'PostStatus',
+        'enum',
+      ]);
+    }
+  });
+
   test('post with missing title fails', () => {
     const initialFile = {
       '444': {
@@ -737,6 +976,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         // title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -768,6 +1009,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: -33,
         postDate: '2023-02-17',
         price: 20,
@@ -799,6 +1042,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: '',
         postDate: '2023-02-17',
         price: 20,
@@ -824,6 +1069,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         // postDate: '2023-02-17',
         price: 20,
@@ -855,6 +1102,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: -33,
         price: 20,
@@ -886,6 +1135,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '',
         price: 20,
@@ -916,6 +1167,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '23-17-01',
         price: 20,
@@ -948,6 +1201,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-10-01',
         price: 20,
@@ -980,6 +1235,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         // price: 20,
@@ -1011,6 +1268,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 'wrong',
@@ -1042,6 +1301,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -1073,6 +1334,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -1104,6 +1367,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -1134,6 +1399,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -1165,6 +1432,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -1198,6 +1467,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -1223,6 +1494,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -1254,6 +1527,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -1287,6 +1562,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -1317,6 +1594,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -1352,6 +1631,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,
@@ -1381,6 +1662,8 @@ describe('dbPosts initialization', () => {
         source: 'craigslist',
         regions: ['modesto', 'inland empire'],
         searchTerms: ['search1', 'search2'],
+        url: 'http://somewhere.com/444',
+        status: 'new',
         title: 'An amazing thing',
         postDate: '2023-02-17',
         price: 20,

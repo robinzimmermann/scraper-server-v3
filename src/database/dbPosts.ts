@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { Result, ok, err } from 'neverthrow';
 
-import { Post, Posts } from './models/dbPosts';
+import { Post, PostStatus, Posts } from './models/dbPosts';
 import { JsonDb } from '../api/jsonDb/JsonDb';
 // import jsonDb from '../api/jsonDb/JsonDb';
 import {
@@ -23,6 +23,7 @@ import {
 } from './models/dbSearches';
 import * as utils from '../utils/utils';
 import * as globals from '../globals';
+import { logger } from '../utils/logger/logger';
 
 export type Database = Posts;
 
@@ -159,6 +160,19 @@ const isPostValid = (key: string, post: Post): Result<boolean, string[]> => {
     errors,
     checkProp(post, 'searchTerms', PropertyType.array, PropertyPresence.mandatory, errorPrefix, {
       arrayElementsExpectedType: PropertyType.string,
+    }),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'url', PropertyType.string, PropertyPresence.mandatory, errorPrefix),
+  );
+
+  appendError(
+    errors,
+    checkProp(post, 'status', PropertyType.enum, PropertyPresence.mandatory, errorPrefix, {
+      expectedEnum: PostStatus,
+      expectedEnumName: 'PostStatus',
     }),
   );
 
@@ -329,6 +343,8 @@ export const upsertPost = (post: Post): Result<Post, string[]> => {
     source,
     regions,
     searchTerms,
+    url,
+    status,
     title,
     postDate,
     price,
@@ -352,6 +368,8 @@ export const upsertPost = (post: Post): Result<Post, string[]> => {
     source,
     regions,
     searchTerms,
+    url,
+    status,
     title,
     postDate,
     price,
@@ -361,6 +379,7 @@ export const upsertPost = (post: Post): Result<Post, string[]> => {
     rank: rank ? rank : globals.highestRank,
     extras: source === Source.craigslist ? extras : undefined,
   };
+  logger.silly(`newPost: ${JSON.stringify(newPost, null, 2)}`);
 
   const postExists = hasPost(pid);
   if (!postExists) {

@@ -199,8 +199,8 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
       return;
     }
 
-    const postUrl = $('.cl-gallery a.main', $result).attr('href');
-    if (!postUrl) {
+    const url = $('.cl-gallery a.main', $result).attr('href');
+    if (!url) {
       logger.error('postUrl is blank');
       return;
     }
@@ -303,6 +303,7 @@ export const processSearchResultsPage = async (job: Job): Promise<void> => {
       source: job.source,
       regions: [details.region],
       searchTerms: [details.searchTerm],
+      url,
       title,
       postDate,
       price,

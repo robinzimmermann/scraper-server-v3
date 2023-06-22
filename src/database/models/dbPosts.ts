@@ -1,5 +1,15 @@
 import { Source, CraigslistSubcategory, CraigslistRegion, FacebookRegion } from './dbSearches';
 
+export enum PostStatus {
+  new = 'new',
+  backlog = 'backlog',
+  tier1 = 'tier1',
+  tier2 = 'tier2',
+  tier3 = 'tier3',
+  sold = 'sold',
+  closed = 'closed',
+}
+
 export type CraiglistFields = {
   subcategories: CraigslistSubcategory[];
 };
@@ -10,6 +20,8 @@ export type Post = {
   source: Source;
   regions: (CraigslistRegion | FacebookRegion)[];
   searchTerms: string[];
+  url: string;
+  status: PostStatus;
   title: string;
   postDate: string; // 2022-12-07
   price: number;

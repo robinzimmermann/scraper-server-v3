@@ -3,7 +3,7 @@ import 'jest-extended';
 import { SpiedFunction } from 'jest-mock';
 
 import JsonDb from '../../src/api/jsonDb/lowdbDriver';
-import { CraiglistFields, Post, Posts } from '../../src/database/models/dbPosts';
+import { CraiglistFields, Post, PostStatus, Posts } from '../../src/database/models/dbPosts';
 import * as dbPosts from '../../src/database/dbPosts';
 import * as dbSearches from '../../src/database/dbSearches';
 import { CraigslistRegion, Searches, Source } from '../../src/database/models/dbSearches';
@@ -53,6 +53,8 @@ describe('dbPosts test suite', () => {
       source: Source.craigslist,
       regions: [CraigslistRegion.modesto],
       searchTerms: ['search1'],
+      url: 'http://somewhere.com/123',
+      status: 'new',
       title: 'An amazing thing',
       postDate: '2023-02-17',
       price: 20,
@@ -71,6 +73,8 @@ describe('dbPosts test suite', () => {
       source: post.source,
       regions: post.regions,
       searchTerms: post.searchTerms,
+      url: post.url,
+      status: post.status,
       title: post.title,
       postDate: post.postDate,
       price: post.price,
@@ -83,6 +87,9 @@ describe('dbPosts test suite', () => {
     expect(result.isOk()).toBeTrue();
     expect(dbPosts.getPosts()).toContainAllKeys(['123']);
     expect(dbPosts.hasPost('123')).toBeTrue();
+
+    const postResult = dbPosts.getPost('123');
+    expect(postResult.status).toEqual(PostStatus.new);
     expect(writeSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -93,6 +100,8 @@ describe('dbPosts test suite', () => {
       source: Source.craigslist,
       regions: [CraigslistRegion.modesto],
       searchTerms: ['search1'],
+      url: 'http://somewhere.com/123',
+      status: 'new',
       title: 'An amazing thing',
       postDate: '',
       price: 20,
@@ -111,6 +120,8 @@ describe('dbPosts test suite', () => {
       source: post.source,
       regions: post.regions,
       searchTerms: post.searchTerms,
+      url: post.url,
+      status: post.status,
       title: post.title,
       postDate: post.postDate,
       price: post.price,
@@ -141,6 +152,8 @@ describe('dbPosts test suite', () => {
       source: Source.facebook,
       regions: [FacebookRegion.reno],
       searchTerms: ['search1'],
+      url: 'http://somewhere.com/888',
+      status: 'new',
       title: 'An amazing thing',
       postDate: '2023-02-17',
       price: 20,
@@ -158,6 +171,8 @@ describe('dbPosts test suite', () => {
       source: post.source,
       regions: post.regions,
       searchTerms: post.searchTerms,
+      url: post.url,
+      status: post.status,
       title: post.title,
       postDate: post.postDate,
       price: post.price,
@@ -253,6 +268,8 @@ describe('dbPosts test suite', () => {
       source: Source.facebook,
       regions: [FacebookRegion.reno],
       searchTerms: ['search1'],
+      url: 'http://somewhere.com/888',
+      status: 'new',
       title: 'An amazing thing',
       postDate: '2023-02-17',
       price: 20,
@@ -270,6 +287,8 @@ describe('dbPosts test suite', () => {
       source: post.source,
       regions: post.regions,
       searchTerms: post.searchTerms,
+      url: post.url,
+      status: post.status,
       title: post.title,
       postDate: post.postDate,
       price: post.price,
@@ -290,6 +309,8 @@ describe('dbPosts test suite', () => {
       source: 'craigslist',
       regions: ['reno', 'modesto'],
       searchTerms: ['search2', 'search1'],
+      status: 'new',
+      url: 'http://somewhere.com/123',
       title: 'An amazing thing',
       postDate: '2023-02-17',
       price: 20,
@@ -308,6 +329,8 @@ describe('dbPosts test suite', () => {
       source: post.source,
       regions: post.regions,
       searchTerms: post.searchTerms,
+      url: post.url,
+      status: post.status,
       title: post.title,
       postDate: post.postDate,
       price: post.price,
@@ -325,6 +348,8 @@ describe('dbPosts test suite', () => {
       source: post.source,
       regions: post.regions,
       searchTerms: post.searchTerms,
+      url: post.url,
+      status: post.status,
       title: post.title,
       postDate: post.postDate,
       price: post.price,
@@ -365,6 +390,8 @@ describe('dbPosts test suite', () => {
       source: 'facebook',
       regions: ['reno', 'telluride'],
       searchTerms: ['search2', 'search1'],
+      status: 'new',
+      url: 'http://somewhere.com/888',
       title: 'An amazing thing',
       postDate: '2023-02-17',
       price: 20,
@@ -382,6 +409,8 @@ describe('dbPosts test suite', () => {
       source: post.source,
       regions: post.regions,
       searchTerms: post.searchTerms,
+      url: post.url,
+      status: post.status,
       title: post.title,
       postDate: post.postDate,
       price: post.price,
@@ -396,6 +425,8 @@ describe('dbPosts test suite', () => {
       source: post.source,
       regions: post.regions,
       searchTerms: post.searchTerms,
+      url: post.url,
+      status: post.status,
       title: post.title,
       postDate: post.postDate,
       price: post.price,
@@ -426,6 +457,8 @@ describe('dbPosts test suite', () => {
       source: Source.craigslist,
       regions: [CraigslistRegion.modesto],
       searchTerms: ['search1'],
+      url: 'http://somewhere.com/123',
+      status: 'new',
       title: 'An amazing thing',
       postDate: '2023-02-17',
       price: 20,
@@ -441,6 +474,8 @@ describe('dbPosts test suite', () => {
       source: Source.craigslist,
       regions: [CraigslistRegion.reno],
       searchTerms: ['search2'],
+      url: 'http://somewhere.com/124',
+      status: 'new',
       title: 'Something different',
       postDate: '2023-02-18',
       price: 33,
@@ -459,9 +494,12 @@ describe('dbPosts test suite', () => {
       source: post1.source,
       regions: post1.regions,
       searchTerms: post1.searchTerms,
+      url: post1.url,
+      status: post1.status,
       title: post1.title,
       postDate: post1.postDate,
       price: post1.price,
+      priceStr: post1.priceStr,
       hood: post1.hood,
       thumbnailUrl: post1.thumbnailUrl,
       rank: globals.highestRank,
@@ -474,9 +512,12 @@ describe('dbPosts test suite', () => {
       source: post2.source,
       regions: post2.regions,
       searchTerms: post2.searchTerms,
+      url: post2.url,
+      status: post2.status,
       title: post2.title,
       postDate: post2.postDate,
       price: post2.price,
+      priceStr: post2.priceStr,
       hood: post2.hood,
       thumbnailUrl: post2.thumbnailUrl,
       rank: globals.highestRank,
