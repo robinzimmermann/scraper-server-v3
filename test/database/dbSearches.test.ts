@@ -263,7 +263,7 @@ describe('dbSearches regular stuff, with empty db', () => {
     }
   });
 
-  test("upserting a search with a blank searchTerm X's", () => {
+  test('upserting a search with a blank searchTerm fails', () => {
     const search = <Search>{
       sid: '17',
       alias: 'search-1',
@@ -278,12 +278,7 @@ describe('dbSearches regular stuff, with empty db', () => {
       log: ['first'],
     };
     const result = dbSearches.upsertSearch(search);
-
-    if (result.isOk()) {
-      expect(result.isOk()).toBeTrue();
-    } else {
-      expect(result.isOk()).toBeTrue();
-    }
+    expect(result.isErr()).toBeTrue();
   });
 });
 
@@ -345,15 +340,16 @@ describe('dbSearches regular stuff, with populated db', () => {
     }
   });
 
-  test('upserting a search with a blank searchTerms is allowed', () => {
+  test('upserting a search with a blank searchTerms is not allowed', () => {
     const search = dbSearches.getSearchBySid('401');
     if (search && search.craigslistSearchDetails) {
       search.craigslistSearchDetails.searchTerms.push('');
       const result = dbSearches.upsertSearch(search);
+      expect(result.isErr()).toBeTrue();
       if (result.isOk()) {
-        expect(result.isOk()).toBeTrue();
+        expect(result.isOk()).toBeFalse(); // This can never happen
       } else {
-        expect(result.isOk()).toBeTrue();
+        expect(result.error).toIncludeMultiple(['401', 'searchTerms', 'empty']);
       }
     } else {
       expect(search).toContainKey('401');
