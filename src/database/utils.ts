@@ -28,7 +28,7 @@ interface CheckPropOptions<E extends { [name: string]: unknown }> {
   arrayElementsExpectedType?: PropertyType;
   arrayElementsExpectedEnum?: E;
   arrayElementsExpectedEnumName?: string;
-  arrayElementsCanBeEmpty?: boolean;
+  arrayElementsCanBeEmpty?: boolean; // will default to false for strings
   expectedEnum?: E;
   expectedEnumName?: string;
   expectedObjectName?: string;
@@ -119,7 +119,14 @@ export const checkProp = <T, E extends { [name: string]: unknown }>(
   errorPrefix: string,
   opts?: CheckPropOptions<E>,
 ): Result<boolean, string> => {
-  const options = { ...{ propCanBeEmpty: false }, ...(opts || {}) };
+  // Initialize the options and set defaults that need it.
+  const options = <CheckPropOptions<E>>{ ...{ propCanBeEmpty: false }, ...(opts || {}) };
+  if (
+    options.arrayElementsExpectedType === PropertyType.string &&
+    !('arrayElementsCanBeEmpty' in options)
+  ) {
+    options.arrayElementsCanBeEmpty = false;
+  }
 
   const pushTypeError = (): string => {
     let enumString = '';
