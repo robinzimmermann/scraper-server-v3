@@ -1,5 +1,6 @@
 import { err, ok, Result } from 'neverthrow';
 import chalk from 'chalk';
+import { deepmerge } from 'deepmerge-ts';
 
 import {
   type Search,
@@ -56,7 +57,7 @@ const isCraigslistSearchDetailsValid = (search: Search): Result<boolean, string[
     errors,
     checkProp(parent, 'searchTerms', PropertyType.array, PropertyPresence.mandatory, errorPrefix, {
       arrayElementsExpectedType: PropertyType.string,
-      arrayElementsCanBeEmpty: true,
+      arrayElementsCanBeEmpty: false,
     }),
   );
 
@@ -499,7 +500,9 @@ export const upsertSearch = (search: Search): Result<Search, string> => {
   const result = isSearchValid(search.sid, search);
   if (result.isOk()) {
     const sid = search.sid;
-    dbData[sid] = { ...search };
+    // dbData[sid] = { ...search };
+    dbData[sid] = deepmerge(search);
+
     if (!dbData[sid].rank) {
       dbData[sid].rank = getNextRank();
     }

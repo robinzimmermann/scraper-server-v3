@@ -31,5 +31,7 @@ export type RES_POSTS = {
 };
 
 export type RES_USER_PREFS = {
+  success: boolean;
   userPrefs: UserPrefs;
+  reason?: string;
 };

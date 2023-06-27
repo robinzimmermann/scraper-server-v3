@@ -2,10 +2,12 @@ import { Request, Response } from 'express';
 
 import { publicDir } from '../../globals';
 import { RES, RES_POSTS, RES_SEARCH, RES_SEARCHES, RES_USER_PREFS } from './models';
+import { UserPrefs } from '../../database/models/dbUserPrefs';
 import * as dbSearches from '../../database/dbSearches';
 import * as dbPosts from '../../database/dbPosts';
 import * as dbUserPrefs from '../../database/dbUserPrefs';
 import { removeAnsiCodes } from '../../utils/utils';
+import { Search } from '../../database/models/dbSearches';
 
 export const rootHandler = (_req: Request, res: Response): void => {
   res.sendFile(`${publicDir}/v3.html`);
@@ -17,7 +19,9 @@ export const getSearchesHandler = (_req: Request, res: Response): void => {
 };
 
 export const upsertSearchHandler = (req: Request, res: Response): void => {
-  const result = dbSearches.upsertSearch(req.body);
+  const search = <Search>req.body;
+
+  const result = dbSearches.upsertSearch(search);
   if (result.isOk()) {
     const response = <RES_SEARCH>{ success: true, search: result.value };
     // response.search.alias = response.search.alias + 'X';
@@ -53,8 +57,23 @@ export const getPostsHandler = (_req: Request, res: Response): void => {
 };
 
 export const getUserPrefsHandler = (_req: Request, res: Response): void => {
-  const response: RES_USER_PREFS = { userPrefs: dbUserPrefs.getUserPrefs() };
+  const response: RES_USER_PREFS = { success: true, userPrefs: dbUserPrefs.getUserPrefs() };
   res.status(200).json(response);
+};
+
+export const upsertUserPrefsHandler = (req: Request, res: Response): void => {
+  const userPrefs = <UserPrefs>req.body;
+  const result = dbUserPrefs.upsertUserPrefs(userPrefs);
+  if (result.isOk()) {
+    const response = <RES_USER_PREFS>{ success: true };
+    res.status(200).json(response);
+  } else {
+    const response = <RES_USER_PREFS>{
+      success: false,
+      reason: removeAnsiCodes(result.error),
+    };
+    res.status(400).json(response);
+  }
 };
 
 export const deadHandler = (_req: Request, res: Response): void => {

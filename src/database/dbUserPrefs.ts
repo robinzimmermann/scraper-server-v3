@@ -1,4 +1,5 @@
 import { Result, ok, err } from 'neverthrow';
+import { deepmergeInto } from 'deepmerge-ts';
 
 import { JsonDb } from '../api/jsonDb/JsonDb';
 import {
@@ -129,10 +130,8 @@ const isSearchPrefsValid = (): Result<boolean, string[]> => {
   }
 };
 
-const isDbValid = (): Result<boolean, string[]> => {
+const isUserPrefsValid = (userPrefs: UserPrefs): Result<boolean, string[]> => {
   const errors: string[] = [];
-
-  const userPrefs = dbData;
 
   const errorPrefix = chalk.bold(`userPrefs`);
 
@@ -181,6 +180,10 @@ const isDbValid = (): Result<boolean, string[]> => {
   }
 };
 
+const isDbValid = (): Result<boolean, string[]> => {
+  return isUserPrefsValid(dbData);
+};
+
 export const init = (db: JsonDb<Database>): Result<boolean, string[]> => {
   dbLogger.info('initializing');
 
@@ -203,16 +206,21 @@ export const getUserPrefs = (): UserPrefs => {
   return dbData;
 };
 
-export const upsert = (prefs: UserPrefs): Result<boolean, string[]> => {
-  dbData.isUndoing = prefs.isUndoing;
-  dbData.displayMinimalPostcards = prefs.displayMinimalPostcards;
-  dbData.searchPrefs = JSON.parse(JSON.stringify(prefs.searchPrefs));
-
-  const result = isDbValid();
+export const upsertUserPrefs = (userPrefs: UserPrefs): Result<UserPrefs, string> => {
+  dbLogger.silly('upserting');
+  const result = isUserPrefsValid(userPrefs);
   if (result.isOk()) {
+    dbLogger.silly('before:');
+    dbLogger.silly(JSON.stringify(dbData));
+    // dbData.searchPrefs['67'].isSelected = false;
+    // dbData = { ...userPrefs };
+    // dbData = Object.assign({}, dbData, userPrefs);
+    deepmergeInto(dbData, userPrefs);
+    dbLogger.silly('after:');
+    dbLogger.silly(JSON.stringify(dbData));
     userPrefsDb.write();
-    return ok(true);
+    return ok(userPrefs);
   } else {
-    return err(result.error);
+    return err(result.error.join('|'));
   }
 };

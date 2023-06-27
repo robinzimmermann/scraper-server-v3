@@ -5,16 +5,19 @@ import 'jest-extended';
 import app from '../../src/app';
 import JsonDb from '../../src/api/jsonDb/lowdbDriver';
 import { Searches } from '../../src/database/models/dbSearches';
-
 import * as dbSearches from '../../src/database/dbSearches';
+import { UserPrefs } from '../../src/database/models/dbUserPrefs';
+import * as dbUserPrefs from '../../src/database/dbUserPrefs';
 
 jest.mock('../../src/api/jsonDb/lowdbDriver');
 
 let searchesDb = JsonDb<Searches>();
+let userPrefsDb = JsonDb<UserPrefs>();
 
 const initializeJest = (): void => {
   jest.clearAllMocks();
   searchesDb = JsonDb<Searches>();
+  userPrefsDb = JsonDb<UserPrefs>();
 
   const baseSearches = <Searches>{
     '401': {
@@ -42,6 +45,26 @@ const initializeJest = (): void => {
 
   searchesDb.setCacheDir(JSON.stringify(baseSearches));
   dbSearches.init(searchesDb);
+
+  const baseUserPrefs = <UserPrefs>{
+    isUndoing: true,
+    displayMinimalPostcards: false,
+    searchPrefs: {
+      '66': {
+        sid: '66',
+        showInHeader: false,
+        isSelected: true,
+      },
+      '67': {
+        sid: '67',
+        showInHeader: true,
+        isSelected: false,
+      },
+    },
+  };
+
+  userPrefsDb.setCacheDir(JSON.stringify(baseUserPrefs));
+  dbUserPrefs.init(userPrefsDb);
 };
 
 describe('/api', () => {
@@ -226,4 +249,71 @@ describe('/api/v3', () => {
       expect(search).toBeDefined();
     }
   });
+
+  test('GET /userPrefs', async () => {
+    const res = await request(app).get('/api/v3/userPrefs');
+
+    const desiredResponse = {
+      success: true,
+      userPrefs: {
+        displayMinimalPostcards: false,
+        isUndoing: true,
+        searchPrefs: {
+          '66': {
+            sid: '66',
+            isSelected: true,
+            showInHeader: false,
+          },
+          '67': {
+            sid: '67',
+            isSelected: false,
+            showInHeader: true,
+          },
+        },
+      },
+    };
+
+    expect(res.status).toEqual(200);
+    expect(res.headers['content-type']).toMatch(/json/);
+    expect(res.body).toMatchObject(desiredResponse);
+  });
+  // test('put /userPrefs (insert)', async () => {
+  //   const reqPayload = {
+  //     sid: '802',
+  //     alias: 'demo hammer',
+  //     isEnabled: true,
+  //     rank: 51,
+  //     sources: ['craigslist', 'facebook'],
+  //     craigslistSearchDetails: {
+  //       searchTerms: ['demo hammer', 'jackhammer'],
+  //       regions: ['sf bayarea', 'reno'],
+  //       subcategories: ['tools'],
+  //     },
+  //     facebookSearchDetails: {
+  //       searchTerms: ['demo hammer'],
+  //       regionalDetails: [
+  //         {
+  //           region: 'walnut creek',
+  //           distance: '20 miles',
+  //         },
+  //       ],
+  //     },
+  //   };
+
+  //   const res = await request(app).put('/api/v3/searches/802').send(reqPayload);
+
+  //   const desiredResponse = {
+  //     success: true,
+  //     search: {
+  //       sid: '802',
+  //       rank: 51,
+  //     },
+  //   };
+
+  //   expect(res.status).toEqual(200);
+  //   expect(res.headers['content-type']).toMatch(/json/);
+  //   expect(res.body).toMatchObject(desiredResponse);
+
+  //   expect(dbSearches.getSearches()).toContainAllKeys(['401', '802']);
+  // });
 });

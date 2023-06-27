@@ -78,7 +78,7 @@ describe('dbUserPrefs initialization', () => {
     const result = dbUserPrefs.init(userPrefsDb);
     expect(result.isOk()).toBeTrue();
     if (result.isOk()) {
-      const upsertResult = dbUserPrefs.upsert(<UserPrefs>{
+      const upsertResult = dbUserPrefs.upsertUserPrefs(<UserPrefs>{
         isUndoing: true,
         displayMinimalPostcards: true,
         searchPrefs: {
@@ -92,17 +92,18 @@ describe('dbUserPrefs initialization', () => {
 
       expect(upsertResult.isOk()).toBeTrue();
       const up = dbUserPrefs.getUserPrefs();
-      expect(up).toContainAllKeys(['isUndoing', 'displayMinimalPostcards', 'searchPrefs']);
-      expect(up).toContainEntries([
-        ['isUndoing', true],
-        ['displayMinimalPostcards', true],
-        ['searchPrefs', expect.toContainAllKeys(['2'])],
-      ]);
-      expect(up.searchPrefs['2']).toContainAllEntries([
-        ['sid', '2'],
-        ['showInHeader', false],
-        ['isSelected', false],
-      ]);
+
+      const desiredResponse = <UserPrefs>{
+        isUndoing: true,
+        displayMinimalPostcards: true,
+        searchPrefs: {
+          '1': { sid: '1', showInHeader: true, isSelected: true },
+          '2': { sid: '2', showInHeader: false, isSelected: false },
+        },
+      };
+
+      expect(up).toMatchObject(desiredResponse);
+
       expect(writeSpy).toHaveBeenCalledTimes(1);
     } else {
       expect(result.isOk()).toBeTrue();

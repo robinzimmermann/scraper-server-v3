@@ -16,6 +16,8 @@ router.get('/posts', v3Controllers.getPostsHandler);
 
 router.get('/userPrefs', v3Controllers.getUserPrefsHandler);
 
+router.put('/userPrefs', v3Controllers.upsertUserPrefsHandler);
+
 router.use('/*', v3Controllers.deadHandler);
 
 export { router };
